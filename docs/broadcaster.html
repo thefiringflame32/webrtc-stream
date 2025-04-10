@@ -37,8 +37,11 @@
       try {
         status('Getting screen...');
         const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-          audio: true
+          video: {
+            width: 640,  // Lower resolution for better speed
+            height: 480,
+          },
+          audio: false // Disable audio to reduce bandwidth
         });
 
         status(`Calling viewer ${viewerId}...`);
