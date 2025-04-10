@@ -10,13 +10,12 @@
   <p id="status">Status: Not connected</p>
   <p>Your Peer ID: <span id="peerId">...</span></p>
 
-  <input type="text" id="viewerId" placeholder="Enter Viewer Peer ID">
   <button id="startBtn">Start Streaming</button>
 
   <script>
     const status = msg => document.getElementById('status').textContent = msg;
 
-    // Create peer for the broadcaster
+    // Create a Peer for the broadcaster
     const peer = new Peer({
       host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
       port: 443,
@@ -27,41 +26,30 @@
       debug: 3
     });
 
-    // Set up peer when it's ready
+    // When the broadcaster's peer is ready
     peer.on('open', id => {
-      document.getElementById('peerId').textContent = id;
+      document.getElementById('peerId').textContent = id;  // Display the ID to be shared with the viewer
       status('Ready to stream');
     });
 
-    // When the broadcaster starts streaming
+    // Start streaming when the broadcaster clicks "Start Streaming"
     document.getElementById('startBtn').addEventListener('click', async () => {
-      const viewerId = document.getElementById('viewerId').value.trim();
-      if (!viewerId) {
-        alert('Please enter a viewer ID!');
-        return;
-      }
-
       try {
         status('Getting screen...');
         const stream = await navigator.mediaDevices.getDisplayMedia({
           video: {
-            width: 1280,  // Increased video resolution
+            width: 1280,  // Set video resolution for quality
             height: 720,
             frameRate: 30
           },
           audio: true
         });
 
-        status(`Calling viewer ${viewerId}...`);
-        const call = peer.call(viewerId, stream); // Call the viewer's ID
+        status(`Streaming with ID: ${peer.id}...`);
 
-        call.on('close', () => status('Call closed'));
-        call.on('error', err => {
-          console.error('Call error:', err);
-          status('Error during call');
-        });
+        // Here, the broadcaster's Peer ID is automatically used by the viewer to connect
+        // No need for any additional logic in this part for viewer connection
 
-        status('Streaming to viewer...');
       } catch (err) {
         console.error('Error getting display media:', err);
         status('Error: ' + err.message);
