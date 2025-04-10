@@ -27,12 +27,13 @@
         document.getElementById('localVideo').srcObject = stream;
         document.getElementById('status').textContent = 'Status: Sharing screen';
 
-        var peer = new Peer('someid', {
-                secure: true, 
-                host: '"my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', 
-                port: 443,
+        // Initialize Peer with a specific id, secure connection and corrected host without extra quotes.
+        peer = new Peer('someid', {
+          secure: true, 
+          host: "my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com",
+          port: 443,
+          path: "/peerjs"  // include this if your server uses this path.
         });
-
         
         peer.on('open', id => {
           document.getElementById('peerId').textContent = id;
