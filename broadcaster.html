@@ -8,7 +8,8 @@
 <body>
   <h1>Broadcaster</h1>
   <video id="localVideo" autoplay muted playsinline style="width: 640px; height: 480px;"></video>
-  <p>Your Peer ID: <span id="peerId"></span></p>
+  <p>Your Peer IDs:</p>
+  <ul id="peerIds"></ul> <!-- List of Peer IDs for each tab -->
   <script>
     async function startBroadcast() {
       // Request screen capture
@@ -17,12 +18,16 @@
         const localVideo = document.getElementById("localVideo");
         localVideo.srcObject = stream;
         
-        // Create PeerJS object; uses public server by default
-        const peer = new Peer();  
+        // Create a new Peer object for this tab
+        const peer = new Peer();
         peer.on('open', id => {
-          document.getElementById("peerId").innerText = id;
-          console.log("Broadcaster Peer ID:", id);
+          const peerIdList = document.getElementById("peerIds");
+          const newPeerId = document.createElement("li");
+          newPeerId.innerText = `Peer ID: ${id}`;
+          peerIdList.appendChild(newPeerId);
+          console.log("Broadcaster Peer ID for this tab:", id);
         });
+        
         // When another peer calls, answer with stream
         peer.on('call', call => {
           call.answer(stream);
@@ -32,8 +37,11 @@
         console.error("Error accessing display media:", error);
       }
     }
-    
+
+    // Start broadcasting for this tab
     startBroadcast();
+    
+    // You could start additional broadcasts for different tabs by calling startBroadcast() multiple times
   </script>
 </body>
 </html>
