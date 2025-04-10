@@ -48,7 +48,7 @@
         // When viewer receives a call from the broadcaster
         peer.on('call', call => {
           status('Incoming stream...');
-          call.answer(); // No local stream needed
+          call.answer(); // Automatically answer the incoming call from the broadcaster
 
           // Display the broadcaster's stream
           call.on('stream', remoteStream => {
