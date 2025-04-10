@@ -47,8 +47,21 @@
 
         status(`Streaming with ID: ${peer.id}...`);
 
-        // Here, the broadcaster's Peer ID is automatically used by the viewer to connect
-        // No need for any additional logic in this part for viewer connection
+        // Get the viewer's ID and initiate the call
+        const viewerId = prompt("Enter viewer ID to connect to: "); // This is just a quick way to get the viewer's ID
+        if (viewerId) {
+          const call = peer.call(viewerId, stream);
+
+          call.on('close', () => status('Call closed'));
+          call.on('error', err => {
+            console.error('Call error:', err);
+            status('Error during call');
+          });
+
+          status('Streaming to viewer...');
+        } else {
+          status('Error: No viewer ID provided');
+        }
 
       } catch (err) {
         console.error('Error getting display media:', err);
