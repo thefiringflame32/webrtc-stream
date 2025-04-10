@@ -17,7 +17,7 @@
   <script>
     const status = msg => document.getElementById('status').textContent = msg;
 
-    // Create peer for the viewer
+    // Create a Peer for the viewer
     const peer = new Peer({
       host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
       port: 443,
@@ -45,7 +45,7 @@
       try {
         status('Connecting to broadcaster...');
         
-        // When viewer receives a call
+        // When viewer receives a call from the broadcaster
         peer.on('call', call => {
           status('Incoming stream...');
           call.answer(); // No local stream needed
