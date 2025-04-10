@@ -14,8 +14,9 @@
     const peer = new Peer({
       host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
       port: 443,
-      secure: true,
-      debug: 2
+      secure: true
+      },
+      debug: 0 // Disable debugging for better performance
     });
 
     peer.on('open', id => {
@@ -28,6 +29,7 @@
       call.answer(); // No local stream needed
 
       call.on('stream', remoteStream => {
+        // Set remote stream to video element
         document.getElementById('remoteVideo').srcObject = remoteStream;
         document.getElementById('status').textContent = 'Status: Watching stream';
       });
