@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Viewer</title>
+  <script src="https://cdn.peerjs.com/1.4.7/peerjs.min.js"></script>
+</head>
+<body>
+  <h1>Viewer</h1>
+  <input type="text" id="peerInput" placeholder="Enter Broadcaster Peer ID">
+  <button id="connectBtn">Connect</button>
+  <video id="remoteVideo" autoplay playsinline style="width: 640px; height: 480px;"></video>
+  
+  <script>
+    const peer = new Peer();
+    let conn, call;
+    
+    document.getElementById("connectBtn").addEventListener("click", function(){
+      const broadcasterId = document.getElementById("peerInput").value.trim();
+      if (broadcasterId !== "") {
+        // Call the broadcaster and get the stream.
+        call = peer.call(broadcasterId, null);
+        call.on('stream', function(remoteStream) {
+          const remoteVideo = document.getElementById("remoteVideo");
+          remoteVideo.srcObject = remoteStream;
+        });
+      }
+    });
+    
+    peer.on('open', id => console.log("Viewer Peer ID:", id));
+  </script>
+</body>
+</html>
