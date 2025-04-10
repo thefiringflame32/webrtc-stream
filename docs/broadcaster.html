@@ -28,16 +28,25 @@
         document.getElementById('status').textContent = 'Status: Sharing screen';
 
         // Initialize Peer with a specific id, secure connection and corrected host without extra quotes.
-        var peer = new Peer('someid', {
-              secure: true, 
-              host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com/', 
-              port: 443,
+        
+        const peer = new Peer('someid', {
+          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+          port: 443,
+          path: '/peerjs',
+          secure: true
         });
         
         peer.on('open', id => {
-          document.getElementById('peerId').textContent = id;
-          document.getElementById('status').textContent = 'Status: Ready to connect';
+          console.log('Peer connected with ID:', id);
         });
+        
+        // ✅ Keep WebSocket alive
+        setInterval(() => {
+          if (peer && peer.socket && peer.socket._ws && peer.socket._ws.readyState === WebSocket.OPEN) {
+            peer.socket._ws.send('ping');
+            console.log('[Keepalive] Sent ping to PeerJS server');
+          }
+        }, 25000);
 
         peer.on('call', call => {
           call.answer(stream);
