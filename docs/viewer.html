@@ -16,12 +16,13 @@
     let peer;
     let call;
 
-    // Initialize Peer with YOUR Heroku server
-    var peer = new Peer('someid', {
-                secure: true, 
-                host: '"my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', 
-                port: 443,
+    peer = new Peer('someid', {
+          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+          port: 443,
+          secure: true,
+          debug: 3 // Shows detailed logs in console
     });
+
 
     peer.on('open', id => {
       console.log('Viewer Peer ID:', id);
