@@ -28,10 +28,10 @@
         document.getElementById('status').textContent = 'Status: Sharing screen';
 
         // Initialize Peer with a specific id, secure connection and corrected host without extra quotes.
-        const myPeer = new Peer(undefined, {
-          secure: true,
-          host: '0.peerjs.com',
-          port: 443
+        var peer = new Peer('someid', {
+                secure: true, 
+                host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com/', 
+                port: 443,
         });
         
         peer.on('open', id => {
