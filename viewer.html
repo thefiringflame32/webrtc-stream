@@ -10,24 +10,55 @@
   <input type="text" id="peerInput" placeholder="Enter Broadcaster Peer ID">
   <button id="connectBtn">Connect</button>
   <video id="remoteVideo" autoplay playsinline style="width: 640px; height: 480px;"></video>
-  
+  <p id="status">Status: Disconnected</p>
+
   <script>
-    const peer = new Peer();
-    let conn, call;
-    
-    document.getElementById("connectBtn").addEventListener("click", function(){
-      const broadcasterId = document.getElementById("peerInput").value.trim();
-      if (broadcasterId !== "") {
-        // Call the broadcaster and get the stream.
-        call = peer.call(broadcasterId, null);
-        call.on('stream', function(remoteStream) {
-          const remoteVideo = document.getElementById("remoteVideo");
-          remoteVideo.srcObject = remoteStream;
+    let peer;
+    let call;
+
+    // Initialize Peer with YOUR Heroku server
+    peer = new Peer({
+      host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+      port: 443,
+      secure: true,
+      path: '/peerjs',
+      debug: 3
+    });
+
+    peer.on('open', id => {
+      console.log('Viewer Peer ID:', id);
+      document.getElementById('status').textContent = 'Status: Ready to connect';
+    });
+
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      const broadcasterId = document.getElementById('peerInput').value.trim();
+      if (!broadcasterId) return;
+
+      try {
+        document.getElementById('status').textContent = 'Status: Connecting...';
+        
+        // Initiate call
+        call = peer.call(broadcasterId, null); // No local stream needed
+        
+        call.on('stream', remoteStream => {
+          document.getElementById('remoteVideo').srcObject = remoteStream;
+          document.getElementById('status').textContent = 'Status: Connected';
         });
+
+        call.on('close', () => {
+          document.getElementById('status').textContent = 'Status: Disconnected';
+        });
+
+        call.on('error', err => {
+          console.error('Call Error:', err);
+          document.getElementById('status').textContent = `Error: ${err.message}`;
+        });
+
+      } catch (error) {
+        console.error('Connection Error:', error);
+        document.getElementById('status').textContent = `Error: ${error.message}`;
       }
     });
-    
-    peer.on('open', id => console.log("Viewer Peer ID:", id));
   </script>
 </body>
 </html>
