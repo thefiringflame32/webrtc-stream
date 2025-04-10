@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Broadcaster</title>
+  <script src="https://cdn.peerjs.com/1.4.7/peerjs.min.js"></script>
+</head>
+<body>
+  <h1>Broadcaster</h1>
+  <video id="localVideo" autoplay muted playsinline style="width: 640px; height: 480px;"></video>
+  <p>Your Peer ID: <span id="peerId"></span></p>
+  <script>
+    async function startBroadcast() {
+      // Request screen capture
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        const localVideo = document.getElementById("localVideo");
+        localVideo.srcObject = stream;
+        
+        // Create PeerJS object; uses public server by default
+        const peer = new Peer();  
+        peer.on('open', id => {
+          document.getElementById("peerId").innerText = id;
+          console.log("Broadcaster Peer ID:", id);
+        });
+        // When another peer calls, answer with stream
+        peer.on('call', call => {
+          call.answer(stream);
+        });
+        
+      } catch (error) {
+        console.error("Error accessing display media:", error);
+      }
+    }
+    
+    startBroadcast();
+  </script>
+</body>
+</html>
