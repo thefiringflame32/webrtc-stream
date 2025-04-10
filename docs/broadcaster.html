@@ -16,17 +16,24 @@
   <script>
     const status = msg => document.getElementById('status').textContent = msg;
 
+    // Create peer for the broadcaster
     const peer = new Peer({
       host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
       port: 443,
-      secure: true
+      secure: true,
+      config: {
+        iceServers: [] // No STUN server
+      },
+      debug: 3
     });
 
+    // Set up peer when it's ready
     peer.on('open', id => {
       document.getElementById('peerId').textContent = id;
       status('Ready to stream');
     });
 
+    // When the broadcaster starts streaming
     document.getElementById('startBtn').addEventListener('click', async () => {
       const viewerId = document.getElementById('viewerId').value.trim();
       if (!viewerId) {
@@ -38,14 +45,15 @@
         status('Getting screen...');
         const stream = await navigator.mediaDevices.getDisplayMedia({
           video: {
-            width: 640,  // Lower resolution for better speed
-            height: 480,
+            width: 1280,  // Increased video resolution
+            height: 720,
+            frameRate: 30
           },
-          audio: false // Disable audio to reduce bandwidth
+          audio: true
         });
 
         status(`Calling viewer ${viewerId}...`);
-        const call = peer.call(viewerId, stream);
+        const call = peer.call(viewerId, stream); // Call the viewer's ID
 
         call.on('close', () => status('Call closed'));
         call.on('error', err => {
