@@ -7,44 +7,70 @@
 </head>
 <body>
   <h1>Viewer</h1>
-  <video id="remoteVideo" autoplay playsinline style="width: 640px; height: 480px;"></video>
+  <p>Enter Broadcaster Peer ID:</p>
+  <input type="text" id="peerInput" placeholder="Enter Broadcaster Peer ID">
+  <button id="connectBtn">Connect</button>
+
+  <video id="remoteVideo" autoplay playsinline style="width: 1280px; height: 720px;"></video>
   <p id="status">Status: Waiting for stream...</p>
 
   <script>
+    const status = msg => document.getElementById('status').textContent = msg;
+
+    // Create peer for the viewer
     const peer = new Peer({
       host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
       port: 443,
-      secure: true
+      secure: true,
+      config: {
+        iceServers: [] // No STUN server
+      },
+      debug: 2
     });
 
+    // When the viewer's peer is ready
     peer.on('open', id => {
       console.log('Viewer ready. ID:', id);
       document.getElementById('status').textContent = 'Status: Ready (ID: ' + id + ')';
     });
 
-    peer.on('call', call => {
-      document.getElementById('status').textContent = 'Incoming stream...';
-      call.answer(); // No local stream needed
+    // Listener for the connect button click event
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      const broadcasterId = document.getElementById('peerInput').value.trim();
+      if (!broadcasterId) {
+        alert('Please enter a broadcaster ID!');
+        return;
+      }
 
-      call.on('stream', remoteStream => {
-        // Set remote stream to video element
-        document.getElementById('remoteVideo').srcObject = remoteStream;
-        document.getElementById('status').textContent = 'Status: Watching stream';
-      });
+      try {
+        status('Connecting to broadcaster...');
+        
+        // When viewer receives a call
+        peer.on('call', call => {
+          status('Incoming stream...');
+          call.answer(); // No local stream needed
 
-      call.on('close', () => {
-        document.getElementById('status').textContent = 'Status: Stream ended';
-      });
+          // Display the broadcaster's stream
+          call.on('stream', remoteStream => {
+            document.getElementById('remoteVideo').srcObject = remoteStream;
+            status('Status: Watching stream');
+          });
 
-      call.on('error', err => {
-        console.error('Call error:', err);
-        document.getElementById('status').textContent = 'Error: ' + err.message;
-      });
-    });
+          // Handle stream closing
+          call.on('close', () => {
+            status('Status: Stream ended');
+          });
 
-    peer.on('error', err => {
-      console.error('PeerJS error:', err);
-      document.getElementById('status').textContent = 'Peer error: ' + err.message;
+          // Handle call errors
+          call.on('error', err => {
+            console.error('Call error:', err);
+            status('Error: ' + err.message);
+          });
+        });
+      } catch (err) {
+        console.error('Error connecting to broadcaster:', err);
+        status('Error: ' + err.message);
+      }
     });
   </script>
 </body>
