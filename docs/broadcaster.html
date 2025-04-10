@@ -2,90 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Broadcaster Debug</title>
-  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <title>Broadcaster</title>
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
 </head>
 <body>
   <h1>Broadcaster</h1>
-  <video id="localVideo" autoplay muted playsinline style="width: 640px; height: 480px;"></video>
-  <p>Your Peer ID: <span id="peerId">Generating...</span></p>
-  <p id="status">Status: Idle</p>
+  <p id="status">Status: Not connected</p>
+  <p>Your Peer ID: <span id="peerId">...</span></p>
+
+  <input type="text" id="viewerId" placeholder="Enter Viewer Peer ID">
+  <button id="startBtn">Start Streaming</button>
 
   <script>
-    let peer;
-    let stream;
+    const status = msg => document.getElementById('status').textContent = msg;
 
-    async function startBroadcast() {
-      try {
-        console.log('[DEBUG] Requesting screen share...');
-        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-        document.getElementById('localVideo').srcObject = stream;
-        document.getElementById('status').textContent = 'Status: Sharing screen';
-        console.log('[DEBUG] Screen sharing started');
+    const peer = new Peer({
+      host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+      port: 443,
+      secure: true
+    });
 
-        // 🔧 Initialize PeerJS
-        peer = new Peer('someid', {
-          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
-          port: 443,
-          secure: true,
-          debug: 3 // Shows detailed logs in console
-        });
+    peer.on('open', id => {
+      document.getElementById('peerId').textContent = id;
+      status('Ready to stream');
+    });
 
-        // ✅ Listen for connection open
-        peer.on('open', id => {
-          console.log('[DEBUG] Peer connected with ID:', id);
-          document.getElementById('peerId').textContent = id;
-          document.getElementById('status').textContent = 'Status: Ready to connect';
-        });
-
-        // ✅ Listen for incoming calls
-        peer.on('call', call => {
-          console.log('[DEBUG] Incoming call, answering with stream');
-          call.answer(stream);
-          document.getElementById('status').textContent = 'Status: Connected to viewer';
-        });
-
-        // ✅ Listen for all other peer events
-        peer.on('disconnected', () => {
-          console.warn('[DEBUG] Peer disconnected');
-        });
-
-        peer.on('close', () => {
-          console.warn('[DEBUG] Peer connection closed');
-        });
-
-        peer.on('error', err => {
-          console.error('[ERROR] PeerJS error:', err);
-          document.getElementById('status').textContent = `Error: ${err.message}`;
-        });
-
-        // ✅ Keep-alive ping every 25 seconds to prevent Heroku timeout
-        setInterval(() => {
-          try {
-            if (peer && peer.socket && peer.socket._ws) {
-              const ready = peer.socket._ws.readyState;
-              if (ready === WebSocket.OPEN) {
-                peer.socket._ws.send('ping');
-                console.log('[Keepalive] Sent ping');
-              } else {
-                console.warn(`[Keepalive] WebSocket not open (readyState: ${ready})`);
-              }
-            } else {
-              console.warn('[Keepalive] No WebSocket connection found');
-            }
-          } catch (e) {
-            console.error('[Keepalive] Ping failed:', e);
-          }
-        }, 25000);
-
-      } catch (error) {
-        console.error('[ERROR] Broadcasting failed:', error);
-        document.getElementById('status').textContent = `Error: ${error.message}`;
+    document.getElementById('startBtn').addEventListener('click', async () => {
+      const viewerId = document.getElementById('viewerId').value.trim();
+      if (!viewerId) {
+        alert('Please enter a viewer ID!');
+        return;
       }
-    }
 
-    // Start everything
-    startBroadcast();
+      try {
+        status('Getting screen...');
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true
+        });
+
+        status(`Calling viewer ${viewerId}...`);
+        const call = peer.call(viewerId, stream);
+
+        call.on('close', () => status('Call closed'));
+        call.on('error', err => {
+          console.error('Call error:', err);
+          status('Error during call');
+        });
+
+        status('Streaming to viewer...');
+      } catch (err) {
+        console.error('Error getting display media:', err);
+        status('Error: ' + err.message);
+      }
+    });
   </script>
 </body>
 </html>
