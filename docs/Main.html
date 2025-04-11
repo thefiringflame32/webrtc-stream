@@ -309,13 +309,6 @@
           cell.className = 'player-cell';
           cell.id = snapshot.key;
           broadcasterPlayers.push(parseInt((playerData.title).replace(/\D/g, '')));
-          cell.innerHTML = 
-            <div class="player-title">${playerData.title}</div>
-            <button class="delete-player">X</button>
-            <div class="cell-content">
-              <div class="placeholder text-center">Tab activo</div>
-            </div>
-          ;
 
           cell.innerHTML = `
             <div class="player-title">Player ${playerData.title}</div>
