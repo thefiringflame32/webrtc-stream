@@ -272,7 +272,7 @@
         document.getElementById('authContainer').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
         document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
-        // Role: if email (or displayName) equals "thefiringflame32@gmail.com", become broadcaster.
+        // Role: if email equals "thefiringflame32@gmail.com", become broadcaster.
         isBroadcaster = (user.email === "thefiringflame32@gmail.com");
         if (isBroadcaster) {
           document.getElementById('broadcasterUI').style.display = 'block';
@@ -285,7 +285,6 @@
     });
     
     // ---------- Broadcaster Functions -----------
-    // Local array to track current player numbers in use.
     let broadcasterPlayers = [];
     
     function initBroadcaster() {
@@ -293,9 +292,30 @@
       document.getElementById('addPlayerBtn').addEventListener('click', () => {
         addPlayerCell();
       });
+      // Load any pre-existing players from Firebase.
+      playersRef.on('child_added', snapshot => {
+        const playerData = snapshot.val();
+        if (!document.getElementById(snapshot.key)) {
+          const grid = document.getElementById('gridContainer');
+          const cell = document.createElement('div');
+          cell.className = 'player-cell';
+          cell.id = snapshot.key;
+          cell.innerHTML = `
+            <div class="player-title">${playerData.title}</div>
+            <button class="delete-player">X</button>
+            <div class="cell-content">
+              <div class="placeholder text-center">Tab activo</div>
+            </div>
+          `;
+          grid.appendChild(cell);
+          cell.querySelector('.delete-player').addEventListener('click', () => {
+            grid.removeChild(cell);
+            playersRef.child(snapshot.key).remove();
+          });
+        }
+      });
     }
     
-    // Find the smallest missing positive integer for labeling.
     function getNextPlayerNumber() {
       let num = 1;
       while(broadcasterPlayers.includes(num)) {
@@ -309,7 +329,6 @@
       const playerNumber = getNextPlayerNumber();
       broadcasterPlayers.push(playerNumber);
       
-      // Create cell element
       const cell = document.createElement('div');
       cell.className = 'player-cell';
       cell.id = `player-${playerNumber}`;
@@ -324,24 +343,22 @@
       
       // Delete button handler
       cell.querySelector('.delete-player').addEventListener('click', () => {
-        // Remove from UI
         grid.removeChild(cell);
-        // Remove from our local array and from the database
         broadcasterPlayers = broadcasterPlayers.filter(n => n !== playerNumber);
         playersRef.child(`player-${playerNumber}`).remove();
       });
       
-      // Handler for Add Tab inside this cell
+      // Handler for "Agregar Tab" button in this cell.
       cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
         const contentDiv = cell.querySelector('.cell-content');
         contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
         try {
           const stream = await navigator.mediaDevices.getDisplayMedia({
             video: { width: 1280, height: 720, frameRate: 30 },
-            audio: false  // Change to true if you want audio
+            audio: false
           });
           
-          // Create a new Peer for this player's tab
+          // Create a new Peer for this player's tab.
           const playerPeer = new Peer({
             host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
             port: 443,
@@ -351,19 +368,29 @@
           });
           
           playerPeer.on('open', id => {
-            // Save player data to Firebase for viewers to see.
+            // Save player info to Firebase.
             playersRef.child(`player-${playerNumber}`).set({
               title: `Player ${playerNumber}`,
               peerId: id
             });
           });
           
-          // Listen for incoming calls from viewers.
+          // Listen for data connections from viewers.
+          playerPeer.on('connection', conn => {
+            conn.on('open', () => {
+              console.log('Data connection received from viewer:', conn.peer);
+              // Initiate call back to the viewer with the stream.
+              const call = playerPeer.call(conn.peer, stream);
+              call.on('error', err => console.error('Call error (broadcaster):', err));
+            });
+          });
+          
+          // Also listen for incoming calls (just in case).
           playerPeer.on('call', call => {
             call.answer(stream);
           });
           
-          // Display the stream inside the cell.
+          // Display the stream in the cell.
           const videoElem = document.createElement('video');
           videoElem.autoplay = true;
           videoElem.playsInline = true;
@@ -372,6 +399,7 @@
           contentDiv.appendChild(videoElem);
           
         } catch (err) {
+          console.error(err);
           contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`;
         }
       });
@@ -379,14 +407,9 @@
     
     // ---------- Viewer Functions -----------
     function initViewer() {
-      // In viewer UI, each cell will allow choosing a broadcaster's player.
-      // For simplicity, let's allow the viewer to add cells manually.
-      // Each cell will show a dropdown list (populated from the players list) and a disconnect button.
-      
-      // Here we add one cell initially. You can add an "Add Tab" button similar to broadcaster if desired.
+      // Initially add one viewer cell.
       addViewerCell();
-      
-      // Listen to changes in playersRef to update dropdowns.
+      // Update viewer dropdowns when players change.
       playersRef.on('value', snapshot => {
         const playersData = snapshot.val() || {};
         updateViewerDropdowns(playersData);
@@ -397,7 +420,6 @@
       const grid = document.getElementById('gridContainerViewer');
       const cell = document.createElement('div');
       cell.className = 'player-cell';
-      // For viewers, the cell content will contain a dropdown and a content area.
       cell.innerHTML = `
         <div class="cell-content">
           <select class="player-select">
@@ -412,14 +434,13 @@
       const selectElem = cell.querySelector('.player-select');
       const connectBtn = cell.querySelector('.connect-btn');
       const disconnectBtn = cell.querySelector('.disconnect-btn');
-      let currentCall = null;
       let cellPeer = null;
       
-      // When Connect is clicked, use the selected player.
+      // When the "Conectar" button is clicked:
       connectBtn.addEventListener('click', () => {
         const selected = selectElem.value;
         if (!selected) return;
-        // Create a viewer Peer for this call
+        // Create a Peer for this viewer cell.
         cellPeer = new Peer({
           host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
           port: 443,
@@ -428,10 +449,18 @@
           debug: 2
         });
         cellPeer.on('open', () => {
-          // Once open, call the broadcaster.
-          currentCall = cellPeer.call(selected, null);
-          currentCall.on('stream', stream => {
-            // Replace the dropdown with the video stream.
+          // Instead of calling with a null stream, open a data connection to signal intent.
+          const dataConn = cellPeer.connect(selected);
+          dataConn.on('open', () => {
+            console.log('Data connection sent to broadcaster:', selected);
+            // Wait for an incoming call.
+          });
+        });
+        // Listen for the incoming call from the broadcaster.
+        cellPeer.on('call', call => {
+          // Answer with no stream (viewer does not send any media).
+          call.answer();
+          call.on('stream', stream => {
             const videoElem = document.createElement('video');
             videoElem.autoplay = true;
             videoElem.playsInline = true;
@@ -441,16 +470,15 @@
             contentDiv.appendChild(videoElem);
             disconnectBtn.style.display = 'block';
           });
-          currentCall.on('close', () => {
+          call.on('close', () => {
             disconnectBtn.style.display = 'none';
           });
         });
       });
       
       disconnectBtn.addEventListener('click', () => {
-        if (currentCall) currentCall.close();
         if (cellPeer) cellPeer.destroy();
-        // Reset cell content to allow reconnection.
+        // Reset cell content for reconnection.
         cell.innerHTML = `
           <div class="cell-content">
             <select class="player-select">
@@ -460,7 +488,6 @@
             <button class="disconnect-btn" style="display:none;">Desconectar</button>
           </div>
         `;
-        // Reattach handlers for the new elements.
         addViewerCellHandlers(cell);
       });
     }
@@ -469,7 +496,6 @@
       const selectElem = cell.querySelector('.player-select');
       const connectBtn = cell.querySelector('.connect-btn');
       const disconnectBtn = cell.querySelector('.disconnect-btn');
-      let currentCall = null;
       let cellPeer = null;
       connectBtn.addEventListener('click', () => {
         const selected = selectElem.value;
@@ -482,8 +508,14 @@
           debug: 2
         });
         cellPeer.on('open', () => {
-          currentCall = cellPeer.call(selected, null);
-          currentCall.on('stream', stream => {
+          const dataConn = cellPeer.connect(selected);
+          dataConn.on('open', () => {
+            console.log('Data connection sent to broadcaster:', selected);
+          });
+        });
+        cellPeer.on('call', call => {
+          call.answer();
+          call.on('stream', stream => {
             const videoElem = document.createElement('video');
             videoElem.autoplay = true;
             videoElem.playsInline = true;
@@ -493,13 +525,12 @@
             contentDiv.appendChild(videoElem);
             disconnectBtn.style.display = 'block';
           });
-          currentCall.on('close', () => {
+          call.on('close', () => {
             disconnectBtn.style.display = 'none';
           });
         });
       });
       disconnectBtn.addEventListener('click', () => {
-        if (currentCall) currentCall.close();
         if (cellPeer) cellPeer.destroy();
         cell.innerHTML = `
           <div class="cell-content">
@@ -514,16 +545,13 @@
       });
     }
     
-    // Update all viewer cells’ dropdowns based on the players data from Firebase.
+    // Update viewer dropdowns based on players from Firebase.
     function updateViewerDropdowns(playersData) {
       const grid = document.getElementById('gridContainerViewer');
-      // For each viewer cell, update the options in the select.
       grid.querySelectorAll('.player-cell').forEach(cell => {
         const selectElem = cell.querySelector('.player-select');
         if (!selectElem) return;
-        // Clear current options
         selectElem.innerHTML = '<option value="">Selecciona un Player</option>';
-        // Add an option for each active player (the value will be the broadcaster Peer ID)
         for (let key in playersData) {
           const option = document.createElement('option');
           option.value = playersData[key].peerId;
