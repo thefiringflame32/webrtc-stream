@@ -300,13 +300,13 @@
           const cell = document.createElement('div');
           cell.className = 'player-cell';
           cell.id = snapshot.key;
-          cell.innerHTML = 
+          cell.innerHTML = `
             <div class="player-title">${playerData.title}</div>
             <button class="delete-player">X</button>
             <div class="cell-content">
               <div class="placeholder text-center">Tab activo</div>
             </div>
-          ;
+          `;
           grid.appendChild(cell);
           cell.querySelector('.delete-player').addEventListener('click', () => {
             grid.removeChild(cell);
