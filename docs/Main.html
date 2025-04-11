@@ -306,6 +306,7 @@
         if (!document.getElementById(snapshot.key)) {
           const grid = document.getElementById('gridContainer');
           const cell = document.createElement('div');
+          const playerNumber = parseInt((playerData.title).replace(/\D/g, ''));
           cell.className = 'player-cell';
           cell.id = snapshot.key;
           broadcasterPlayers.push(parseInt((playerData.title).replace(/\D/g, '')));
