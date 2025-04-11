@@ -192,21 +192,40 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <!-- PeerJS -->
   <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
-  <!-- jQuery and Bootstrap JS for tabs -->
+  <!-- jQuery and Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
+  <!-- ----------------- Begin Script (Define functions first) ----------------- -->
   <script>
-    /* ----------------- Funciones de Ayuda (Broadcaster & Viewer) ----------------- */
-    let broadcasterPlayers = [];
-    
+    /* ---------- Firebase Initialization ---------- */
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUMHJ0oLNYvCiDQMODSzr_KpJglDTJASI",
+      authDomain: "thefiringflame32.firebaseapp.com",
+      projectId: "thefiringflame32",
+      databaseURL: "https://thefiringflame32-default-rtdb.europe-west1.firebasedatabase.app",
+      storageBucket: "thefiringflame32.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const playersRef = db.ref('players');
+
+    /* ---------- Global Variables ---------- */
+    let isBroadcaster = false;  
+    let broadcasterPlayers = []; // Para numerar players en broadcaster
+
+    /* ---------- Helper Functions ---------- */
+
     function getNextPlayerNumber() {
       let num = 1;
       while (broadcasterPlayers.includes(num)) { num++; }
       return num;
     }
     
-    // Broadcaster: Cierra la transmisión y reinicia la celda.
+    // Broadcaster: Cierra la transmisión en una celda
     function closePlayerTab(cell) {
       const videoElem = cell.querySelector('video');
       if (videoElem && videoElem.srcObject) {
@@ -219,7 +238,7 @@
       attachAddTabHandler(cell);
     }
     
-    // Broadcaster: Asigna el handler al botón "Agregar Tab" dentro de una celda.
+    // Broadcaster: Asigna el handler para "Agregar Tab" en una celda
     function attachAddTabHandler(cell) {
       cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
         const contentDiv = cell.querySelector('.cell-content');
@@ -269,7 +288,7 @@
       });
     }
     
-    // Broadcaster: Crea una nueva celda (player) y la guarda en Firebase.
+    // Broadcaster: Crea una nueva celda (player) y guarda en Firebase (sin transmitir)
     function addPlayerCell() {
       const grid = document.getElementById('gridContainer');
       const playerNumber = getNextPlayerNumber();
@@ -323,7 +342,7 @@
       attachViewerCellHandlers(cell);
     }
     
-    // Viewer: Asigna los handlers a una celda de viewer.
+    // Viewer: Asigna los handlers a la celda de viewer.
     function attachViewerCellHandlers(cell) {
       const selectElem = cell.querySelector('.player-select');
       const connectBtn = cell.querySelector('.connect-btn');
@@ -355,7 +374,7 @@
                 dataConn.on('open', () => { console.log('Data connection sent to broadcaster:', selected); });
               });
               cellPeer.on('call', call => {
-                call.answer();
+                call.answer(); // Viewer no envía stream.
                 call.on('stream', stream => {
                   const videoElem = document.createElement('video');
                   videoElem.autoplay = true;
@@ -395,7 +414,7 @@
       });
     }
     
-    // Viewer: Actualiza los dropdowns con players disponibles (peerId activo y no bloqueados).
+    // Viewer: Actualiza el dropdown con los players disponibles (con peerId activo y no bloqueados).
     function updateViewerDropdowns(playersData) {
       const grid = document.getElementById('gridContainerViewer');
       grid.querySelectorAll('.player-cell').forEach(cell => {
@@ -430,10 +449,6 @@
         }
       }
     });
-    
-    /* ----------------- Firebase & Auth Initialization ----------------- */
-    // NOTA: Asegurate de no duplicar la inicialización.
-    // Ya inicializamos Firebase en este script.
   </script>
 </body>
 </html>
