@@ -297,20 +297,114 @@
         const playerData = snapshot.val();
         if (!document.getElementById(snapshot.key)) {
           const grid = document.getElementById('gridContainer');
+          const playerNumber = playerData.title
+          broadcasterPlayers.push(playerNumber);
+          
+          const cellId = `player-${playerNumber}`;
           const cell = document.createElement('div');
           cell.className = 'player-cell';
           cell.id = snapshot.key;
+          
+          // Se crea la celda con estado inicial: player creado sin transmitir.
           cell.innerHTML = `
-            <div class="player-title">${playerData.title}</div>
+            <div class="player-title">Player ${playerNumber}</div>
             <button class="delete-player">X</button>
+            <!-- Added button for "Agregar Tab" -->
+            <button class="add-tab-btn">Agregar Tab</button>
             <div class="cell-content">
-              <div class="placeholder text-center">Tab activo</div>
+              <div class="placeholder text-center">Player creado. No se comparte tab.</div>
             </div>
           `;
           grid.appendChild(cell);
+          
+          // Guarda el player en Firebase, sin peerId y sin owner (vacío)
+          playersRef.child(cellId).set({
+            title: `Player ${playerNumber}`,
+            peerId: "",
+            viewerUid: "",
+            owner: ""
+          });
+          
+          // Handler del botón Delete: si hay transmisión, actúa como "Cerrar Tab"; sino elimina el player.
           cell.querySelector('.delete-player').addEventListener('click', () => {
-            grid.removeChild(cell);
-            playersRef.child(snapshot.key).remove();
+            if (cell.querySelector('video')) {
+              closePlayerTab(cell);
+            } else {
+              grid.removeChild(cell);
+              broadcasterPlayers = broadcasterPlayers.filter(n => n !== playerNumber);
+              playersRef.child(cellId).remove();
+            }
+          });
+          
+          // Handler del botón "Cerrar Tab": cierra la transmisión y reinicia la celda.
+          cell.querySelector('.close-tab-btn').addEventListener('click', () => {
+            closePlayerTab(cell);
+          });
+          
+          // Handler para "Agregar Tab": inicia la captura de pantalla y actualiza la celda
+          cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
+            const contentDiv = cell.querySelector('.cell-content');
+            contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
+            try {
+              const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: { width: 1280, height: 720, frameRate: 30 },
+                audio: false
+              });
+              
+              // Crea un nuevo Peer para esta transmisión.
+              const playerPeer = new Peer({
+                host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+                port: 443,
+                secure: true,
+                config: { iceServers: [] },
+                debug: 2
+              });
+              
+              playerPeer.on('open', id => {
+                // Actualiza Firebase: establece el peerId obtenido.
+                playersRef.child(cell.id).update({ peerId: id });
+              });
+              
+              // Escucha conexiones de datos de viewers.
+              playerPeer.on('connection', conn => {
+                conn.on('open', () => {
+                  playersRef.child(cell.id).once('value', snapshot => {
+                    const data = snapshot.val();
+                    if (!data.locked) {
+                      // Bloquea este player para el primer viewer conectado y asigna como owner.
+                      playersRef.child(cell.id).update({ locked: true, viewerUid: auth.currentUser.uid, owner: auth.currentUser.uid });
+                      // Inicia la llamada al viewer con la transmisión.
+                      const call = playerPeer.call(conn.peer, stream);
+                      call.on('error', err => console.error('Call error (broadcaster):', err));
+                    } else {
+                      conn.send('locked');
+                    }
+                  });
+                });
+              });
+              
+              // También contesta llamadas entrantes, por si el viewer inicia directamente.
+              playerPeer.on('call', call => { call.answer(stream); });
+              
+              // Vigila si la transmisión termina para volver al estado "Agregar Tab".
+              stream.getTracks().forEach(track => {
+                track.onended = () => { closePlayerTab(cell); };
+              });
+              
+              // Muestra la transmisión (video) en la celda.
+              const videoElem = document.createElement('video');
+              videoElem.autoplay = true;
+              videoElem.playsInline = true;
+              videoElem.srcObject = stream;
+              contentDiv.innerHTML = "";
+              contentDiv.appendChild(videoElem);
+              // Muestra el botón "Cerrar Tab".
+              cell.querySelector('.close-tab-btn').style.display = 'block';
+              
+            } catch (err) {
+              console.error(err);
+              contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`;
+            }
           });
         }
       });
@@ -323,6 +417,8 @@
       }
       return num;
     }
+    
+
     
     function addPlayerCell() {
       const grid = document.getElementById('gridContainer');
@@ -338,7 +434,6 @@
       cell.innerHTML = `
         <div class="player-title">Player ${playerNumber}</div>
         <button class="delete-player">X</button>
-        <button class="close-tab-btn">Cerrar Tab</button>
         <!-- Added button for "Agregar Tab" -->
         <button class="add-tab-btn">Agregar Tab</button>
         <div class="cell-content">
@@ -351,7 +446,6 @@
       playersRef.child(cellId).set({
         title: `Player ${playerNumber}`,
         peerId: "",
-        locked: false,
         viewerUid: "",
         owner: ""
       });
