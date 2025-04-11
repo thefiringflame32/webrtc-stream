@@ -453,7 +453,7 @@
       const grid = document.getElementById('gridContainerViewer');
       const cell = document.createElement('div');
       cell.className = 'player-cell';
-      cell.innerHTML = '
+      cell.innerHTML = `
         <div class="cell-content">
           <select class="player-select">
             <option value="">Selecciona un Player</option>
@@ -461,7 +461,7 @@
           <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
           <button class="disconnect-btn" style="display:none;">Desconectar</button>
         </div>
-      ';
+      `;
       grid.appendChild(cell);
       
       const selectElem = cell.querySelector('.player-select');
