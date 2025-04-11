@@ -260,7 +260,7 @@
       auth.signInWithEmailLink(email, window.location.href)
         .then(cred => {
           window.localStorage.removeItem('emailForSignIn');
-          showAuthMessage(Bienvenido ${cred.user.email});
+          showAuthMessage(`Bienvenido ${cred.user.email}`);
         })
         .catch(err => showAuthMessage(err.message, true));
     }
