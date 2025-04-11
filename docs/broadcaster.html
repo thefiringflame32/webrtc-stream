@@ -7,67 +7,45 @@
 </head>
 <body>
   <h1>Broadcaster</h1>
-  <p id="status">Status: Not connected</p>
-  <p>Your Peer ID: <span id="peerId">...</span></p>
-
-  <button id="startBtn">Start Streaming</button>
+  <p>Status: <span id="status">Initializing...</span></p>
+  <button id="addScreenBtn">Add Screen</button>
+  <div id="screensContainer"></div>
 
   <script>
     const status = msg => document.getElementById('status').textContent = msg;
+    const container = document.getElementById('screensContainer');
 
-    // Create a Peer for the broadcaster
-    const peer = new Peer({
-      host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
-      port: 443,
-      secure: true,
-      config: {
-        iceServers: [] // No STUN server
-      },
-      debug: 3
-    });
+    async function addScreen() {
+      const newPeer = new Peer({
+        host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+        port: 443,
+        secure: true,
+        config: { iceServers: [] },
+        debug: 2
+      });
 
-    // When the broadcaster's peer is ready
-    peer.on('open', id => {
-      document.getElementById('peerId').textContent = id;  // Display the ID to be shared with the viewer
-      status('Ready to stream');
-    });
-
-    // Start streaming when the broadcaster clicks "Start Streaming"
-    document.getElementById('startBtn').addEventListener('click', async () => {
-      try {
-        status('Getting screen...');
+      newPeer.on('open', async id => {
         const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: {
-            width: 1280,  // Set video resolution for quality
-            height: 720,
-            frameRate: 30
-          },
+          video: { width: 1280, height: 720, frameRate: 30 },
           audio: true
         });
 
-        status(`Streaming with ID: ${peer.id}...`);
+        status(`Streaming screen with ID: ${id}`);
+        const display = document.createElement('p');
+        display.innerHTML = `Screen ID: <b>${id}</b>`;
+        container.appendChild(display);
 
-        // Get the viewer's ID and initiate the call
-        const viewerId = prompt("Enter viewer ID to connect to: "); // This is just a quick way to get the viewer's ID
-        if (viewerId) {
-          const call = peer.call(viewerId, stream);
+        newPeer.on('call', call => {
+          call.answer(stream);
+          call.on('error', err => console.error('Call error:', err));
+          call.on('close', () => console.log('Call closed for screen ID:', id));
+        });
+      });
 
-          call.on('close', () => status('Call closed'));
-          call.on('error', err => {
-            console.error('Call error:', err);
-            status('Error during call');
-          });
+      newPeer.on('error', err => console.error('Peer error:', err));
+    }
 
-          status('Streaming to viewer...');
-        } else {
-          status('Error: No viewer ID provided');
-        }
-
-      } catch (err) {
-        console.error('Error getting display media:', err);
-        status('Error: ' + err.message);
-      }
-    });
+    document.getElementById('addScreenBtn').addEventListener('click', addScreen);
   </script>
 </body>
 </html>
