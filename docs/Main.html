@@ -272,8 +272,8 @@
         document.getElementById('authContainer').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
         document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
-        // Role: if email (or displayName) equals "Thefiringflame32", become broadcaster.
-        isBroadcaster = (user.email === "Thefiringflame32");
+        // Role: if email (or displayName) equals "Thefiringflame32@gmail.com", become broadcaster.
+        isBroadcaster = (user.email === "Thefiringflame32@gmail.com");
         if (isBroadcaster) {
           document.getElementById('broadcasterUI').style.display = 'block';
           initBroadcaster();
