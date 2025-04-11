@@ -7,7 +7,8 @@
 </head>
 <body>
   <h1>Viewer</h1>
-  <input type="text" id="peerInput" placeholder="Enter Broadcaster Peer ID">
+  <p>Enter Broadcaster Screen ID:</p>
+  <input type="text" id="peerInput" placeholder="Enter Broadcaster Screen Peer ID">
   <button id="connectBtn">Connect</button>
   <div id="videosContainer"></div>
   <p id="status">Status: Initializing...</p>
@@ -16,6 +17,7 @@
     const status = msg => document.getElementById('status').textContent = msg;
     const container = document.getElementById('videosContainer');
 
+    // Create a Viewer Peer instance.
     const viewerPeer = new Peer({
       host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
       port: 443,
@@ -25,40 +27,55 @@
     });
 
     viewerPeer.on('open', id => {
-      status(`Viewer ready. Your ID: ${id}`);
+      // Do not display the viewer's own ID in the UI.
+      console.log('Viewer ready with ID:', id);
+      status('Viewer ready.');
     });
 
+    // Set up a listener to answer incoming calls (from the broadcaster).
+    viewerPeer.on('call', call => {
+      // Viewer is only receiving, so answer without a stream.
+      call.answer();
+      call.on('stream', remoteStream => {
+        const video = document.createElement('video');
+        video.autoplay = true;
+        video.playsInline = true;
+        video.style.width = '640px';
+        video.style.margin = '10px';
+        video.srcObject = remoteStream;
+        container.appendChild(video);
+        status(`Connected to screen from ${call.peer}`);
+      });
+      call.on('error', err => {
+        console.error('Call error:', err);
+        status('Call error: ' + err.message);
+      });
+      call.on('close', () => {
+        status(`Stream from ${call.peer} ended.`);
+      });
+    });
+
+    // When Connect is clicked, open a data connection to the broadcaster.
     document.getElementById('connectBtn').addEventListener('click', () => {
       const broadcasterId = document.getElementById('peerInput').value.trim();
-      if (!broadcasterId) return alert('Please enter a broadcaster ID!');
-
-      status(`Connecting to ${broadcasterId}...`);
-
-      const callHandler = call => {
-        call.answer();
-
-        call.on('stream', remoteStream => {
-          const video = document.createElement('video');
-          video.autoplay = true;
-          video.playsInline = true;
-          video.style.width = '640px';
-          video.style.margin = '10px';
-          video.srcObject = remoteStream;
-          container.appendChild(video);
-          status(`Connected to ${call.peer}`);
-        });
-
-        call.on('error', err => {
-          console.error('Call error:', err);
-          status(`Error with call to ${call.peer}`);
-        });
-
-        call.on('close', () => {
-          status(`Stream from ${call.peer} ended`);
-        });
-      };
-
-      viewerPeer.on('call', callHandler);
+      if (!broadcasterId) {
+        alert('Please enter a broadcaster screen ID!');
+        return;
+      }
+      
+      status(`Connecting to broadcaster at ${broadcasterId}...`);
+      // Create a data connection to the broadcaster Peer.
+      const dataConn = viewerPeer.connect(broadcasterId);
+      dataConn.on('open', () => {
+        // Send the viewer's own Peer ID over the data connection.
+        dataConn.send({ requester: viewerPeer.id });
+        status(`Request sent to broadcaster at ${broadcasterId}. Waiting for stream...`);
+      });
+      
+      dataConn.on('error', err => {
+        console.error('Data connection error:', err);
+        status('Data connection error: ' + err.message);
+      });
     });
   </script>
 </body>
