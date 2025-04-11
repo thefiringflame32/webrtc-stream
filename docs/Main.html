@@ -388,8 +388,6 @@
               videoElem.srcObject = stream;
               contentDiv.innerHTML = "";
               contentDiv.appendChild(videoElem);
-              // Muestra el botón "Cerrar Tab".
-              cell.querySelector('.close-tab-btn').style.display = 'block';
               
             } catch (err) {
               console.error(err);
@@ -504,8 +502,6 @@
           videoElem.srcObject = stream;
           contentDiv.innerHTML = "";
           contentDiv.appendChild(videoElem);
-          // Muestra el botón "Cerrar Tab".
-          cell.querySelector('.close-tab-btn').style.display = 'block';
           
         } catch (err) {
           console.error(err);
