@@ -261,23 +261,52 @@
         .catch(err => showAuthMessage(err.message, true));
     }
     // On Auth State Change: Mostrar la UI principal.
+    let broadcasterPlayers = [];
+  
+    function initBroadcaster() {
+      document.getElementById('addPlayerBtn').addEventListener('click', () => { addPlayerCell(); });
+      playersRef.on('child_added', snapshot => {
+        // ... código para crear la celda desde Firebase ...
+      });
+    }
+    
+    function getNextPlayerNumber() { /* ... */ }
+    function addPlayerCell() { /* ... */ }
+    function attachAddTabHandler(cell) { /* ... */ }
+    function closePlayerTab(cell) { /* ... */ }
+    
+    function initViewer() { /* ... */ }
+    function addViewerCell() { /* ... */ }
+    function attachViewerCellHandlers(cell) { /* ... */ }
+    function updateViewerDropdowns(playersData) { /* ... */ }
+    
+    /* ---------- Configuración de Firebase, Variables Globales, etc. ---------- */
+    const firebaseConfig = { /* ... */ };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const playersRef = db.ref('players');
+    let isBroadcaster = false;
+    
+    /* ---------- Handlers de Autenticación ---------- */
+    // ... Código de login, signup, email link, etc. ...
+    
+    /* ---------- On Auth State Change ---------- */
     auth.onAuthStateChanged(user => {
       if (user) {
         document.getElementById('authContainer').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
         document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
-        // Define el rol: si el email es "thefiringflame32@gmail.com", es broadcaster.
         isBroadcaster = (user.email === "thefiringflame32@gmail.com");
         if (isBroadcaster) {
           document.getElementById('broadcasterUI').style.display = 'block';
-          initBroadcaster();
+          initBroadcaster(); // Ahora sí, la función ya está definida.
         } else {
           document.getElementById('viewerUI').style.display = 'block';
           initViewer();
         }
       }
     });
-    
     /* ---------- Broadcaster Functions ---------- */
     // Crea un player en Firebase sin compartir tab (inicialmente con peerId vacío y locked false).
     function addPlayerCell() {
