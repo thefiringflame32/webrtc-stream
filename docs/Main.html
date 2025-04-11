@@ -230,7 +230,7 @@
       const password = document.getElementById('signupPassword').value;
       auth.createUserWithEmailAndPassword(email, password)
         .then(cred => {
-          showAuthMessage(Registro exitoso. Bienvenido ${cred.user.email});
+          showAuthMessage(`Registro exitoso. Bienvenido ${cred.user.email}`);
         })
         .catch(err => showAuthMessage(err.message, true));
     });
@@ -246,7 +246,7 @@
       auth.sendSignInLinkToEmail(email, actionCodeSettings)
         .then(() => {
           window.localStorage.setItem('emailForSignIn', email);
-          showAuthMessage(Se ha enviado un vínculo de acceso a ${email}. Revisa tu correo.);
+          showAuthMessage(`Se ha enviado un vínculo de acceso a ${email}. Revisa tu correo.`);
         })
         .catch(err => showAuthMessage(err.message, true));
     });
@@ -271,7 +271,7 @@
         // Hide the auth container and show the main UI.
         document.getElementById('authContainer').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
-        document.getElementById('welcomeText').textContent = Bienvenido ${user.email};
+        document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
         // Role: if email equals "thefiringflame32@gmail.com", become broadcaster.
         isBroadcaster = (user.email === "thefiringflame32@gmail.com");
         if (isBroadcaster) {
