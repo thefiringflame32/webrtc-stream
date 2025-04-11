@@ -312,6 +312,9 @@
         locked: false,
         viewerUid: ""
       });
+      cell.querySelector('.close-tab-btn').addEventListener('click', () => {
+        closePlayerTab(cell);
+      });
       cell.querySelector('.delete-player').addEventListener('click', () => {
         if (cell.querySelector('video')) {
           closePlayerTab(cell);
