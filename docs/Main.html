@@ -197,40 +197,21 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    /* ---------- Firebase Configuration (Replace with your own) ---------- */
-    const firebaseConfig = {
-      apiKey: "AIzaSyAUMHJ0oLNYvCiDQMODSzr_KpJglDTJASI",
-      authDomain: "thefiringflame32.firebaseapp.com",
-      projectId: "thefiringflame32",
-      databaseURL: "https://thefiringflame32-default-rtdb.europe-west1.firebasedatabase.app",
-      storageBucket: "thefiringflame32.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
-    // Reference for players info.
-    const playersRef = db.ref('players');
-
-    /* ---------- Global Variables ---------- */
-    let isBroadcaster = false;  // Se establece después del login.
-    let broadcasterPlayers = []; // Para numerar los players en broadcaster.
-
-    /* ---------- Helper Functions (Broadcaster & Viewer) ---------- */
+    /* ----------------- Funciones de Ayuda (Broadcaster & Viewer) ----------------- */
+    let broadcasterPlayers = [];
+    
     function getNextPlayerNumber() {
       let num = 1;
       while (broadcasterPlayers.includes(num)) { num++; }
       return num;
     }
     
-    // Broadcaster: Cierra la transmisión en una celda y reinicia el UI.
+    // Broadcaster: Cierra la transmisión y reinicia la celda.
     function closePlayerTab(cell) {
       const videoElem = cell.querySelector('video');
       if (videoElem && videoElem.srcObject) {
         videoElem.srcObject.getTracks().forEach(track => track.stop());
       }
-      // Actualiza Firebase: borra el peerId y desbloquea el cell.
       playersRef.child(cell.id).update({ peerId: "", locked: false, viewerUid: "" });
       const contentDiv = cell.querySelector('.cell-content');
       contentDiv.innerHTML = `<button class="btn btn-outline-primary add-tab-btn">Agregar Tab</button>`;
@@ -238,7 +219,7 @@
       attachAddTabHandler(cell);
     }
     
-    // Broadcaster: Asigna el handler para el botón "Agregar Tab" en una celda.
+    // Broadcaster: Asigna el handler al botón "Agregar Tab" dentro de una celda.
     function attachAddTabHandler(cell) {
       cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
         const contentDiv = cell.querySelector('.cell-content');
@@ -248,7 +229,6 @@
             video: { width: 1280, height: 720, frameRate: 30 },
             audio: false
           });
-          // Crea un nuevo Peer para esta transmisión.
           const playerPeer = new Peer({
             host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
             port: 443,
@@ -257,18 +237,14 @@
             debug: 2
           });
           playerPeer.on('open', id => {
-            // Actualiza Firebase: establece el peerId.
             playersRef.child(cell.id).update({ peerId: id });
           });
-          // Escucha conexiones de datos de viewers.
           playerPeer.on('connection', conn => {
             conn.on('open', () => {
               playersRef.child(cell.id).once('value', snapshot => {
                 const data = snapshot.val();
                 if (!data.locked) {
-                  // Bloquea el player para el viewer que se conecte.
                   playersRef.child(cell.id).update({ locked: true, viewerUid: auth.currentUser ? auth.currentUser.uid : "broadcaster" });
-                  // Envía la transmisión al viewer.
                   const call = playerPeer.call(conn.peer, stream);
                   call.on('error', err => console.error('Call error (broadcaster):', err));
                 } else {
@@ -277,18 +253,14 @@
               });
             });
           });
-          // También contesta llamadas entrantes.
           playerPeer.on('call', call => { call.answer(stream); });
-          // Vigila si la transmisión termina para volver al estado "Agregar Tab".
           stream.getTracks().forEach(track => { track.onended = () => { closePlayerTab(cell); }; });
-          // Muestra el stream en el cell.
           const videoElem = document.createElement('video');
           videoElem.autoplay = true;
           videoElem.playsInline = true;
           videoElem.srcObject = stream;
           contentDiv.innerHTML = "";
           contentDiv.appendChild(videoElem);
-          // Muestra el botón "Cerrar Tab".
           cell.querySelector('.close-tab-btn').style.display = 'block';
         } catch (err) {
           console.error(err);
@@ -297,7 +269,7 @@
       });
     }
     
-    // Broadcaster: Crea una celda (player) en Firebase sin transmitir.
+    // Broadcaster: Crea una nueva celda (player) y la guarda en Firebase.
     function addPlayerCell() {
       const grid = document.getElementById('gridContainer');
       const playerNumber = getNextPlayerNumber();
@@ -306,7 +278,6 @@
       const cell = document.createElement('div');
       cell.className = 'player-cell';
       cell.id = cellId;
-      // Al crearse, guarda el player en Firebase con datos iniciales (peerId vacío).
       cell.innerHTML = `
         <div class="player-title">Player ${playerNumber}</div>
         <button class="delete-player">X</button>
@@ -322,7 +293,6 @@
         locked: false,
         viewerUid: ""
       });
-      // Botón Delete: si hay transmisión activa, actúa como "Cerrar Tab".
       cell.querySelector('.delete-player').addEventListener('click', () => {
         if (cell.querySelector('video')) {
           closePlayerTab(cell);
@@ -333,16 +303,6 @@
         }
       });
       attachAddTabHandler(cell);
-    }
-    
-    // Viewer: Inicializa la UI del viewer.
-    function initViewer() {
-      addViewerCell();
-      // Actualiza los dropdowns a partir de Firebase.
-      playersRef.on('value', snapshot => {
-        const playersData = snapshot.val() || {};
-        updateViewerDropdowns(playersData);
-      });
     }
     
     // Viewer: Agrega una celda para conectarse a un player.
@@ -363,7 +323,7 @@
       attachViewerCellHandlers(cell);
     }
     
-    // Viewer: Asigna los handlers de la celda del viewer.
+    // Viewer: Asigna los handlers a una celda de viewer.
     function attachViewerCellHandlers(cell) {
       const selectElem = cell.querySelector('.player-select');
       const connectBtn = cell.querySelector('.connect-btn');
@@ -372,7 +332,6 @@
       connectBtn.addEventListener('click', () => {
         const selected = selectElem.value;
         if (!selected) return;
-        // Antes de conectarse, verifica que el player no esté bloqueado.
         playersRef.orderByChild('peerId').equalTo(selected).once('value', snapshot => {
           let playerKey = null;
           snapshot.forEach(child => { playerKey = child.key; });
@@ -383,7 +342,6 @@
               alert('Este Player ya está ocupado.');
               return;
             } else {
-              // Bloquea el player para este viewer.
               playersRef.child(playerKey).update({ locked: true, viewerUid: auth.currentUser.uid });
               cellPeer = new Peer({
                 host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
@@ -397,7 +355,7 @@
                 dataConn.on('open', () => { console.log('Data connection sent to broadcaster:', selected); });
               });
               cellPeer.on('call', call => {
-                call.answer(); // Viewer no envía stream.
+                call.answer();
                 call.on('stream', stream => {
                   const videoElem = document.createElement('video');
                   videoElem.autoplay = true;
@@ -416,7 +374,6 @@
       
       disconnectBtn.addEventListener('click', () => {
         if (cellPeer) cellPeer.destroy();
-        // Libera el bloqueo en Firebase para este player.
         const selected = selectElem.value;
         playersRef.orderByChild('peerId').equalTo(selected).once('value', snapshot => {
           snapshot.forEach(child => {
@@ -438,7 +395,7 @@
       });
     }
     
-    // Viewer: Actualiza el dropdown con los players disponibles (no bloqueados y con peerId activo).
+    // Viewer: Actualiza los dropdowns con players disponibles (peerId activo y no bloqueados).
     function updateViewerDropdowns(playersData) {
       const grid = document.getElementById('gridContainerViewer');
       grid.querySelectorAll('.player-cell').forEach(cell => {
@@ -457,7 +414,7 @@
       });
     }
     
-    /* ---------- On Auth State Change ---------- */
+    /* ----------------- On Auth State Change ----------------- */
     auth.onAuthStateChanged(user => {
       if (user) {
         document.getElementById('authContainer').style.display = 'none';
@@ -473,6 +430,10 @@
         }
       }
     });
+    
+    /* ----------------- Firebase & Auth Initialization ----------------- */
+    // NOTA: Asegurate de no duplicar la inicialización.
+    // Ya inicializamos Firebase en este script.
   </script>
 </body>
 </html>
