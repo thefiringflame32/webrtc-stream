@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Tab Sharing</title>
+  <!-- Bootstrap CSS for styling -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background: #f5f7fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    #authContainer {
+      max-width: 420px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    #mainContainer {
+      display: none;
+      padding: 20px;
+    }
+    /* Grid for player cells */
+    #gridContainer {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 200px;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .player-cell {
+      position: relative;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+      padding: 5px;
+    }
+    .player-title {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.8rem;
+    }
+    .delete-player {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 0.8rem;
+    }
+    .cell-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .cell-content video, .cell-content .placeholder {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .add-player {
+      cursor: pointer;
+      border: 2px dashed #007bff;
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #007bff;
+      font-size: 1.2rem;
+    }
+    .disconnect-btn {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: #ffc107;
+      color: #333;
+      border: none;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 0.8rem;
+    }
+    /* Viewer dropdown styling */
+    .player-select {
+      width: 100%;
+      padding: 5px;
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Authentication area -->
+  <div id="authContainer" class="container">
+    <h3 class="text-center mb-3">Inicia Sesión / Regístrate</h3>
+    <!-- Tabs for login / signup / email link -->
+    <ul class="nav nav-tabs" id="authTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="login-tab" data-toggle="tab" href="#loginForm" role="tab">Iniciar Sesión</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="signup-tab" data-toggle="tab" href="#signupForm" role="tab">Registrarse</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="emailLink-tab" data-toggle="tab" href="#emailLinkForm" role="tab">Acceso vía Correo</a>
+      </li>
+    </ul>
+    <div class="tab-content" id="authTabContent">
+      <!-- Login Form -->
+      <div class="tab-pane fade show active p-3" id="loginForm" role="tabpanel">
+        <form id="login-form">
+          <div class="form-group">
+            <input type="email" class="form-control" id="loginEmail" placeholder="Correo Electrónico" required>
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-control" id="loginPassword" placeholder="Contraseña" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
+        </form>
+      </div>
+      <!-- Signup Form -->
+      <div class="tab-pane fade p-3" id="signupForm" role="tabpanel">
+        <form id="signup-form">
+          <div class="form-group">
+            <input type="email" class="form-control" id="signupEmail" placeholder="Correo Electrónico" required>
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-control" id="signupPassword" placeholder="Contraseña" required>
+          </div>
+          <button type="submit" class="btn btn-success btn-block">Registrarse</button>
+        </form>
+      </div>
+      <!-- Email Link Form -->
+      <div class="tab-pane fade p-3" id="emailLinkForm" role="tabpanel">
+        <form id="email-link-form">
+          <div class="form-group">
+            <input type="email" class="form-control" id="emailLinkEmail" placeholder="Correo Electrónico" required>
+          </div>
+          <button type="submit" class="btn btn-warning btn-block">Enviar vínculo de acceso</button>
+        </form>
+      </div>
+    </div>
+    <div id="authMessage" class="mt-2 text-center"></div>
+  </div>
+
+  <!-- Main area (shown after login) -->
+  <div id="mainContainer" class="container">
+    <h4 id="welcomeText"></h4>
+    <!-- For broadcasters -->
+    <div id="broadcasterUI" style="display:none;">
+      <div class="mb-2">
+        <button id="addPlayerBtn" class="btn btn-primary">Agregar Player</button>
+      </div>
+      <div id="gridContainer"></div>
+    </div>
+    <!-- For viewers -->
+    <div id="viewerUI" style="display:none;">
+      <p class="mb-2">Selecciona qué pantalla visualizar:</p>
+      <div id="gridContainerViewer"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- PeerJS -->
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <!-- jQuery and Bootstrap JS for tabs -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ---------- Firebase Configuration (Replace with your own) -----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUMHJ0oLNYvCiDQMODSzr_KpJglDTJASI",
+      authDomain: "thefiringflame32.firebaseapp.com",
+      projectId: "thefiringflame32",
+      databaseURL: "https://thefiringflame32.firebaseio.com",
+      storageBucket: "thefiringflame32.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // ---------- Global Variables -----------
+    let isBroadcaster = false;  // Will be set after login.
+    const playersRef = db.ref('players'); // Path for broadcaster players info.
+
+    // ---------- Authentication Handlers -----------
+    const authMessage = document.getElementById('authMessage');
+    function showAuthMessage(msg, isError = false) {
+      authMessage.textContent = msg;
+      authMessage.style.color = isError ? '#dc3545' : '#28a745';
+    }
+
+    // Login
+    document.getElementById('login-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(cred => {
+          showAuthMessage(`Bienvenido ${cred.user.email}`);
+        })
+        .catch(err => showAuthMessage(err.message, true));
+    });
+    
+    // Signup
+    document.getElementById('signup-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(cred => {
+          showAuthMessage(`Registro exitoso. Bienvenido ${cred.user.email}`);
+        })
+        .catch(err => showAuthMessage(err.message, true));
+    });
+    
+    // Email Link Authentication
+    const actionCodeSettings = {
+      url: window.location.href,
+      handleCodeInApp: true
+    };
+    document.getElementById('email-link-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('emailLinkEmail').value;
+      auth.sendSignInLinkToEmail(email, actionCodeSettings)
+        .then(() => {
+          window.localStorage.setItem('emailForSignIn', email);
+          showAuthMessage(`Se ha enviado un vínculo de acceso a ${email}. Revisa tu correo.`);
+        })
+        .catch(err => showAuthMessage(err.message, true));
+    });
+    
+    // If using email link sign-in:
+    if (auth.isSignInWithEmailLink(window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        email = window.prompt('Por favor ingresa tu correo para confirmar el vínculo de acceso:');
+      }
+      auth.signInWithEmailLink(email, window.location.href)
+        .then(cred => {
+          window.localStorage.removeItem('emailForSignIn');
+          showAuthMessage(`Bienvenido ${cred.user.email}`);
+        })
+        .catch(err => showAuthMessage(err.message, true));
+    }
+    
+    // ---------- On Auth State Change -----------
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        // Hide the auth container and show the main UI.
+        document.getElementById('authContainer').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+        document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
+        // Role: if email (or displayName) equals "Thefiringflame32", become broadcaster.
+        isBroadcaster = (user.email === "Thefiringflame32");
+        if (isBroadcaster) {
+          document.getElementById('broadcasterUI').style.display = 'block';
+          initBroadcaster();
+        } else {
+          document.getElementById('viewerUI').style.display = 'block';
+          initViewer();
+        }
+      }
+    });
+    
+    // ---------- Broadcaster Functions -----------
+    // Local array to track current player numbers in use.
+    let broadcasterPlayers = [];
+    
+    function initBroadcaster() {
+      // When the broadcaster clicks Add Player, add a new cell.
+      document.getElementById('addPlayerBtn').addEventListener('click', () => {
+        addPlayerCell();
+      });
+    }
+    
+    // Find the smallest missing positive integer for labeling.
+    function getNextPlayerNumber() {
+      let num = 1;
+      while(broadcasterPlayers.includes(num)) {
+        num++;
+      }
+      return num;
+    }
+    
+    function addPlayerCell() {
+      const grid = document.getElementById('gridContainer');
+      const playerNumber = getNextPlayerNumber();
+      broadcasterPlayers.push(playerNumber);
+      
+      // Create cell element
+      const cell = document.createElement('div');
+      cell.className = 'player-cell';
+      cell.id = `player-${playerNumber}`;
+      cell.innerHTML = `
+        <div class="player-title">Player ${playerNumber}</div>
+        <button class="delete-player">X</button>
+        <div class="cell-content">
+          <button class="btn btn-outline-primary add-tab-btn">Agregar Tab</button>
+        </div>
+      `;
+      grid.appendChild(cell);
+      
+      // Delete button handler
+      cell.querySelector('.delete-player').addEventListener('click', () => {
+        // Remove from UI
+        grid.removeChild(cell);
+        // Remove from our local array and from the database
+        broadcasterPlayers = broadcasterPlayers.filter(n => n !== playerNumber);
+        playersRef.child(`player-${playerNumber}`).remove();
+      });
+      
+      // Handler for Add Tab inside this cell
+      cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
+        const contentDiv = cell.querySelector('.cell-content');
+        contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { width: 1280, height: 720, frameRate: 30 },
+            audio: false  // Change to true if you want audio
+          });
+          
+          // Create a new Peer for this player's tab
+          const playerPeer = new Peer({
+            host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+            port: 443,
+            secure: true,
+            config: { iceServers: [] },
+            debug: 2
+          });
+          
+          playerPeer.on('open', id => {
+            // Save player data to Firebase for viewers to see.
+            playersRef.child(`player-${playerNumber}`).set({
+              title: `Player ${playerNumber}`,
+              peerId: id
+            });
+          });
+          
+          // Listen for incoming calls from viewers.
+          playerPeer.on('call', call => {
+            call.answer(stream);
+          });
+          
+          // Display the stream inside the cell.
+          const videoElem = document.createElement('video');
+          videoElem.autoplay = true;
+          videoElem.playsInline = true;
+          videoElem.srcObject = stream;
+          contentDiv.innerHTML = "";
+          contentDiv.appendChild(videoElem);
+          
+        } catch (err) {
+          contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`;
+        }
+      });
+    }
+    
+    // ---------- Viewer Functions -----------
+    function initViewer() {
+      // In viewer UI, each cell will allow choosing a broadcaster's player.
+      // For simplicity, let's allow the viewer to add cells manually.
+      // Each cell will show a dropdown list (populated from the players list) and a disconnect button.
+      
+      // Here we add one cell initially. You can add an "Add Tab" button similar to broadcaster if desired.
+      addViewerCell();
+      
+      // Listen to changes in playersRef to update dropdowns.
+      playersRef.on('value', snapshot => {
+        const playersData = snapshot.val() || {};
+        updateViewerDropdowns(playersData);
+      });
+    }
+    
+    function addViewerCell() {
+      const grid = document.getElementById('gridContainerViewer');
+      const cell = document.createElement('div');
+      cell.className = 'player-cell';
+      // For viewers, the cell content will contain a dropdown and a content area.
+      cell.innerHTML = `
+        <div class="cell-content">
+          <select class="player-select">
+            <option value="">Selecciona un Player</option>
+          </select>
+          <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
+          <button class="disconnect-btn" style="display:none;">Desconectar</button>
+        </div>
+      `;
+      grid.appendChild(cell);
+      
+      const selectElem = cell.querySelector('.player-select');
+      const connectBtn = cell.querySelector('.connect-btn');
+      const disconnectBtn = cell.querySelector('.disconnect-btn');
+      let currentCall = null;
+      let cellPeer = null;
+      
+      // When Connect is clicked, use the selected player.
+      connectBtn.addEventListener('click', () => {
+        const selected = selectElem.value;
+        if (!selected) return;
+        // Create a viewer Peer for this call
+        cellPeer = new Peer({
+          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+          port: 443,
+          secure: true,
+          config: { iceServers: [] },
+          debug: 2
+        });
+        cellPeer.on('open', () => {
+          // Once open, call the broadcaster.
+          currentCall = cellPeer.call(selected, null);
+          currentCall.on('stream', stream => {
+            // Replace the dropdown with the video stream.
+            const videoElem = document.createElement('video');
+            videoElem.autoplay = true;
+            videoElem.playsInline = true;
+            videoElem.srcObject = stream;
+            const contentDiv = cell.querySelector('.cell-content');
+            contentDiv.innerHTML = "";
+            contentDiv.appendChild(videoElem);
+            disconnectBtn.style.display = 'block';
+          });
+          currentCall.on('close', () => {
+            disconnectBtn.style.display = 'none';
+          });
+        });
+      });
+      
+      disconnectBtn.addEventListener('click', () => {
+        if (currentCall) currentCall.close();
+        if (cellPeer) cellPeer.destroy();
+        // Reset cell content to allow reconnection.
+        cell.innerHTML = `
+          <div class="cell-content">
+            <select class="player-select">
+              <option value="">Selecciona un Player</option>
+            </select>
+            <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
+            <button class="disconnect-btn" style="display:none;">Desconectar</button>
+          </div>
+        `;
+        // Reattach handlers for the new elements.
+        addViewerCellHandlers(cell);
+      });
+    }
+    
+    function addViewerCellHandlers(cell) {
+      const selectElem = cell.querySelector('.player-select');
+      const connectBtn = cell.querySelector('.connect-btn');
+      const disconnectBtn = cell.querySelector('.disconnect-btn');
+      let currentCall = null;
+      let cellPeer = null;
+      connectBtn.addEventListener('click', () => {
+        const selected = selectElem.value;
+        if (!selected) return;
+        cellPeer = new Peer({
+          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+          port: 443,
+          secure: true,
+          config: { iceServers: [] },
+          debug: 2
+        });
+        cellPeer.on('open', () => {
+          currentCall = cellPeer.call(selected, null);
+          currentCall.on('stream', stream => {
+            const videoElem = document.createElement('video');
+            videoElem.autoplay = true;
+            videoElem.playsInline = true;
+            videoElem.srcObject = stream;
+            const contentDiv = cell.querySelector('.cell-content');
+            contentDiv.innerHTML = "";
+            contentDiv.appendChild(videoElem);
+            disconnectBtn.style.display = 'block';
+          });
+          currentCall.on('close', () => {
+            disconnectBtn.style.display = 'none';
+          });
+        });
+      });
+      disconnectBtn.addEventListener('click', () => {
+        if (currentCall) currentCall.close();
+        if (cellPeer) cellPeer.destroy();
+        cell.innerHTML = `
+          <div class="cell-content">
+            <select class="player-select">
+              <option value="">Selecciona un Player</option>
+            </select>
+            <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
+            <button class="disconnect-btn" style="display:none;">Desconectar</button>
+          </div>
+        `;
+        addViewerCellHandlers(cell);
+      });
+    }
+    
+    // Update all viewer cells’ dropdowns based on the players data from Firebase.
+    function updateViewerDropdowns(playersData) {
+      const grid = document.getElementById('gridContainerViewer');
+      // For each viewer cell, update the options in the select.
+      grid.querySelectorAll('.player-cell').forEach(cell => {
+        const selectElem = cell.querySelector('.player-select');
+        if (!selectElem) return;
+        // Clear current options
+        selectElem.innerHTML = '<option value="">Selecciona un Player</option>';
+        // Add an option for each active player (the value will be the broadcaster Peer ID)
+        for (let key in playersData) {
+          const option = document.createElement('option');
+          option.value = playersData[key].peerId;
+          option.textContent = playersData[key].title;
+          selectElem.appendChild(option);
+        }
+      });
+    }
+    
+  </script>
+</body>
+</html>
