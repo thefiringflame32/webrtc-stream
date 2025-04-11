@@ -286,7 +286,15 @@
     
     // ---------- Broadcaster Functions -----------
     let broadcasterPlayers = [];
-    
+
+    function getNextPlayerNumber() {
+      let num = 1;
+      while(broadcasterPlayers.includes(num)) {
+        num++;
+      }
+      return num;
+    }
+
     function initBroadcaster() {
       // When the broadcaster clicks Add Player, add a new cell.
       document.getElementById('addPlayerBtn').addEventListener('click', () => {
@@ -297,17 +305,20 @@
         const playerData = snapshot.val();
         if (!document.getElementById(snapshot.key)) {
           const grid = document.getElementById('gridContainer');
-          const playerNumber = playerData.title
-          broadcasterPlayers.push(playerNumber);
-          
-          const cellId = `player-${playerNumber}`;
           const cell = document.createElement('div');
           cell.className = 'player-cell';
           cell.id = snapshot.key;
-          
-          // Se crea la celda con estado inicial: player creado sin transmitir.
+          broadcasterPlayers.push(parseInt((playerData.title).replace(/\D/g, '')));
+          cell.innerHTML = 
+            <div class="player-title">${playerData.title}</div>
+            <button class="delete-player">X</button>
+            <div class="cell-content">
+              <div class="placeholder text-center">Tab activo</div>
+            </div>
+          ;
+
           cell.innerHTML = `
-            <div class="player-title">Player ${playerNumber}</div>
+            <div class="player-title">Player ${playerData.title}</div>
             <button class="delete-player">X</button>
             <!-- Added button for "Agregar Tab" -->
             <button class="add-tab-btn">Agregar Tab</button>
@@ -316,8 +327,6 @@
             </div>
           `;
           grid.appendChild(cell);
-          
-          // Handler del botón Delete: si hay transmisión, actúa como "Cerrar Tab"; sino elimina el player.
           cell.querySelector('.delete-player').addEventListener('click', () => {
             if (cell.querySelector('video')) {
               closePlayerTab(cell);
@@ -327,13 +336,7 @@
               playersRef.child(cellId).remove();
             }
           });
-          
-          // Handler del botón "Cerrar Tab": cierra la transmisión y reinicia la celda.
-          cell.querySelector('.close-tab-btn').addEventListener('click', () => {
-            closePlayerTab(cell);
-          });
-          
-          // Handler para "Agregar Tab": inicia la captura de pantalla y actualiza la celda
+
           cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
             const contentDiv = cell.querySelector('.cell-content');
             contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
@@ -402,15 +405,6 @@
       });
     }
     
-    function getNextPlayerNumber() {
-      let num = 1;
-      while(broadcasterPlayers.includes(num)) {
-        num++;
-      }
-      return num;
-    }
-    
-
     
     function addPlayerCell() {
       const grid = document.getElementById('gridContainer');
