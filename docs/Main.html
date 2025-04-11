@@ -217,144 +217,28 @@
     let isBroadcaster = false;  // Se establece después del login.
     let broadcasterPlayers = []; // Para numerar los players en broadcaster.
 
-    /* ---------- Authentication Handlers ---------- */
-    const authMessage = document.getElementById('authMessage');
-    function showAuthMessage(msg, isError=false) {
-      authMessage.textContent = msg;
-      authMessage.style.color = isError ? '#dc3545' : '#28a745';
-    }
-    // Login
-    document.getElementById('login-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then(cred => { showAuthMessage(`Bienvenido ${cred.user.email}`); })
-        .catch(err => showAuthMessage(err.message, true));
-    });
-    // Signup
-    document.getElementById('signup-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const email = document.getElementById('signupEmail').value;
-      const password = document.getElementById('signupPassword').value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(cred => { showAuthMessage(`Registro exitoso. Bienvenido ${cred.user.email}`); })
-        .catch(err => showAuthMessage(err.message, true));
-    });
-    // Email Link Authentication
-    const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
-    document.getElementById('email-link-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const email = document.getElementById('emailLinkEmail').value;
-      auth.sendSignInLinkToEmail(email, actionCodeSettings)
-        .then(() => {
-          window.localStorage.setItem('emailForSignIn', email);
-          showAuthMessage(`Se ha enviado un vínculo de acceso a ${email}. Revisa tu correo.`);
-        })
-        .catch(err => showAuthMessage(err.message, true));
-    });
-    if (auth.isSignInWithEmailLink(window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn');
-      if (!email) { email = window.prompt('Por favor ingresa tu correo para confirmar el vínculo de acceso:'); }
-      auth.signInWithEmailLink(email, window.location.href)
-        .then(cred => { window.localStorage.removeItem('emailForSignIn'); showAuthMessage(`Bienvenido ${cred.user.email}`); })
-        .catch(err => showAuthMessage(err.message, true));
-    }
-    // On Auth State Change: Mostrar la UI principal.
-    let broadcasterPlayers = [];
-  
-    function initBroadcaster() {
-      document.getElementById('addPlayerBtn').addEventListener('click', () => { addPlayerCell(); });
-      playersRef.on('child_added', snapshot => {
-        // ... código para crear la celda desde Firebase ...
-      });
-    }
-    
-    function getNextPlayerNumber() { /* ... */ }
-    function addPlayerCell() { /* ... */ }
-    function attachAddTabHandler(cell) { /* ... */ }
-    function closePlayerTab(cell) { /* ... */ }
-    
-    function initViewer() { /* ... */ }
-    function addViewerCell() { /* ... */ }
-    function attachViewerCellHandlers(cell) { /* ... */ }
-    function updateViewerDropdowns(playersData) { /* ... */ }
-    
-    /* ---------- Configuración de Firebase, Variables Globales, etc. ---------- */
-    const firebaseConfig = { /* ... */ };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
-    const playersRef = db.ref('players');
-    let isBroadcaster = false;
-    
-    /* ---------- Handlers de Autenticación ---------- */
-    // ... Código de login, signup, email link, etc. ...
-    
-    /* ---------- On Auth State Change ---------- */
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        document.getElementById('authContainer').style.display = 'none';
-        document.getElementById('mainContainer').style.display = 'block';
-        document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
-        isBroadcaster = (user.email === "thefiringflame32@gmail.com");
-        if (isBroadcaster) {
-          document.getElementById('broadcasterUI').style.display = 'block';
-          initBroadcaster(); // Ahora sí, la función ya está definida.
-        } else {
-          document.getElementById('viewerUI').style.display = 'block';
-          initViewer();
-        }
-      }
-    });
-    /* ---------- Broadcaster Functions ---------- */
-    // Crea un player en Firebase sin compartir tab (inicialmente con peerId vacío y locked false).
-    function addPlayerCell() {
-      const grid = document.getElementById('gridContainer');
-      const playerNumber = getNextPlayerNumber();
-      broadcasterPlayers.push(playerNumber);
-      const cellId = `player-${playerNumber}`;
-      const cell = document.createElement('div');
-      cell.className = 'player-cell';
-      cell.id = cellId;
-      // Al crearse, guarda el player en Firebase con datos iniciales.
-      cell.innerHTML = `
-        <div class="player-title">Player ${playerNumber}</div>
-        <button class="delete-player">X</button>
-        <button class="close-tab-btn">Cerrar Tab</button>
-        <div class="cell-content">
-          <button class="btn btn-outline-primary add-tab-btn">Agregar Tab</button>
-        </div>
-      `;
-      grid.appendChild(cell);
-      // Guarda el player inicial en Firebase (peerId vacío)
-      playersRef.child(cellId).set({
-        title: `Player ${playerNumber}`,
-        peerId: "",
-        locked: false,
-        viewerUid: ""
-      });
-      // Botón Delete: si hay transmisión activa, se toma como "Cerrar Tab", sino elimina la celda.
-      cell.querySelector('.delete-player').addEventListener('click', () => {
-        if (cell.querySelector('video')) {
-          closePlayerTab(cell);
-        } else {
-          grid.removeChild(cell);
-          broadcasterPlayers = broadcasterPlayers.filter(n => n !== playerNumber);
-          playersRef.child(cellId).remove();
-        }
-      });
-      // Asigna el handler para "Agregar Tab".
-      attachAddTabHandler(cell);
-    }
-    
+    /* ---------- Helper Functions (Broadcaster & Viewer) ---------- */
     function getNextPlayerNumber() {
       let num = 1;
-      while(broadcasterPlayers.includes(num)) { num++; }
+      while (broadcasterPlayers.includes(num)) { num++; }
       return num;
     }
     
-    // Handler para que, en el cell, al presionar "Agregar Tab" se inicie la captura.
+    // Broadcaster: Cierra la transmisión en una celda y reinicia el UI.
+    function closePlayerTab(cell) {
+      const videoElem = cell.querySelector('video');
+      if (videoElem && videoElem.srcObject) {
+        videoElem.srcObject.getTracks().forEach(track => track.stop());
+      }
+      // Actualiza Firebase: borra el peerId y desbloquea el cell.
+      playersRef.child(cell.id).update({ peerId: "", locked: false, viewerUid: "" });
+      const contentDiv = cell.querySelector('.cell-content');
+      contentDiv.innerHTML = `<button class="btn btn-outline-primary add-tab-btn">Agregar Tab</button>`;
+      cell.querySelector('.close-tab-btn').style.display = 'none';
+      attachAddTabHandler(cell);
+    }
+    
+    // Broadcaster: Asigna el handler para el botón "Agregar Tab" en una celda.
     function attachAddTabHandler(cell) {
       cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
         const contentDiv = cell.querySelector('.cell-content');
@@ -379,23 +263,21 @@
           // Escucha conexiones de datos de viewers.
           playerPeer.on('connection', conn => {
             conn.on('open', () => {
-              // Verifica que el player no esté bloqueado para otro viewer.
               playersRef.child(cell.id).once('value', snapshot => {
                 const data = snapshot.val();
                 if (!data.locked) {
-                  // Bloquea este player para el viewer que se conecte.
-                  playersRef.child(cell.id).update({ locked: true, viewerUid: auth.currentUser.uid });
+                  // Bloquea el player para el viewer que se conecte.
+                  playersRef.child(cell.id).update({ locked: true, viewerUid: auth.currentUser ? auth.currentUser.uid : "broadcaster" });
                   // Envía la transmisión al viewer.
                   const call = playerPeer.call(conn.peer, stream);
                   call.on('error', err => console.error('Call error (broadcaster):', err));
                 } else {
-                  // Si ya está bloqueado, rechaza la conexión.
                   conn.send('locked');
                 }
               });
             });
           });
-          // También contesta llamadas entrantes (por si el viewer inicia call en vez de dataConn).
+          // También contesta llamadas entrantes.
           playerPeer.on('call', call => { call.answer(stream); });
           // Vigila si la transmisión termina para volver al estado "Agregar Tab".
           stream.getTracks().forEach(track => { track.onended = () => { closePlayerTab(cell); }; });
@@ -415,22 +297,45 @@
       });
     }
     
-    // Cuando se presiona "Cerrar Tab" o cuando el stream finaliza, se restablece la celda.
-    function closePlayerTab(cell) {
-      const videoElem = cell.querySelector('video');
-      if (videoElem && videoElem.srcObject) {
-        videoElem.srcObject.getTracks().forEach(track => track.stop());
-      }
-      // Actualiza Firebase: borrar el peerId y desbloquear el cell.
-      playersRef.child(cell.id).update({ peerId: "", locked: false, viewerUid: "" });
-      const contentDiv = cell.querySelector('.cell-content');
-      contentDiv.innerHTML = `<button class="btn btn-outline-primary add-tab-btn">Agregar Tab</button>`;
-      cell.querySelector('.close-tab-btn').style.display = 'none';
+    // Broadcaster: Crea una celda (player) en Firebase sin transmitir.
+    function addPlayerCell() {
+      const grid = document.getElementById('gridContainer');
+      const playerNumber = getNextPlayerNumber();
+      broadcasterPlayers.push(playerNumber);
+      const cellId = `player-${playerNumber}`;
+      const cell = document.createElement('div');
+      cell.className = 'player-cell';
+      cell.id = cellId;
+      // Al crearse, guarda el player en Firebase con datos iniciales (peerId vacío).
+      cell.innerHTML = `
+        <div class="player-title">Player ${playerNumber}</div>
+        <button class="delete-player">X</button>
+        <button class="close-tab-btn">Cerrar Tab</button>
+        <div class="cell-content">
+          <button class="btn btn-outline-primary add-tab-btn">Agregar Tab</button>
+        </div>
+      `;
+      grid.appendChild(cell);
+      playersRef.child(cellId).set({
+        title: `Player ${playerNumber}`,
+        peerId: "",
+        locked: false,
+        viewerUid: ""
+      });
+      // Botón Delete: si hay transmisión activa, actúa como "Cerrar Tab".
+      cell.querySelector('.delete-player').addEventListener('click', () => {
+        if (cell.querySelector('video')) {
+          closePlayerTab(cell);
+        } else {
+          grid.removeChild(cell);
+          broadcasterPlayers = broadcasterPlayers.filter(n => n !== playerNumber);
+          playersRef.child(cellId).remove();
+        }
+      });
       attachAddTabHandler(cell);
     }
     
-    /* ---------- Viewer Functions ---------- */
-    // El viewer sólo puede conectarse a un player si éste está disponible (locked=false).
+    // Viewer: Inicializa la UI del viewer.
     function initViewer() {
       addViewerCell();
       // Actualiza los dropdowns a partir de Firebase.
@@ -440,6 +345,7 @@
       });
     }
     
+    // Viewer: Agrega una celda para conectarse a un player.
     function addViewerCell() {
       const grid = document.getElementById('gridContainerViewer');
       const cell = document.createElement('div');
@@ -457,6 +363,7 @@
       attachViewerCellHandlers(cell);
     }
     
+    // Viewer: Asigna los handlers de la celda del viewer.
     function attachViewerCellHandlers(cell) {
       const selectElem = cell.querySelector('.player-select');
       const connectBtn = cell.querySelector('.connect-btn');
@@ -478,7 +385,6 @@
             } else {
               // Bloquea el player para este viewer.
               playersRef.child(playerKey).update({ locked: true, viewerUid: auth.currentUser.uid });
-              // Crea Peer y conéctate.
               cellPeer = new Peer({
                 host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
                 port: 443,
@@ -491,8 +397,7 @@
                 dataConn.on('open', () => { console.log('Data connection sent to broadcaster:', selected); });
               });
               cellPeer.on('call', call => {
-                // Viewer responde sin enviar stream.
-                call.answer();
+                call.answer(); // Viewer no envía stream.
                 call.on('stream', stream => {
                   const videoElem = document.createElement('video');
                   videoElem.autoplay = true;
@@ -520,7 +425,6 @@
             }
           });
         });
-        // Reinicia la celda.
         cell.innerHTML = `
           <div class="cell-content">
             <select class="player-select">
@@ -534,6 +438,7 @@
       });
     }
     
+    // Viewer: Actualiza el dropdown con los players disponibles (no bloqueados y con peerId activo).
     function updateViewerDropdowns(playersData) {
       const grid = document.getElementById('gridContainerViewer');
       grid.querySelectorAll('.player-cell').forEach(cell => {
@@ -542,7 +447,6 @@
         selectElem.innerHTML = '<option value="">Selecciona un Player</option>';
         for (let key in playersData) {
           const player = playersData[key];
-          // Sólo incluir players con un peerId activo y sin bloqueo.
           if (player.peerId && !player.locked) {
             const option = document.createElement('option');
             option.value = player.peerId;
@@ -552,6 +456,23 @@
         }
       });
     }
+    
+    /* ---------- On Auth State Change ---------- */
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('authContainer').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+        document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
+        isBroadcaster = (user.email === "thefiringflame32@gmail.com");
+        if (isBroadcaster) {
+          document.getElementById('broadcasterUI').style.display = 'block';
+          initBroadcaster();
+        } else {
+          document.getElementById('viewerUI').style.display = 'block';
+          initViewer();
+        }
+      }
+    });
   </script>
 </body>
 </html>
