@@ -218,7 +218,7 @@
       const password = document.getElementById('loginPassword').value;
       auth.signInWithEmailAndPassword(email, password)
         .then(cred => {
-          showAuthMessage(Bienvenido ${cred.user.email});
+          showAuthMessage(`Bienvenido ${cred.user.email}`);
         })
         .catch(err => showAuthMessage(err.message, true));
     });
