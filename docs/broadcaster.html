@@ -16,7 +16,7 @@
     const container = document.getElementById('screensContainer');
 
     async function addScreen() {
-      // Create a new Peer for each screen share.
+      // Create a new Peer for the screen share.
       const screenPeer = new Peer({
         host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
         port: 443,
@@ -25,10 +25,27 @@
         debug: 2
       });
 
-      // When the Peer is ready, get display media and show the Peer ID.
+      // Listen for incoming data connections as soon as possible.
+      screenPeer.on('connection', conn => {
+        // Ensure that each viewer connection triggers only one call.
+        conn.once('open', () => {
+          conn.once('data', data => {
+            console.log('Received viewer data:', data);
+            // Immediately initiate a call to the viewer’s Peer ID with the stream (if available).
+            if (stream) { // stream is assigned below once getDisplayMedia resolves.
+              const call = screenPeer.call(conn.peer, stream);
+              call.on('error', err => console.error('Call error:', err));
+              call.on('close', () => console.log('Call closed for screen ID:', screenPeer.id));
+            } else {
+              console.warn('Stream not ready at connection time.');
+            }
+          });
+        });
+      });
+
+      // When the Peer is ready, capture the screen stream.
+      let stream;  // Declare stream variable in a scope shared with connection listener.
       screenPeer.on('open', async id => {
-        // Get the screen stream.
-        let stream;
         try {
           stream = await navigator.mediaDevices.getDisplayMedia({
             video: { width: 1280, height: 720, frameRate: 30 },
@@ -39,29 +56,14 @@
           status('Error: ' + err.message);
           return;
         }
-
         status(`Screen ready with ID: ${id}`);
         const display = document.createElement('p');
         display.innerHTML = `Screen ID: <b>${id}</b>`;
         container.appendChild(display);
-
-        // Listen for data connections from viewers.
-        screenPeer.on('connection', conn => {
-          conn.on('open', () => {
-            // When the viewer sends their ID over the data connection, initiate a call.
-            conn.on('data', data => {
-              console.log('Received viewer data:', data);
-              // Initiate a call to the viewer’s Peer ID, using the screen stream.
-              const call = screenPeer.call(conn.peer, stream);
-              call.on('error', err => console.error('Call error:', err));
-              call.on('close', () => console.log('Call closed for screen ID:', id));
-            });
-          });
-        });
       });
 
       screenPeer.on('error', err => {
-        console.error('Peer error (screen):', err);
+        console.error('Peer error:', err);
         status('Peer error: ' + err.message);
       });
     }
