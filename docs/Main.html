@@ -317,14 +317,6 @@
           `;
           grid.appendChild(cell);
           
-          // Guarda el player en Firebase, sin peerId y sin owner (vacío)
-          playersRef.child(cellId).set({
-            title: `Player ${playerNumber}`,
-            peerId: "",
-            viewerUid: "",
-            owner: ""
-          });
-          
           // Handler del botón Delete: si hay transmisión, actúa como "Cerrar Tab"; sino elimina el player.
           cell.querySelector('.delete-player').addEventListener('click', () => {
             if (cell.querySelector('video')) {
