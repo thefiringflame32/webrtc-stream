@@ -218,7 +218,7 @@
       const password = document.getElementById('loginPassword').value;
       auth.signInWithEmailAndPassword(email, password)
         .then(cred => {
-          showAuthMessage(Bienvenido ${cred.user.email});
+          showAuthMessage(`Bienvenido ${cred.user.email}`);
         })
         .catch(err => showAuthMessage(err.message, true));
     });
@@ -230,7 +230,7 @@
       const password = document.getElementById('signupPassword').value;
       auth.createUserWithEmailAndPassword(email, password)
         .then(cred => {
-          showAuthMessage(Registro exitoso. Bienvenido ${cred.user.email});
+          showAuthMessage(`Registro exitoso. Bienvenido ${cred.user.email}`);
         })
         .catch(err => showAuthMessage(err.message, true));
     });
@@ -246,7 +246,7 @@
       auth.sendSignInLinkToEmail(email, actionCodeSettings)
         .then(() => {
           window.localStorage.setItem('emailForSignIn', email);
-          showAuthMessage(Se ha enviado un vínculo de acceso a ${email}. Revisa tu correo.);
+          showAuthMessage(`Se ha enviado un vínculo de acceso a ${email}. Revisa tu correo.`);
         })
         .catch(err => showAuthMessage(err.message, true));
     });
@@ -260,7 +260,7 @@
       auth.signInWithEmailLink(email, window.location.href)
         .then(cred => {
           window.localStorage.removeItem('emailForSignIn');
-          showAuthMessage(Bienvenido ${cred.user.email});
+          showAuthMessage(`Bienvenido ${cred.user.email}`);
         })
         .catch(err => showAuthMessage(err.message, true));
     }
@@ -271,7 +271,7 @@
         // Hide the auth container and show the main UI.
         document.getElementById('authContainer').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
-        document.getElementById('welcomeText').textContent = Bienvenido ${user.email};
+        document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
         // Role: if email equals "thefiringflame32@gmail.com", become broadcaster.
         isBroadcaster = (user.email === "thefiringflame32@gmail.com");
         if (isBroadcaster) {
@@ -307,12 +307,12 @@
           const grid = document.getElementById('gridContainer');
           const cell = document.createElement('div');
           const playerNumber = parseInt((playerData.title).replace(/\D/g, ''));
-          const cellId = player-${playerNumber};
+          const cellId = `player-${playerNumber}`;
           cell.className = 'player-cell';
           cell.id = snapshot.key;
           broadcasterPlayers.push(parseInt((playerData.title).replace(/\D/g, '')));
 
-          cell.innerHTML = 
+          cell.innerHTML = `
             <div class="player-title">Player ${playerData.title}</div>
             <button class="delete-player">X</button>
             <!-- Added button for "Agregar Tab" -->
@@ -320,7 +320,7 @@
             <div class="cell-content">
               <div class="placeholder text-center">Player creado. No se comparte tab.</div>
             </div>
-          ;
+          `;
           grid.appendChild(cell);
           cell.querySelector('.delete-player').addEventListener('click', () => {
             if (cell.querySelector('video')) {
@@ -334,7 +334,7 @@
 
           cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
             const contentDiv = cell.querySelector('.cell-content');
-            contentDiv.innerHTML = <div class="placeholder text-center">Obteniendo pantalla...</div>;
+            contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
             try {
               const stream = await navigator.mediaDevices.getDisplayMedia({
                 video: { width: 1280, height: 720, frameRate: 30 },
@@ -391,7 +391,7 @@
               
             } catch (err) {
               console.error(err);
-              contentDiv.innerHTML = <div class="placeholder text-danger text-center">Error al obtener pantalla</div>;
+              contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`;
             }
           });
         }
@@ -404,13 +404,13 @@
       const playerNumber = getNextPlayerNumber();
       broadcasterPlayers.push(playerNumber);
       
-      const cellId = player-${playerNumber};
+      const cellId = `player-${playerNumber}`;
       const cell = document.createElement('div');
       cell.className = 'player-cell';
       cell.id = cellId;
       
       // Se crea la celda con estado inicial: player creado sin transmitir.
-      cell.innerHTML = 
+      cell.innerHTML = `
         <div class="player-title">Player ${playerNumber}</div>
         <button class="delete-player">X</button>
         <!-- Added button for "Agregar Tab" -->
@@ -418,12 +418,12 @@
         <div class="cell-content">
           <div class="placeholder text-center">Player creado. No se comparte tab.</div>
         </div>
-      ;
+      `;
       grid.appendChild(cell);
       
       // Guarda el player en Firebase, sin peerId y sin owner (vacío)
       playersRef.child(cellId).set({
-        title: Player ${playerNumber},
+        title: `Player ${playerNumber}`,
         peerId: "",
         viewerUid: "",
         owner: ""
@@ -448,7 +448,7 @@
       // Handler para "Agregar Tab": inicia la captura de pantalla y actualiza la celda
       cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
         const contentDiv = cell.querySelector('.cell-content');
-        contentDiv.innerHTML = <div class="placeholder text-center">Obteniendo pantalla...</div>;
+        contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
         try {
           const stream = await navigator.mediaDevices.getDisplayMedia({
             video: { width: 1280, height: 720, frameRate: 30 },
@@ -505,7 +505,7 @@
           
         } catch (err) {
           console.error(err);
-          contentDiv.innerHTML = <div class="placeholder text-danger text-center">Error al obtener pantalla</div>;
+          contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`;
         }
       });
     }
@@ -526,7 +526,7 @@
       const grid = document.getElementById('gridContainerViewer');
       const cell = document.createElement('div');
       cell.className = 'player-cell';
-      cell.innerHTML = 
+      cell.innerHTML = `
         <div class="cell-content">
           <select class="player-select">
             <option value="">Selecciona un Player</option>
@@ -534,7 +534,7 @@
           <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
           <button class="disconnect-btn" style="display:none;">Desconectar</button>
         </div>
-      ;
+      `;
       grid.appendChild(cell);
       
       const selectElem = cell.querySelector('.player-select');
@@ -585,7 +585,7 @@
       disconnectBtn.addEventListener('click', () => {
         if (cellPeer) cellPeer.destroy();
         // Reset cell content for reconnection.
-        cell.innerHTML = 
+        cell.innerHTML = `
           <div class="cell-content">
             <select class="player-select">
               <option value="">Selecciona un Player</option>
@@ -593,7 +593,7 @@
             <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
             <button class="disconnect-btn" style="display:none;">Desconectar</button>
           </div>
-        ;
+        `;
         addViewerCellHandlers(cell);
       });
     }
@@ -638,7 +638,7 @@
       });
       disconnectBtn.addEventListener('click', () => {
         if (cellPeer) cellPeer.destroy();
-        cell.innerHTML = 
+        cell.innerHTML = `
           <div class="cell-content">
             <select class="player-select">
               <option value="">Selecciona un Player</option>
@@ -646,7 +646,7 @@
             <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
             <button class="disconnect-btn" style="display:none;">Desconectar</button>
           </div>
-        ;
+        `;
         addViewerCellHandlers(cell);
       });
     }
