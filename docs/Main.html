@@ -569,15 +569,21 @@
       
       // When the "Conectar" button is clicked:
       connectBtn.addEventListener('click', () => {
-        const selected = selectElem.value;
-        if (!selected) return;
-        // Create a Peer for this viewer cell.
-        cellPeer = new Peer({
-          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
-          port: 443,
-          secure: true,
-          config: { iceServers: [] },
-          debug: 2
+          const nodeKey = selectElem.value;             // ← this is now e.g. "player-3"
+          if (!nodeKey) return;
+          
+          // look up the true peerId from the last snapshot you got
+          playersRef.child(nodeKey).once('value').then(snap => {
+            const { peerId } = snap.val();
+            if (!peerId) return alert("Ese player aún no está listo.");
+        
+            // ① mark yourself as the owner
+            playersRef.child(nodeKey)
+              .update({ viewerUid: auth.currentUser.uid });
+        
+            // ② connect
+            connectToPeer(peerId, cell);
+          });
         });
         cellPeer.on('open', () => {
           // Instead of calling with a null stream, open a data connection to signal intent.
@@ -624,40 +630,33 @@
     }
 
     function connectToPeer(peerId, cell) {
-    const selectElem   = cell.querySelector('.player-select');
-    const disconnectBtn = cell.querySelector('.disconnect-btn');
-    let cellPeer = new Peer({
-      host: '…',
-      port: 443,
-      secure: true,
-      config: { iceServers: [] },
-      debug: 2
-    });
-  
-    cellPeer.on('open', () => {
-      const dataConn = cellPeer.connect(peerId);
-      dataConn.on('open', () => {
-        console.log('Re-connecting to broadcaster', peerId);
+      const disconnectBtn = cell.querySelector('.disconnect-btn');
+      const cellPeer = new Peer({
+        host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+        port: 443,
+        secure: true,
+        config: { iceServers: [] },
+        debug: 2
       });
-    });
-  
-    cellPeer.on('call', call => {
-      call.answer();
-      call.on('stream', stream => {
-        const videoElem = document.createElement('video');
-        videoElem.autoplay = true;
-        videoElem.playsInline = true;
-        videoElem.srcObject = stream;
-        const contentDiv = cell.querySelector('.cell-content');
-        contentDiv.innerHTML = "";
-        contentDiv.appendChild(videoElem);
-        disconnectBtn.style.display = 'block';
+    
+      cellPeer.on('open', () => {
+        cellPeer.connect(peerId);
       });
-      call.on('close', () => {
-        disconnectBtn.style.display = 'none';
+    
+      cellPeer.on('call', call => {
+        call.answer();
+        call.on('stream', stream => {
+          const video = document.createElement('video');
+          video.autoplay = true;
+          video.playsInline = true;
+          video.srcObject = stream;
+          const content = cell.querySelector('.cell-content');
+          content.innerHTML = '';
+          content.appendChild(video);
+          disconnectBtn.style.display = 'block';
+        });
       });
-    });
-  }
+    }
     
     function addViewerCellHandlers(cell) {
       const selectElem = cell.querySelector('.player-select');
@@ -717,18 +716,18 @@
     function updateViewerDropdowns(playersData) {
       const grid = document.getElementById('gridContainerViewer');
       grid.querySelectorAll('.player-cell').forEach(cell => {
-        const selectElem = cell.querySelector('.player-select');
-        if (!selectElem) return;
-        selectElem.innerHTML = '<option value="">Selecciona un Player</option>';
+        const select = cell.querySelector('.player-select');
+        select.innerHTML = '<option value="">Selecciona un Player</option>';
         for (let key in playersData) {
-          const option = document.createElement('option');
-          option.value = playersData[key].peerId;
-          option.textContent = playersData[key].title;
-          selectElem.appendChild(option);
+          const data = playersData[key];
+          const opt = document.createElement('option');
+          opt.value = key;                     // ← use the Firebase key here
+          opt.textContent = data.title;
+          select.appendChild(opt);
         }
       });
     }
-    
+        
   </script>
 </body>
 </html>
