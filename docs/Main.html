@@ -120,7 +120,45 @@
       $('#authMessage').text(msg).css('color', err?'#dc3545':'#28a745');
     }
 
-    // Auth forms (igual que antes)...
+    // ---------- Authentication Handlers -----------
+$('#login-form').submit(e => {
+  e.preventDefault();
+  const email = $('#loginEmail').val();
+  const pwd = $('#loginPassword').val();
+  auth.signInWithEmailAndPassword(email, pwd)
+    .then(cred => showAuthMessage(`Bienvenido ${cred.user.email}`))
+    .catch(err => showAuthMessage(err.message, true));
+});
+$('#signup-form').submit(e => {
+  e.preventDefault();
+  const email = $('#signupEmail').val();
+  const pwd = $('#signupPassword').val();
+  auth.createUserWithEmailAndPassword(email, pwd)
+    .then(cred => showAuthMessage(`Registro exitoso. Bienvenido ${cred.user.email}`))
+    .catch(err => showAuthMessage(err.message, true));
+});
+
+// Email Link Authentication
+const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+$('#email-link-form').submit(e => {
+  e.preventDefault();
+  const emailLink = $('#emailLinkEmail').val();
+  auth.sendSignInLinkToEmail(emailLink, actionCodeSettings)
+    .then(() => {
+      window.localStorage.setItem('emailForSignIn', emailLink);
+      showAuthMessage(`Se ha enviado un vínculo de acceso a ${emailLink}`);
+    })
+    .catch(err => showAuthMessage(err.message, true));
+});
+
+// Handle email link sign-in
+if (auth.isSignInWithEmailLink(window.location.href)) {
+  let emailLink = window.localStorage.getItem('emailForSignIn');
+  if (!emailLink) emailLink = prompt('Por favor ingresa tu correo para confirmar el vínculo de acceso:');
+  auth.signInWithEmailLink(emailLink, window.location.href)
+    .then(cred => { window.localStorage.removeItem('emailForSignIn'); showAuthMessage(`Bienvenido ${cred.user.email}`); })
+    .catch(err => showAuthMessage(err.message, true));
+}
 
     // On auth state changed
     auth.onAuthStateChanged(user => {
