@@ -6,151 +6,53 @@
   <!-- Bootstrap CSS for styling -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
-    body {
-      background: #f5f7fa;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    #authContainer {
-      max-width: 420px;
-      margin: 50px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    #mainContainer {
-      display: none;
-      padding: 20px;
-    }
-    /* Grid for player cells */
-    #gridContainer {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-auto-rows: 200px;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .player-cell {
-      position: relative;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      overflow: hidden;
-      padding: 5px;
-    }
-    .player-title {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 0.8rem;
-    }
-    .delete-player {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: #dc3545;
-      color: #fff;
-      border: none;
-      border-radius: 3px;
-      padding: 2px 6px;
-      font-size: 0.8rem;
-    }
-    .cell-content {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .cell-content video, .cell-content .placeholder {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .add-player {
-      cursor: pointer;
-      border: 2px dashed #007bff;
-      border-radius: 4px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #007bff;
-      font-size: 1.2rem;
-    }
-    .disconnect-btn {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      background: #ffc107;
-      color: #333;
-      border: none;
-      border-radius: 3px;
-      padding: 2px 6px;
-      font-size: 0.8rem;
-    }
-    /* Viewer dropdown styling */
-    .player-select {
-      width: 100%;
-      padding: 5px;
-      font-size: 1rem;
-      margin-bottom: 5px;
-    }
+    body { background: #f5f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+    .split-container { display: flex; height: 100vh; }
+    #sidebar { width: 240px; background: #fff; border-right: 1px solid #ddd; overflow-y: auto; padding: 20px; }
+    #mainArea { flex: 1; padding: 20px; overflow-y: auto; }
+    #authContainer { max-width: 420px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+    #mainContainer { display: none; }
+    #gridContainer, #gridContainerViewer { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 200px; gap: 10px; margin-top: 20px; }
+    .player-cell { position: relative; background: #fff; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; padding: 5px; }
+    .player-title { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.7); color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; }
+    .delete-player, .unbind-btn { position: absolute; top: 5px; right: 5px; background: #dc3545; color: #fff; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.8rem; cursor: pointer; }
+    .add-tab-btn { position: absolute; top: 5px; right: 50px; background: #007bff; color: #fff; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.8rem; cursor: pointer; }
+    .cell-content { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    .cell-content video, .cell-content .placeholder { width: 100%; height: 100%; object-fit: cover; }
+    .list-group-item { display: flex; justify-content: space-between; align-items: center; }
+    .btn-link { padding: 0; }
   </style>
 </head>
 <body>
-
   <!-- Authentication area -->
   <div id="authContainer" class="container">
     <h3 class="text-center mb-3">Inicia Sesión / Regístrate</h3>
-    <!-- Tabs for login / signup / email link -->
     <ul class="nav nav-tabs" id="authTab" role="tablist">
-      <li class="nav-item">
-        <a class="nav-link active" id="login-tab" data-toggle="tab" href="#loginForm" role="tab">Iniciar Sesión</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" id="signup-tab" data-toggle="tab" href="#signupForm" role="tab">Registrarse</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" id="emailLink-tab" data-toggle="tab" href="#emailLinkForm" role="tab">Acceso vía Correo</a>
-      </li>
+      <li class="nav-item"><a class="nav-link active" id="login-tab" data-toggle="tab" href="#loginForm" role="tab">Iniciar Sesión</a></li>
+      <li class="nav-item"><a class="nav-link" id="signup-tab" data-toggle="tab" href="#signupForm" role="tab">Registrarse</a></li>
+      <li class="nav-item"><a class="nav-link" id="emailLink-tab" data-toggle="tab" href="#emailLinkForm" role="tab">Acceso vía Correo</a></li>
     </ul>
-    <div class="tab-content" id="authTabContent">
+    <div class="tab-content p-3" id="authTabContent">
       <!-- Login Form -->
-      <div class="tab-pane fade show active p-3" id="loginForm" role="tabpanel">
+      <div class="tab-pane fade show active" id="loginForm" role="tabpanel">
         <form id="login-form">
-          <div class="form-group">
-            <input type="email" class="form-control" id="loginEmail" placeholder="Correo Electrónico" required>
-          </div>
-          <div class="form-group">
-            <input type="password" class="form-control" id="loginPassword" placeholder="Contraseña" required>
-          </div>
+          <div class="form-group"><input type="email" class="form-control" id="loginEmail" placeholder="Correo Electrónico" required></div>
+          <div class="form-group"><input type="password" class="form-control" id="loginPassword" placeholder="Contraseña" required></div>
           <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
         </form>
       </div>
       <!-- Signup Form -->
-      <div class="tab-pane fade p-3" id="signupForm" role="tabpanel">
+      <div class="tab-pane fade" id="signupForm" role="tabpanel">
         <form id="signup-form">
-          <div class="form-group">
-            <input type="email" class="form-control" id="signupEmail" placeholder="Correo Electrónico" required>
-          </div>
-          <div class="form-group">
-            <input type="password" class="form-control" id="signupPassword" placeholder="Contraseña" required>
-          </div>
+          <div class="form-group"><input type="email" class="form-control" id="signupEmail" placeholder="Correo Electrónico" required></div>
+          <div class="form-group"><input type="password" class="form-control" id="signupPassword" placeholder="Contraseña" required></div>
           <button type="submit" class="btn btn-success btn-block">Registrarse</button>
         </form>
       </div>
       <!-- Email Link Form -->
-      <div class="tab-pane fade p-3" id="emailLinkForm" role="tabpanel">
+      <div class="tab-pane fade" id="emailLinkForm" role="tabpanel">
         <form id="email-link-form">
-          <div class="form-group">
-            <input type="email" class="form-control" id="emailLinkEmail" placeholder="Correo Electrónico" required>
-          </div>
+          <div class="form-group"><input type="email" class="form-control" id="emailLinkEmail" placeholder="Correo Electrónico" required></div>
           <button type="submit" class="btn btn-warning btn-block">Enviar vínculo de acceso</button>
         </form>
       </div>
@@ -158,35 +60,40 @@
     <div id="authMessage" class="mt-2 text-center"></div>
   </div>
 
-  <!-- Main area (shown after login) -->
-  <div id="mainContainer" class="container">
-    <h4 id="welcomeText"></h4>
-    <!-- For broadcasters -->
-    <div id="broadcasterUI" style="display:none;">
-      <div class="mb-2">
-        <button id="addPlayerBtn" class="btn btn-primary">Agregar Player</button>
+  <!-- Main area -->
+  <div id="mainContainer">
+    <div class="split-container">
+      <!-- Sidebar for viewers -->
+      <div id="sidebar">
+        <h5>Mis Players</h5>
+        <ul id="userPlayersList" class="list-group"></ul>
       </div>
-      <div id="gridContainer"></div>
-    </div>
-    <!-- For viewers -->
-    <div id="viewerUI" style="display:none;">
-      <p class="mb-2">Selecciona qué pantalla visualizar:</p>
-      <div id="gridContainerViewer"></div>
+      <!-- Main content -->
+      <div id="mainArea">
+        <h4 id="welcomeText"></h4>
+        <!-- Broadcaster UI -->
+        <div id="broadcasterUI" style="display:none;">
+          <button id="addPlayerBtn" class="btn btn-primary mb-3">Agregar Player</button>
+          <div id="gridContainer"></div>
+        </div>
+        <!-- Viewer UI -->
+        <div id="viewerUI" style="display:none;">
+          <p class="mb-2">Tus Players asignados (haz clic en Ver):</p>
+          <div id="gridContainerViewer"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase & PeerJS SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <!-- PeerJS -->
   <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
-  <!-- jQuery and Bootstrap JS for tabs -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
   <script>
-    // ---------- Firebase Configuration (Replace with your own) -----------
+    // ---------- Firebase Configuration -----------
     const firebaseConfig = {
       apiKey: "AIzaSyAUMHJ0oLNYvCiDQMODSzr_KpJglDTJASI",
       authDomain: "thefiringflame32.firebaseapp.com",
@@ -199,474 +106,183 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
+    const playersRef = db.ref('players');
+    let isBroadcaster = false;
 
-    // ---------- Global Variables -----------
-    let isBroadcaster = false;  // Will be set after login.
-    const playersRef = db.ref('players'); // Path for broadcaster players info.
-
-    // ---------- Authentication Handlers -----------
-    const authMessage = document.getElementById('authMessage');
-    function showAuthMessage(msg, isError = false) {
-      authMessage.textContent = msg;
-      authMessage.style.color = isError ? '#dc3545' : '#28a745';
+    // ----------- Cleanup expired assignments (>24h) ----------
+    function cleanupExpired() {
+      const now = Date.now();
+      playersRef.once('value', snap => snap.forEach(ch => {
+        const data = ch.val();
+        if (data.ownerTimestamp && now - data.ownerTimestamp > 24 * 3600 * 1000) {
+          playersRef.child(ch.key).update({ locked: false, viewerUid: '', owner: '', ownerTimestamp: null });
+        }
+      }));
     }
 
-    // Login
-    document.getElementById('login-form').addEventListener('submit', e => {
+    // ----------- Auth Handlers -----------
+    function showAuthMessage(msg, isError = false) {
+      const el = document.getElementById('authMessage');
+      el.textContent = msg;
+      el.style.color = isError ? '#dc3545' : '#28a745';
+    }
+
+    $('#login-form').submit(e => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then(cred => {
-          showAuthMessage(`Bienvenido ${cred.user.email}`);
-        })
+      const email = $('#loginEmail').val();
+      const pwd = $('#loginPassword').val();
+      auth.signInWithEmailAndPassword(email, pwd)
+        .then(cred => showAuthMessage(`Bienvenido ${cred.user.email}`))
         .catch(err => showAuthMessage(err.message, true));
     });
-    
-    // Signup
-    document.getElementById('signup-form').addEventListener('submit', e => {
+    $('#signup-form').submit(e => {
       e.preventDefault();
-      const email = document.getElementById('signupEmail').value;
-      const password = document.getElementById('signupPassword').value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(cred => {
-          showAuthMessage(`Registro exitoso. Bienvenido ${cred.user.email}`);
-        })
+      const email = $('#signupEmail').val();
+      const pwd = $('#signupPassword').val();
+      auth.createUserWithEmailAndPassword(email, pwd)
+        .then(cred => showAuthMessage(`Registro exitoso. Bienvenido ${cred.user.email}`))
         .catch(err => showAuthMessage(err.message, true));
     });
-    
-    // Email Link Authentication
-    const actionCodeSettings = {
-      url: window.location.href,
-      handleCodeInApp: true
-    };
-    document.getElementById('email-link-form').addEventListener('submit', e => {
+    $('#email-link-form').submit(e => {
       e.preventDefault();
-      const email = document.getElementById('emailLinkEmail').value;
-      auth.sendSignInLinkToEmail(email, actionCodeSettings)
+      const email = $('#emailLinkEmail').val();
+      auth.sendSignInLinkToEmail(email, { url: window.location.href, handleCodeInApp: true })
         .then(() => {
           window.localStorage.setItem('emailForSignIn', email);
           showAuthMessage(`Se ha enviado un vínculo de acceso a ${email}. Revisa tu correo.`);
         })
         .catch(err => showAuthMessage(err.message, true));
     });
-    
-    // If using email link sign-in:
     if (auth.isSignInWithEmailLink(window.location.href)) {
       let email = window.localStorage.getItem('emailForSignIn');
-      if (!email) {
-        email = window.prompt('Por favor ingresa tu correo para confirmar el vínculo de acceso:');
-      }
+      if (!email) email = prompt('Ingresa tu correo para confirmar el enlace');
       auth.signInWithEmailLink(email, window.location.href)
-        .then(cred => {
-          window.localStorage.removeItem('emailForSignIn');
-          showAuthMessage(`Bienvenido ${cred.user.email}`);
-        })
+        .then(cred => { window.localStorage.removeItem('emailForSignIn'); showAuthMessage(`Bienvenido ${cred.user.email}`); })
         .catch(err => showAuthMessage(err.message, true));
     }
-    
-    // ---------- On Auth State Change -----------
+
+    // ----------- Auth State Change -----------
     auth.onAuthStateChanged(user => {
       if (user) {
-        // Hide the auth container and show the main UI.
+        cleanupExpired();
         document.getElementById('authContainer').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
         document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
-        // Role: if email equals "thefiringflame32@gmail.com", become broadcaster.
-        isBroadcaster = (user.email === "thefiringflame32@gmail.com");
+        isBroadcaster = (user.email === 'thefiringflame32@gmail.com');
         if (isBroadcaster) {
           document.getElementById('broadcasterUI').style.display = 'block';
           initBroadcaster();
         } else {
           document.getElementById('viewerUI').style.display = 'block';
           initViewer();
+          initSidebar(user.uid);
         }
       }
     });
-    
-    // ---------- Broadcaster Functions -----------
+
+    // ----------- Sidebar for Viewer -----------
+    function initSidebar(uid) {
+      playersRef.on('value', snap => {
+        const list = document.getElementById('userPlayersList');
+        list.innerHTML = '';
+        const all = snap.val() || {};
+        Object.entries(all).forEach(([key, p]) => {
+          if (p.owner === uid) {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = p.title;
+            const btnVer = document.createElement('button'); btnVer.className = 'btn btn-link btn-sm'; btnVer.textContent = 'Ver';
+            btnVer.onclick = () => attachToMain(key, p.peerId);
+            const btnUn = document.createElement('button'); btnUn.className = 'unbind-btn'; btnUn.textContent = 'Desasociar';
+            btnUn.onclick = () => playersRef.child(key).update({ locked: false, viewerUid: '', owner: '', ownerTimestamp: null });
+            li.append(btnVer, btnUn);
+            list.appendChild(li);
+          }
+        });
+      });
+    }
+
+    function attachToMain(cellId, peerId) {
+      const cell = document.createElement('div'); cell.className = 'player-cell';
+      document.getElementById('gridContainerViewer').appendChild(cell);
+      const peer = new Peer({ host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', port: 443, secure: true, config: { iceServers: [] } });
+      peer.on('open', () => peer.connect(peerId));
+      peer.on('call', call => {
+        call.answer();
+        call.on('stream', stream => {
+          const video = document.createElement('video'); video.autoplay = true; video.playsInline = true; video.srcObject = stream;
+          cell.innerHTML = '';
+          cell.appendChild(video);
+        });
+      });
+    }
+
+    // ----------- Broadcaster -----------
     let broadcasterPlayers = [];
-
-    function getNextPlayerNumber() {
-      let num = 1;
-      while(broadcasterPlayers.includes(num)) {
-        num++;
-      }
-      return num;
-    }
-
-    function initBroadcaster() {
-      // When the broadcaster clicks Add Player, add a new cell.
-      document.getElementById('addPlayerBtn').addEventListener('click', () => {
-        addPlayerCell();
-      });
-      // Load any pre-existing players from Firebase.
-      playersRef.on('child_added', snapshot => {
-        const playerData = snapshot.val();
-        if (!document.getElementById(snapshot.key)) {
-          const grid = document.getElementById('gridContainer');
-          const cell = document.createElement('div');
-          const playerNumber = parseInt((playerData.title).replace(/\D/g, ''));
-          const cellId = `player-${playerNumber}`;
-          cell.className = 'player-cell';
-          cell.id = snapshot.key;
-          broadcasterPlayers.push(parseInt((playerData.title).replace(/\D/g, '')));
-
-          cell.innerHTML = `
-            <div class="player-title">Player ${playerData.title}</div>
-            <button class="delete-player">X</button>
-            <!-- Added button for "Agregar Tab" -->
-            <button class="add-tab-btn">Agregar Tab</button>
-            <div class="cell-content">
-              <div class="placeholder text-center">Player creado. No se comparte tab.</div>
-            </div>
-          `;
-          grid.appendChild(cell);
-          cell.querySelector('.delete-player').addEventListener('click', () => {
-            if (cell.querySelector('video')) {
-              closePlayerTab(cell);
-            } else {
-              grid.removeChild(cell);
-              broadcasterPlayers = broadcasterPlayers.filter(n => n !== playerNumber);
-              playersRef.child(cellId).remove();
-            }
-          });
-
-          cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
-            const contentDiv = cell.querySelector('.cell-content');
-            contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
-            try {
-              const stream = await navigator.mediaDevices.getDisplayMedia({
-                video: { width: 1280, height: 720, frameRate: 30 },
-                audio: false
-              });
-              
-              // Crea un nuevo Peer para esta transmisión.
-              const playerPeer = new Peer({
-                host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
-                port: 443,
-                secure: true,
-                config: { iceServers: [] },
-                debug: 2
-              });
-              
-              playerPeer.on('open', id => {
-                // Actualiza Firebase: establece el peerId obtenido.
-                playersRef.child(cell.id).update({ peerId: id });
-              });
-              
-              // Escucha conexiones de datos de viewers.
-              playerPeer.on('connection', conn => {
-                conn.on('open', () => {
-                  playersRef.child(cell.id).once('value', snapshot => {
-                    const data = snapshot.val();
-                    if (!data.locked) {
-                      // Bloquea este player para el primer viewer conectado y asigna como owner.
-                      playersRef.child(cell.id).update({ locked: true, viewerUid: auth.currentUser.uid, owner: auth.currentUser.uid });
-                      // Inicia la llamada al viewer con la transmisión.
-                      const call = playerPeer.call(conn.peer, stream);
-                      call.on('error', err => console.error('Call error (broadcaster):', err));
-                    } else {
-                      conn.send('locked');
-                    }
-                  });
-                });
-              });
-              
-              // También contesta llamadas entrantes, por si el viewer inicia directamente.
-              playerPeer.on('call', call => { call.answer(stream); });
-              
-              // Vigila si la transmisión termina para volver al estado "Agregar Tab".
-              stream.getTracks().forEach(track => {
-                track.onended = () => { closePlayerTab(cell); };
-              });
-              
-              // Muestra la transmisión (video) en la celda.
-              const videoElem = document.createElement('video');
-              videoElem.autoplay = true;
-              videoElem.playsInline = true;
-              videoElem.srcObject = stream;
-              contentDiv.innerHTML = "";
-              contentDiv.appendChild(videoElem);
-              
-            } catch (err) {
-              console.error(err);
-              contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`;
-            }
-          });
-        }
-      });
-    }
-    
-    
+    function getNextPlayerNumber() { let num = 1; while (broadcasterPlayers.includes(num)) num++; return num; }
     function addPlayerCell() {
-      const grid = document.getElementById('gridContainer');
-      const playerNumber = getNextPlayerNumber();
-      broadcasterPlayers.push(playerNumber);
-      
-      const cellId = `player-${playerNumber}`;
-      const cell = document.createElement('div');
-      cell.className = 'player-cell';
-      cell.id = cellId;
-      
-      // Se crea la celda con estado inicial: player creado sin transmitir.
-      cell.innerHTML = `
-        <div class="player-title">Player ${playerNumber}</div>
-        <button class="delete-player">X</button>
-        <!-- Added button for "Agregar Tab" -->
-        <button class="add-tab-btn">Agregar Tab</button>
-        <div class="cell-content">
-          <div class="placeholder text-center">Player creado. No se comparte tab.</div>
-        </div>
-      `;
-      grid.appendChild(cell);
-      
-      // Guarda el player en Firebase, sin peerId y sin owner (vacío)
-      playersRef.child(cellId).set({
-        title: `Player ${playerNumber}`,
-        peerId: "",
-        viewerUid: "",
-        owner: ""
-      });
-      
-      // Handler del botón Delete: si hay transmisión, actúa como "Cerrar Tab"; sino elimina el player.
-      cell.querySelector('.delete-player').addEventListener('click', () => {
-        if (cell.querySelector('video')) {
-          closePlayerTab(cell);
-        } else {
-          grid.removeChild(cell);
-          broadcasterPlayers = broadcasterPlayers.filter(n => n !== playerNumber);
-          playersRef.child(cellId).remove();
-        }
-      });
-      
-      // Handler del botón "Cerrar Tab": cierra la transmisión y reinicia la celda.
-      cell.querySelector('.close-tab-btn').addEventListener('click', () => {
-        closePlayerTab(cell);
-      });
-      
-      // Handler para "Agregar Tab": inicia la captura de pantalla y actualiza la celda
-      cell.querySelector('.add-tab-btn').addEventListener('click', async () => {
-        const contentDiv = cell.querySelector('.cell-content');
+      const num = getNextPlayerNumber(); broadcasterPlayers.push(num);
+      const id = `player-${num}`;
+      playersRef.child(id).set({ title: `Player ${num}`, peerId: '', viewerUid: '', owner: '', ownerTimestamp: null });
+    }
+    function renderBroadcasterCell(snapshot) {
+      const data = snapshot.val(), id = snapshot.key;
+      let cell = document.getElementById(id);
+      if (!cell) {
+        cell = document.createElement('div'); cell.className = 'player-cell'; cell.id = id;
+        document.getElementById('gridContainer').appendChild(cell);
+      }
+      cell.innerHTML = `<div class="player-title">${data.title}</div>`;
+      const status = document.createElement('small'); status.style = 'position:absolute;bottom:5px;left:5px;';
+      status.textContent = data.owner ? `Usuario: ${data.owner}` : 'Libre'; cell.appendChild(status);
+      if (data.owner) {
+        const btnUn = document.createElement('button'); btnUn.className = 'unbind-btn'; btnUn.textContent = 'Desasociar';
+        btnUn.onclick = () => playersRef.child(id).update({ locked: false, viewerUid: '', owner: '', ownerTimestamp: null }); cell.appendChild(btnUn);
+      }
+      // Add-Tab and delete logic
+      const addBtn = document.createElement('button'); addBtn.className = 'add-tab-btn'; addBtn.textContent = 'Agregar Tab';
+      cell.appendChild(addBtn);
+      const delBtn = document.createElement('button'); delBtn.className = 'delete-player'; delBtn.textContent = 'X'; cell.appendChild(delBtn);
+      const contentDiv = document.createElement('div'); contentDiv.className = 'cell-content';
+      contentDiv.innerHTML = `<div class="placeholder text-center">Esperando Tab...</div>`; cell.appendChild(contentDiv);
+      delBtn.onclick = () => {
+        if (cell.querySelector('video')) closePlayerTab(cell);
+        else { playersRef.child(id).remove(); broadcasterPlayers = broadcasterPlayers.filter(n => n !== parseInt(data.title.replace(/\D/g, ''))); cell.remove(); }
+      };
+      addBtn.onclick = async () => {
         contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
         try {
-          const stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { width: 1280, height: 720, frameRate: 30 },
-            audio: false
-          });
-          
-          // Crea un nuevo Peer para esta transmisión.
-          const playerPeer = new Peer({
-            host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
-            port: 443,
-            secure: true,
-            config: { iceServers: [] },
-            debug: 2
-          });
-          
-          playerPeer.on('open', id => {
-            // Actualiza Firebase: establece el peerId obtenido.
-            playersRef.child(cell.id).update({ peerId: id });
-          });
-          
-          // Escucha conexiones de datos de viewers.
-          playerPeer.on('connection', conn => {
-            conn.on('open', () => {
-              playersRef.child(cell.id).once('value', snapshot => {
-                const data = snapshot.val();
-                if (!data.locked) {
-                  // Bloquea este player para el primer viewer conectado y asigna como owner.
-                  playersRef.child(cell.id).update({ locked: true, viewerUid: auth.currentUser.uid, owner: auth.currentUser.uid });
-                  // Inicia la llamada al viewer con la transmisión.
-                  const call = playerPeer.call(conn.peer, stream);
-                  call.on('error', err => console.error('Call error (broadcaster):', err));
-                } else {
-                  conn.send('locked');
-                }
-              });
+          const stream = await navigator.mediaDevices.getDisplayMedia({ video: { width: 1280, height: 720, frameRate: 30 }, audio: false });
+          const peer = new Peer({ host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', port: 443, secure: true, config: { iceServers: [] }, debug: 2 });
+          peer.on('open', idPeer => playersRef.child(id).update({ peerId: idPeer }));
+          peer.on('connection', conn => conn.on('open', () => {
+            playersRef.child(id).once('value', s => {
+              const d = s.val();
+              if (!d.locked) {
+                playersRef.child(id).update({ locked: true, viewerUid: auth.currentUser.uid, owner: auth.currentUser.uid, ownerTimestamp: Date.now() });
+                peer.call(conn.peer, stream).on('error', console.error);
+              } else conn.send('locked');
             });
-          });
-          
-          // También contesta llamadas entrantes, por si el viewer inicia directamente.
-          playerPeer.on('call', call => { call.answer(stream); });
-          
-          // Vigila si la transmisión termina para volver al estado "Agregar Tab".
-          stream.getTracks().forEach(track => {
-            track.onended = () => { closePlayerTab(cell); };
-          });
-          
-          // Muestra la transmisión (video) en la celda.
-          const videoElem = document.createElement('video');
-          videoElem.autoplay = true;
-          videoElem.playsInline = true;
-          videoElem.srcObject = stream;
-          contentDiv.innerHTML = "";
-          contentDiv.appendChild(videoElem);
-          
-        } catch (err) {
-          console.error(err);
-          contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`;
-        }
-      });
+          }));
+          peer.on('call', c => c.answer(stream));
+          stream.getTracks().forEach(t => t.onended = () => closePlayerTab(cell));
+          const videoEl = document.createElement('video'); videoEl.autoplay = true; videoEl.playsInline = true; videoEl.srcObject = stream;
+          contentDiv.innerHTML = ''; contentDiv.appendChild(videoEl);
+        } catch (err) { console.error(err); contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`; }
+      };
+    }
+    function closePlayerTab(cell) {
+      const id = cell.id; playersRef.child(id).update({ peerId: '', locked: false, viewerUid: '', ownerTimestamp: null, owner: '' });
+      renderBroadcasterCell({ key: id, val: () => ({ title: cell.querySelector('.player-title').textContent, owner: '', ownerTimestamp: null }) });
+    }
+    function initBroadcaster() {
+      document.getElementById('addPlayerBtn').addEventListener('click', addPlayerCell);
+      playersRef.on('child_added', renderBroadcasterCell);
+      playersRef.on('child_changed', renderBroadcasterCell);
     }
 
-    
-    // ---------- Viewer Functions -----------
-    function initViewer() {
-      // Initially add one viewer cell.
-      addViewerCell();
-      // Update viewer dropdowns when players change.
-      playersRef.on('value', snapshot => {
-        const playersData = snapshot.val() || {};
-        updateViewerDropdowns(playersData);
-      });
-    }
-    
-    function addViewerCell() {
-      const grid = document.getElementById('gridContainerViewer');
-      const cell = document.createElement('div');
-      cell.className = 'player-cell';
-      cell.innerHTML = `
-        <div class="cell-content">
-          <select class="player-select">
-            <option value="">Selecciona un Player</option>
-          </select>
-          <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
-          <button class="disconnect-btn" style="display:none;">Desconectar</button>
-        </div>
-      `;
-      grid.appendChild(cell);
-      
-      const selectElem = cell.querySelector('.player-select');
-      const connectBtn = cell.querySelector('.connect-btn');
-      const disconnectBtn = cell.querySelector('.disconnect-btn');
-      let cellPeer = null;
-      
-      // When the "Conectar" button is clicked:
-      connectBtn.addEventListener('click', () => {
-        const selected = selectElem.value;
-        if (!selected) return;
-        // Create a Peer for this viewer cell.
-        cellPeer = new Peer({
-          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
-          port: 443,
-          secure: true,
-          config: { iceServers: [] },
-          debug: 2
-        });
-        cellPeer.on('open', () => {
-          // Instead of calling with a null stream, open a data connection to signal intent.
-          const dataConn = cellPeer.connect(selected);
-          dataConn.on('open', () => {
-            console.log('Data connection sent to broadcaster:', selected);
-            // Wait for an incoming call.
-          });
-        });
-        // Listen for the incoming call from the broadcaster.
-        cellPeer.on('call', call => {
-          // Answer with no stream (viewer does not send any media).
-          call.answer();
-          call.on('stream', stream => {
-            const videoElem = document.createElement('video');
-            videoElem.autoplay = true;
-            videoElem.playsInline = true;
-            videoElem.srcObject = stream;
-            const contentDiv = cell.querySelector('.cell-content');
-            contentDiv.innerHTML = "";
-            contentDiv.appendChild(videoElem);
-            disconnectBtn.style.display = 'block';
-          });
-          call.on('close', () => {
-            disconnectBtn.style.display = 'none';
-          });
-        });
-      });
-      
-      disconnectBtn.addEventListener('click', () => {
-        if (cellPeer) cellPeer.destroy();
-        // Reset cell content for reconnection.
-        cell.innerHTML = `
-          <div class="cell-content">
-            <select class="player-select">
-              <option value="">Selecciona un Player</option>
-            </select>
-            <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
-            <button class="disconnect-btn" style="display:none;">Desconectar</button>
-          </div>
-        `;
-        addViewerCellHandlers(cell);
-      });
-    }
-    
-    function addViewerCellHandlers(cell) {
-      const selectElem = cell.querySelector('.player-select');
-      const connectBtn = cell.querySelector('.connect-btn');
-      const disconnectBtn = cell.querySelector('.disconnect-btn');
-      let cellPeer = null;
-      connectBtn.addEventListener('click', () => {
-        const selected = selectElem.value;
-        if (!selected) return;
-        cellPeer = new Peer({
-          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
-          port: 443,
-          secure: true,
-          config: { iceServers: [] },
-          debug: 2
-        });
-        cellPeer.on('open', () => {
-          const dataConn = cellPeer.connect(selected);
-          dataConn.on('open', () => {
-            console.log('Data connection sent to broadcaster:', selected);
-          });
-        });
-        cellPeer.on('call', call => {
-          call.answer();
-          call.on('stream', stream => {
-            const videoElem = document.createElement('video');
-            videoElem.autoplay = true;
-            videoElem.playsInline = true;
-            videoElem.srcObject = stream;
-            const contentDiv = cell.querySelector('.cell-content');
-            contentDiv.innerHTML = "";
-            contentDiv.appendChild(videoElem);
-            disconnectBtn.style.display = 'block';
-          });
-          call.on('close', () => {
-            disconnectBtn.style.display = 'none';
-          });
-        });
-      });
-      disconnectBtn.addEventListener('click', () => {
-        if (cellPeer) cellPeer.destroy();
-        cell.innerHTML = `
-          <div class="cell-content">
-            <select class="player-select">
-              <option value="">Selecciona un Player</option>
-            </select>
-            <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
-            <button class="disconnect-btn" style="display:none;">Desconectar</button>
-          </div>
-        `;
-        addViewerCellHandlers(cell);
-      });
-    }
-    
-    // Update viewer dropdowns based on players from Firebase.
-    function updateViewerDropdowns(playersData) {
-      const grid = document.getElementById('gridContainerViewer');
-      grid.querySelectorAll('.player-cell').forEach(cell => {
-        const selectElem = cell.querySelector('.player-select');
-        if (!selectElem) return;
-        selectElem.innerHTML = '<option value="">Selecciona un Player</option>';
-        for (let key in playersData) {
-          const option = document.createElement('option');
-          option.value = playersData[key].peerId;
-          option.textContent = playersData[key].title;
-          selectElem.appendChild(option);
-        }
-      });
-    }
-    
+    // ----------- Viewer (unused dropdown) -----------
+    function initViewer() { /* usamos sidebar para viewers */ }
   </script>
 </body>
 </html>
