@@ -514,149 +514,108 @@
     // ---------- Viewer Functions -----------
 
     function initViewer() {
+      // 1) Create exactly one viewer cell and grab its elements
       addViewerCell();
+      const cell       = document.querySelector('#gridContainerViewer .player-cell');
+      const selectElem = cell.querySelector('.player-select');
+      const connectBtn = cell.querySelector('.connect-btn');
+      const disconnectBtn = cell.querySelector('.disconnect-btn');
     
-      // 1️⃣ Keep your dropdown-updater as you have it:
+      // 2) When the players list changes, rebuild dropdown + auto-reconnect if needed
       playersRef.on('value', snapshot => {
         const playersData = snapshot.val() || {};
-        updateViewerDropdowns(playersData);
+    
+        // rebuild the <select>
+        selectElem.innerHTML = '<option value="">Selecciona un Player</option>';
+        for (let key in playersData) {
+          const data = playersData[key];
+          const opt = document.createElement('option');
+          opt.value    = key;          // Firebase node key, e.g. "player-3"
+          opt.textContent = data.title;
+          selectElem.appendChild(opt);
+        }
+    
+        // find which node (if any) is still locked by me
+        const entry = Object.entries(playersData)
+                            .find(([key, data]) => data.viewerUid === auth.currentUser.uid);
+    
+        if (entry) {
+          const [nodeKey, nodeData] = entry;
+          selectElem.value = nodeKey;
+    
+          // only auto-connect if there's a real peerId
+          if (nodeData.peerId) {
+            connectToPeer(nodeData.peerId, cell);
+          }
+        }
       });
     
-      // 2️⃣ THEN, immediately fetch which player you already “own”:
-      playersRef
-        .orderByChild('viewerUid')
-        .equalTo(auth.currentUser.uid)
-        .once('value')
-        .then(snap => {
-          const data = snap.val();
-          if (!data) return; // you haven’t locked any yet
+      // 3) Wire up the button to both claim ownership and actually connect
+      connectBtn.addEventListener('click', () => {
+        const nodeKey = selectElem.value;
+        if (!nodeKey) return alert("Por favor, selecciona un Player primero.");
     
-          // There should be exactly one key here:
-          const [cellId, { peerId }] = Object.entries(data)[0];
+        // look up the peerId, then store viewerUid & call helper
+        playersRef.child(nodeKey).once('value')
+          .then(snap => {
+            const { peerId } = snap.val() || {};
+            if (!peerId) return alert("Ese Player aún no ha compartido su pantalla.");
     
-          // find your single viewer cell:
-          const cell = document.querySelector('#gridContainerViewer .player-cell');
-          const selectElem = cell.querySelector('.player-select');
-          const connectBtn = cell.querySelector('.connect-btn');
+            // ① mark me as owner
+            playersRef.child(nodeKey)
+                      .update({ viewerUid: auth.currentUser.uid });
     
-          // 3️⃣ If that peerId is still in the dropdown, pick it and re-connect:
-          if ([...selectElem.options].some(o => o.value === peerId)) {
-            selectElem.value = peerId;
+            // ② connect
             connectToPeer(peerId, cell);
-          }
-        });
-    }
+          });
+      });
     
-    function addViewerCell() {
-      const grid = document.getElementById('gridContainerViewer');
-      const cell = document.createElement('div');
-      cell.className = 'player-cell';
-      cell.innerHTML = `
-        <div class="cell-content">
+      // 4) And let “Desconectar” just destroy the Peer and reset the UI
+      disconnectBtn.addEventListener('click', () => {
+        if (cell._peer) cell._peer.destroy();
+        cell.querySelector('.cell-content').innerHTML = `
           <select class="player-select">
             <option value="">Selecciona un Player</option>
           </select>
           <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
           <button class="disconnect-btn" style="display:none;">Desconectar</button>
-        </div>
-      `;
-      grid.appendChild(cell);
-      
-      const selectElem = cell.querySelector('.player-select');
-      const connectBtn = cell.querySelector('.connect-btn');
-      const disconnectBtn = cell.querySelector('.disconnect-btn');
-      let cellPeer = null;
-      
-      // When the "Conectar" button is clicked:
-      connectBtn.addEventListener('click', () => {
-          const nodeKey = selectElem.value;             // ← this is now e.g. "player-3"
-          if (!nodeKey) return;
-          
-          // look up the true peerId from the last snapshot you got
-          playersRef.child(nodeKey).once('value').then(snap => {
-            const { peerId } = snap.val();
-            if (!peerId) return alert("Ese player aún no está listo.");
-        
-            // ① mark yourself as the owner
-            playersRef.child(nodeKey)
-              .update({ viewerUid: auth.currentUser.uid });
-        
-            // ② connect
-            connectToPeer(peerId, cell);
-          });
-        });
-        cellPeer.on('open', () => {
-          // Instead of calling with a null stream, open a data connection to signal intent.
-          const dataConn = cellPeer.connect(selected);
-          dataConn.on('open', () => {
-            console.log('Data connection sent to broadcaster:', selected);
-            // Wait for an incoming call.
-          });
-        });
-        // Listen for the incoming call from the broadcaster.
-        cellPeer.on('call', call => {
-          // Answer with no stream (viewer does not send any media).
-          call.answer();
-          call.on('stream', stream => {
-            const videoElem = document.createElement('video');
-            videoElem.autoplay = true;
-            videoElem.playsInline = true;
-            videoElem.srcObject = stream;
-            const contentDiv = cell.querySelector('.cell-content');
-            contentDiv.innerHTML = "";
-            contentDiv.appendChild(videoElem);
-            disconnectBtn.style.display = 'block';
-          });
-          call.on('close', () => {
-            disconnectBtn.style.display = 'none';
-          });
-        });
-      });
-      
-      disconnectBtn.addEventListener('click', () => {
-        if (cellPeer) cellPeer.destroy();
-        // Reset cell content for reconnection.
-        cell.innerHTML = `
-          <div class="cell-content">
-            <select class="player-select">
-              <option value="">Selecciona un Player</option>
-            </select>
-            <button class="btn btn-primary btn-block connect-btn mt-2">Conectar</button>
-            <button class="disconnect-btn" style="display:none;">Desconectar</button>
-          </div>
         `;
-        addViewerCellHandlers(cell);
+        // re-initialize so you can connect again
+        initViewer();
       });
     }
-
+    
+    // your helper stays the same, but attach the peer to the cell for easy cleanup:
     function connectToPeer(peerId, cell) {
       const disconnectBtn = cell.querySelector('.disconnect-btn');
-      const cellPeer = new Peer({
+      const contentDiv    = cell.querySelector('.cell-content');
+    
+      const peer = new Peer({
         host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
         port: 443,
         secure: true,
         config: { iceServers: [] },
         debug: 2
       });
+      cell._peer = peer;  // so we can destroy it on disconnect
     
-      cellPeer.on('open', () => {
-        cellPeer.connect(peerId);
+      peer.on('open', () => {
+        peer.connect(peerId);
       });
     
-      cellPeer.on('call', call => {
+      peer.on('call', call => {
         call.answer();
         call.on('stream', stream => {
           const video = document.createElement('video');
-          video.autoplay = true;
-          video.playsInline = true;
+          video.autoplay = video.playsInline = true;
           video.srcObject = stream;
-          const content = cell.querySelector('.cell-content');
-          content.innerHTML = '';
-          content.appendChild(video);
+          contentDiv.innerHTML = '';
+          contentDiv.appendChild(video);
           disconnectBtn.style.display = 'block';
         });
       });
     }
+
     
     function addViewerCellHandlers(cell) {
       const selectElem = cell.querySelector('.player-select');
