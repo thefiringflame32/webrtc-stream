@@ -170,8 +170,7 @@
     </div>
     <!-- For viewers -->
     <div id="viewerUI" style="display:none;">
-      <p class="mb-2">Selecciona qué pantalla visualizar:</p>
-      <p class="mb-2">Tus Players asignados (haz clic en Ver):</p>
+      <p class="mb-2">na qué pantalla visualizar:</p>
       <div id="gridContainerViewer"></div>
     </div>
   </div>
@@ -281,7 +280,6 @@
         } else {
           document.getElementById('viewerUI').style.display = 'block';
           initViewer();
-          initSidebar(user.uid);
         }
       }
     });
@@ -515,32 +513,38 @@
     
     // ---------- Viewer Functions -----------
 
-    function initSidebar(uid) {
-      playersRef.on('value', snap => {
-        const list = $('#userPlayersList').empty();
-        const all = snap.val() || {};
-        Object.entries(all).forEach(([k,p]) => {
-          if (p.owner === uid) {
-            const li = $('<li>').addClass('list-group-item').text(p.title);
-            const btnV = $('<button>').addClass('btn btn-link btn-sm').text('Ver').click(()=> attachToMain(k,p.peerId));
-            const btnU = $('<button>').addClass('unbind-btn').text('Desasociar').click(()=> 
-              playersRef.child(k).update({locked:false,viewerUid:'',owner:'',ownerTimestamp:null})
-            );
-            li.append(btnV, btnU);
-            list.append(li);
-          }
-        });
-      });
-    }
-
     function initViewer() {
-      // Initially add one viewer cell.
       addViewerCell();
-      // Update viewer dropdowns when players change.
+    
+      // 1️⃣ Keep your dropdown-updater as you have it:
       playersRef.on('value', snapshot => {
         const playersData = snapshot.val() || {};
         updateViewerDropdowns(playersData);
       });
+    
+      // 2️⃣ THEN, immediately fetch which player you already “own”:
+      playersRef
+        .orderByChild('viewerUid')
+        .equalTo(auth.currentUser.uid)
+        .once('value')
+        .then(snap => {
+          const data = snap.val();
+          if (!data) return; // you haven’t locked any yet
+    
+          // There should be exactly one key here:
+          const [cellId, { peerId }] = Object.entries(data)[0];
+    
+          // find your single viewer cell:
+          const cell = document.querySelector('#gridContainerViewer .player-cell');
+          const selectElem = cell.querySelector('.player-select');
+          const connectBtn = cell.querySelector('.connect-btn');
+    
+          // 3️⃣ If that peerId is still in the dropdown, pick it and re-connect:
+          if ([...selectElem.options].some(o => o.value === peerId)) {
+            selectElem.value = peerId;
+            connectToPeer(peerId, cell);
+          }
+        });
     }
     
     function addViewerCell() {
@@ -618,6 +622,42 @@
         addViewerCellHandlers(cell);
       });
     }
+
+    function connectToPeer(peerId, cell) {
+    const selectElem   = cell.querySelector('.player-select');
+    const disconnectBtn = cell.querySelector('.disconnect-btn');
+    let cellPeer = new Peer({
+      host: '…',
+      port: 443,
+      secure: true,
+      config: { iceServers: [] },
+      debug: 2
+    });
+  
+    cellPeer.on('open', () => {
+      const dataConn = cellPeer.connect(peerId);
+      dataConn.on('open', () => {
+        console.log('Re-connecting to broadcaster', peerId);
+      });
+    });
+  
+    cellPeer.on('call', call => {
+      call.answer();
+      call.on('stream', stream => {
+        const videoElem = document.createElement('video');
+        videoElem.autoplay = true;
+        videoElem.playsInline = true;
+        videoElem.srcObject = stream;
+        const contentDiv = cell.querySelector('.cell-content');
+        contentDiv.innerHTML = "";
+        contentDiv.appendChild(videoElem);
+        disconnectBtn.style.display = 'block';
+      });
+      call.on('close', () => {
+        disconnectBtn.style.display = 'none';
+      });
+    });
+  }
     
     function addViewerCellHandlers(cell) {
       const selectElem = cell.querySelector('.player-select');
@@ -625,14 +665,15 @@
       const disconnectBtn = cell.querySelector('.disconnect-btn');
       let cellPeer = null;
       connectBtn.addEventListener('click', () => {
-        const selected = selectElem.value;
-        if (!selected) return;
-        cellPeer = new Peer({
-          host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
-          port: 443,
-          secure: true,
-          config: { iceServers: [] },
-          debug: 2
+          const peerId = selectElem.value;
+          if (!peerId) return;
+        
+          // ① mark this viewer as owner in Firebase:
+          db.ref(`players/${peerNodeId}`)   // ← peerNodeId is the Firebase key, e.g. "player-3"
+            .update({ viewerUid: auth.currentUser.uid });
+        
+          // ② actually open the PeerJS connection & stream display:
+          connectToPeer(peerId, connectBtn.closest('.player-cell'));
         });
         cellPeer.on('open', () => {
           const dataConn = cellPeer.connect(selected);
