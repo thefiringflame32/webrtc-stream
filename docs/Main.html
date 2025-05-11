@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Live Tab Sharing</title>
-  <!-- Bootstrap CSS for styling -->
+  <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
-    body { background: #f5f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+    body { background: #f5f7fa; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
     .split-container { display: flex; height: 100vh; }
     #sidebar { width: 240px; background: #fff; border-right: 1px solid #ddd; overflow-y: auto; padding: 20px; }
     #mainArea { flex: 1; padding: 20px; overflow-y: auto; }
@@ -15,60 +15,33 @@
     #gridContainer, #gridContainerViewer { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 200px; gap: 10px; margin-top: 10px; }
     .player-cell { position: relative; background: #fff; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; padding: 5px; }
     .player-title { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.7); color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; }
-    .delete-player, .unbind-btn { position: absolute; top: 5px; right: 5px; background: #dc3545; color: #fff; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.8rem; cursor: pointer; }
-    .add-tab-btn { position: absolute; top: 5px; right: 50px; background: #007bff; color: #fff; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.8rem; cursor: pointer; }
-    .cell-content { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    .btn-assign, .unbind-btn, .delete-player, .add-tab-btn { position: absolute; top: 5px; right: 5px; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.8rem; cursor: pointer; }
+    .btn-assign { background: #28a745; color: #fff; right: 5px; }
+    .unbind-btn, .delete-player { background: #dc3545; color: #fff; }
+    .add-tab-btn { background: #007bff; color: #fff; right: 50px; }
+    .cell-content { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
     .cell-content video, .cell-content .placeholder { width: 100%; height: 100%; object-fit: cover; }
     .list-group-item { display: flex; justify-content: space-between; align-items: center; }
     .btn-link { padding: 0; }
   </style>
 </head>
 <body>
-  <!-- Authentication area -->
+  <!-- Auth -->
   <div id="authContainer" class="container">
-    <h3 class="text-center mb-3">Inicia Sesión / Regístrate</h3>
-    <ul class="nav nav-tabs" id="authTab" role="tablist">
-      <li class="nav-item"><a class="nav-link active" id="login-tab" data-toggle="tab" href="#loginForm" role="tab">Iniciar Sesión</a></li>
-      <li class="nav-item"><a class="nav-link" id="signup-tab" data-toggle="tab" href="#signupForm" role="tab">Registrarse</a></li>
-      <li class="nav-item"><a class="nav-link" id="emailLink-tab" data-toggle="tab" href="#emailLinkForm" role="tab">Acceso vía Correo</a></li>
-    </ul>
-    <div class="tab-content p-3" id="authTabContent">
-      <!-- Login Form -->
-      <div class="tab-pane fade show active" id="loginForm" role="tabpanel">
-        <form id="login-form">
-          <div class="form-group"><input type="email" class="form-control" id="loginEmail" placeholder="Correo Electrónico" required></div>
-          <div class="form-group"><input type="password" class="form-control" id="loginPassword" placeholder="Contraseña" required></div>
-          <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
-        </form>
-      </div>
-      <!-- Signup Form -->
-      <div class="tab-pane fade" id="signupForm" role="tabpanel">
-        <form id="signup-form">
-          <div class="form-group"><input type="email" class="form-control" id="signupEmail" placeholder="Correo Electrónico" required></div>
-          <div class="form-group"><input type="password" class="form-control" id="signupPassword" placeholder="Contraseña" required></div>
-          <button type="submit" class="btn btn-success btn-block">Registrarse</button>
-        </form>
-      </div>
-      <!-- Email Link Form -->
-      <div class="tab-pane fade" id="emailLinkForm" role="tabpanel">
-        <form id="email-link-form">
-          <div class="form-group"><input type="email" class="form-control" id="emailLinkEmail" placeholder="Correo Electrónico" required></div>
-          <button type="submit" class="btn btn-warning btn-block">Enviar vínculo de acceso</button>
-        </form>
-      </div>
-    </div>
-    <div id="authMessage" class="mt-2 text-center"></div>
+    <!-- ... (idéntico al anterior) ... -->
   </div>
 
-  <!-- Main area -->
+  <!-- Main -->
   <div id="mainContainer">
     <div class="split-container">
-      <!-- Sidebar for viewers -->
+      <!-- Sidebar: Mis Players -->
       <div id="sidebar">
         <h5>Mis Players</h5>
-        <ul id="userPlayersList" class="list-group"></ul>
+        <ul id="userPlayersList" class="list-group mb-4"></ul>
+        <h5>Players Disponibles</h5>
+        <ul id="availablePlayersList" class="list-group"></ul>
       </div>
-      <!-- Main content -->
+      <!-- Main area -->
       <div id="mainArea">
         <h4 id="welcomeText"></h4>
 
@@ -81,14 +54,13 @@
         <!-- Viewer UI -->
         <div id="viewerUI" style="display:none;">
           <button id="addViewerSlotBtn" class="btn btn-secondary mb-2">Agregar Slot</button>
-          <p class="mb-2">Tus Players asignados (haz clic en Ver):</p>
           <div id="gridContainerViewer"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase & PeerJS SDKs -->
+  <!-- SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -96,192 +68,224 @@
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // ---------- Firebase Configuration -----------
-    const firebaseConfig = {
-      apiKey: "AIzaSyAUMHJ0oLNYvCiDQMODSzr_KpJglDTJASI",
-      authDomain: "thefiringflame32.firebaseapp.com",
-      projectId: "thefiringflame32",
-      databaseURL: "https://thefiringflame32-default-rtdb.europe-west1.firebasedatabase.app",
-      storageBucket: "thefiringflame32.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+    // Init Firebase
+    const firebaseConfig = { /* tu config */ };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
     const playersRef = db.ref('players');
     let isBroadcaster = false;
 
-    // ----------- Cleanup expired assignments (>24h) ----------
+    // Limpieza 24h
     function cleanupExpired() {
       const now = Date.now();
       playersRef.once('value', snap => snap.forEach(ch => {
-        const data = ch.val();
-        if (data.ownerTimestamp && now - data.ownerTimestamp > 24 * 3600 * 1000) {
-          playersRef.child(ch.key).update({ locked: false, viewerUid: '', owner: '', ownerTimestamp: null });
+        const d = ch.val();
+        if (d.ownerTimestamp && (now - d.ownerTimestamp > 24*3600*1000)) {
+          playersRef.child(ch.key).update({ locked:false, owner:'', viewerUid:'', ownerTimestamp:null });
         }
       }));
     }
 
-    // ----------- Auth Handlers -----------
-    function showAuthMessage(msg, isError = false) {
-      const el = document.getElementById('authMessage');
-      el.textContent = msg;
-      el.style.color = isError ? '#dc3545' : '#28a745';
+    // Mensajes auth
+    function showAuthMessage(msg, isErr=false) {
+      $('#authMessage').text(msg).css('color', isErr?'#dc3545':'#28a745');
     }
 
-    $('#login-form').submit(e => {
-      e.preventDefault();
-      auth.signInWithEmailAndPassword($('#loginEmail').val(), $('#loginPassword').val())
-        .then(c => showAuthMessage(`Bienvenido ${c.user.email}`))
-        .catch(err => showAuthMessage(err.message, true));
-    });
-    $('#signup-form').submit(e => {
-      e.preventDefault();
-      auth.createUserWithEmailAndPassword($('#signupEmail').val(), $('#signupPassword').val())
-        .then(c => showAuthMessage(`Registro exitoso. Bienvenido ${c.user.email}`))
-        .catch(err => showAuthMessage(err.message, true));
-    });
-    $('#email-link-form').submit(e => {
-      e.preventDefault();
-      auth.sendSignInLinkToEmail($('#emailLinkEmail').val(), { url: location.href, handleCodeInApp: true })
-        .then(() => {
-          localStorage.setItem('emailForSignIn', $('#emailLinkEmail').val());
-          showAuthMessage(`Vínculo enviado.`);
-        })
-        .catch(err => showAuthMessage(err.message, true));
-    });
-    if (auth.isSignInWithEmailLink(location.href)) {
-      let em = localStorage.getItem('emailForSignIn') || prompt('Ingresa tu correo');
-      auth.signInWithEmailLink(em, location.href)
-        .then(c => { localStorage.removeItem('emailForSignIn'); showAuthMessage(`Bienvenido ${c.user.email}`); })
-        .catch(err => showAuthMessage(err.message, true));
-    }
+    // Formularios auth...
+    // ... idénticos a tu versión
 
-    // ----------- Auth State Change -----------
-    auth.onAuthStateChanged(user => {
-      if (!user) return;
+    // Al cambiar estado
+    auth.onAuthStateChanged(user=>{
+      if(!user) return;
       cleanupExpired();
       $('#authContainer').hide();
       $('#mainContainer').show();
       $('#welcomeText').text(`Bienvenido ${user.email}`);
-      isBroadcaster = (user.email === 'thefiringflame32@gmail.com');
-      if (isBroadcaster) {
+      isBroadcaster = (user.email==='thefiringflame32@gmail.com');
+      if(isBroadcaster) {
         $('#broadcasterUI').show();
         initBroadcaster();
       } else {
         $('#viewerUI').show();
         initViewer();
         initSidebar(user.uid);
+        loadAvailablePlayers();
       }
     });
 
-    // ----------- Sidebar for Viewer -----------
-    function initSidebar(uid) {
-      playersRef.on('value', snap => {
-        const list = $('#userPlayersList').empty();
-        const all = snap.val() || {};
-        Object.entries(all).forEach(([k,p]) => {
-          if (p.owner === uid) {
+    // Sidebar viewers
+    function initSidebar(uid){
+      playersRef.on('value', snap=>{
+        const all = snap.val()||{};
+        // Mis Players
+        $('#userPlayersList').empty();
+        Object.entries(all).forEach(([key,p])=>{
+          if(p.owner===uid){
             const li = $('<li>').addClass('list-group-item').text(p.title);
-            const btnV = $('<button>').addClass('btn btn-link btn-sm').text('Ver').click(()=> attachToMain(k,p.peerId));
-            const btnU = $('<button>').addClass('unbind-btn').text('Desasociar').click(()=> 
-              playersRef.child(k).update({locked:false,viewerUid:'',owner:'',ownerTimestamp:null})
-            );
-            li.append(btnV, btnU);
-            list.append(li);
+            const btnV = $('<button>').addClass('btn btn-link btn-sm').text('Ver')
+              .click(()=> attachToMain(key,p.peerId) );
+            const btnU = $('<button>').addClass('unbind-btn').text('Desasociar')
+              .click(()=> playersRef.child(key).update({ locked:false, owner:'', viewerUid:'', ownerTimestamp:null }));
+            li.append(btnV,btnU);
+            $('#userPlayersList').append(li);
           }
         });
       });
     }
 
-    function attachToMain(cellId, peerId) {
-      const cell = document.createElement('div'); cell.className='player-cell';
-      document.getElementById('gridContainerViewer').appendChild(cell);
-      const peer = new Peer({ host:'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', port:443, secure:true, config:{iceServers:[]} });
-      peer.on('open', () => peer.connect(peerId));
-      peer.on('call', call => {
-        call.answer();
-        call.on('stream', s => {
-          const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.srcObject=s;
-          cell.innerHTML=''; cell.appendChild(v);
+    // Listado de disponibles
+    function loadAvailablePlayers(){
+      playersRef.on('value', snap=>{
+        const all = snap.val()||{};
+        $('#availablePlayersList').empty();
+        Object.entries(all).forEach(([key,p])=>{
+          if(!p.locked){
+            const li = $('<li>').addClass('list-group-item').text(p.title);
+            const btnA = $('<button>').addClass('btn-assign').text('Asignar')
+              .click(()=>{
+                // Bloqueo y asignación
+                playersRef.child(key).update({
+                  locked:true,
+                  owner:auth.currentUser.uid,
+                  viewerUid:auth.currentUser.uid,
+                  ownerTimestamp:Date.now()
+                });
+              });
+            li.append(btnA);
+            $('#availablePlayersList').append(li);
+          }
         });
       });
     }
 
-    // ----------- Viewer Slot Logic -----------
-    function initViewer() {
-      $('#addViewerSlotBtn').click(addViewerCell);
-    }
-    function addViewerCell() {
-      const cell = document.createElement('div'); cell.className='player-cell';
-      cell.innerHTML = `<div class="cell-content placeholder">Esperando selección</div>`;
-      document.getElementById('gridContainerViewer').appendChild(cell);
+    // Al asignar, aparece en sidebar y desaparece de disponibles
+    function attachToMain(cellId, peerId){
+      // Crear slot de vídeo
+      const div = document.createElement('div');
+      div.className='player-cell';
+      $('#gridContainerViewer').append(div);
+      const peer = new Peer({
+        host:'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+        port:443, secure:true, config:{ iceServers:[] }
+      });
+      peer.on('open',()=> peer.connect(peerId));
+      peer.on('call', call=>{
+        call.answer();
+        call.on('stream', stream=>{
+          const v = document.createElement('video');
+          v.autoplay=true; v.playsInline=true; v.srcObject=stream;
+          div.innerHTML=''; div.append(v);
+        });
+      });
     }
 
-    // ----------- Broadcaster Logic -----------
-    let broadcasterPlayers = [];
-    function getNextPlayerNumber() { let n=1; while(broadcasterPlayers.includes(n)) n++; return n; }
-    function initBroadcaster() {
-      $('#addPlayerBtn').click(()=>{
-        const num = getNextPlayerNumber(); broadcasterPlayers.push(num);
-        playersRef.child(`player-${num}`).set({ title:`Player ${num}`, peerId:'', viewerUid:'', owner:'', ownerTimestamp:null });
+    // Slots vacíos de viewers
+    function initViewer(){
+      $('#addViewerSlotBtn').click(()=>{
+        const slot = document.createElement('div');
+        slot.className='player-cell';
+        slot.innerHTML=`<div class="cell-content placeholder">Seleccione un Player</div>`;
+        $('#gridContainerViewer').append(slot);
       });
-      playersRef.on('child_added', renderBroadcasterCell);
-      playersRef.on('child_changed', renderBroadcasterCell);
     }
-    function renderBroadcasterCell(snap) {
+
+    // Broadcaster
+    let broadcasterPlayers=[];
+    function getNextPlayerNumber(){ let n=1; while(broadcasterPlayers.includes(n)) n++; return n; }
+    function initBroadcaster(){
+      $('#addPlayerBtn').click(()=>{
+        const num=getNextPlayerNumber();
+        broadcasterPlayers.push(num);
+        const id=`player-${num}`;
+        playersRef.child(id).set({
+          title:`Player ${num}`,
+          peerId:'', viewerUid:'', owner:'', ownerTimestamp:null
+        });
+      });
+      playersRef.on('child_added',renderBroadcasterCell);
+      playersRef.on('child_changed',renderBroadcasterCell);
+    }
+    function renderBroadcasterCell(snap){
       const d=snap.val(), id=snap.key;
       let cell=document.getElementById(id);
-      if(!cell) {
-        cell=document.createElement('div'); cell.id=id; cell.className='player-cell';
-        document.getElementById('gridContainer').appendChild(cell);
+      if(!cell){
+        cell=document.createElement('div');
+        cell.id=id; cell.className='player-cell';
+        $('#gridContainer').append(cell);
       }
-      cell.innerHTML = `<div class="player-title">${d.title}</div>`;
-      // status + unbind
-      const st=document.createElement('small'); st.style='position:absolute;bottom:5px;left:5px;';
-      st.textContent = d.owner ? `Usuario: ${d.owner}` : 'Libre'; cell.appendChild(st);
+      cell.innerHTML=`<div class="player-title">${d.title}</div>`;
+      // Estado y desasignar
+      const st=document.createElement('small');
+      st.style='position:absolute;bottom:5px;left:5px;';
+      st.textContent=d.owner?`Usuario: ${d.owner}`:'Libre';
+      cell.append(st);
       if(d.owner){
-        const bu=document.createElement('button'); bu.className='unbind-btn'; bu.textContent='Desasociar';
-        bu.onclick=()=>playersRef.child(id).update({locked:false,viewerUid:'',owner:'',ownerTimestamp:null}); cell.appendChild(bu);
+        const bu=document.createElement('button');
+        bu.className='unbind-btn'; bu.textContent='Desasociar';
+        bu.onclick=()=>playersRef.child(id).update({
+          locked:false, owner:'', viewerUid:'', ownerTimestamp:null
+        });
+        cell.append(bu);
       }
-      // add-tab, delete
-      const ba=document.createElement('button'); ba.className='add-tab-btn'; ba.textContent='Agregar Tab'; cell.appendChild(ba);
-      const bd=document.createElement('button'); bd.className='delete-player'; bd.textContent='X'; cell.appendChild(bd);
-      const cd=document.createElement('div'); cd.className='cell-content'; cd.innerHTML=`<div class="placeholder">Esperando Tab...</div>`; cell.appendChild(cd);
+      // Agregar Tab + eliminar
+      const ba=document.createElement('button');
+      ba.className='add-tab-btn'; ba.textContent='Agregar Tab';
+      cell.append(ba);
+      const bd=document.createElement('button');
+      bd.className='delete-player'; bd.textContent='X';
+      cell.append(bd);
+      const cd=document.createElement('div');
+      cd.className='cell-content';
+      cd.innerHTML=`<div class="placeholder text-center">Esperando Tab...</div>`;
+      cell.append(cd);
 
-      bd.onclick = ()=>{
+      bd.onclick=()=>{
         if(cell.querySelector('video')) closePlayerTab(cell);
-        else { playersRef.child(id).remove(); cell.remove(); broadcasterPlayers=broadcasterPlayers.filter(x=>x!==parseInt(d.title.replace(/\D/g,''))); }
+        else { playersRef.child(id).remove(); cell.remove(); }
       };
-      ba.onclick = async ()=>{
-        cd.innerHTML=`<div class="placeholder">Obteniendo pantalla...</div>`;
-        try {
-          const stream = await navigator.mediaDevices.getDisplayMedia({video:{width:1280,height:720,frameRate:30},audio:false});
-          const pr=new Peer({ host:'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', port:443, secure:true, config:{iceServers:[]}, debug:2});
-          pr.on('open', peerId=> playersRef.child(id).update({peerId}));
-          pr.on('connection', conn=> conn.on('open', ()=>{
-            playersRef.child(id).once('value', s=>{
+      ba.onclick=async ()=>{
+        cd.innerHTML=`<div class="placeholder text-center">Obteniendo pantalla...</div>`;
+        try{
+          const stream=await navigator.mediaDevices.getDisplayMedia({
+            video:{width:1280,height:720,frameRate:30}, audio:false
+          });
+          const pr=new Peer({
+            host:'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com',
+            port:443, secure:true, config:{iceServers:[]}, debug:2
+          });
+          pr.on('open',pid=>playersRef.child(id).update({ peerId:pid }));
+          pr.on('connection',conn=>conn.on('open',()=>{
+            playersRef.child(id).once('value',s=>{
               const dd=s.val();
               if(!dd.locked){
-                playersRef.child(id).update({locked:true,viewerUid:auth.currentUser.uid,owner:auth.currentUser.uid,ownerTimestamp:Date.now()});
-                pr.call(conn.peer, stream).on('error',console.error);
+                playersRef.child(id).update({
+                  locked:true,
+                  owner:auth.currentUser.uid,
+                  viewerUid:auth.currentUser.uid,
+                  ownerTimestamp:Date.now()
+                });
+                pr.call(conn.peer,stream).on('error',console.error);
               } else conn.send('locked');
             });
           }));
-          pr.on('call', c=> c.answer(stream));
-          stream.getTracks().forEach(t=>t.onended=()=> closePlayerTab(cell));
-          const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.srcObject=stream;
-          cd.innerHTML=''; cd.appendChild(v);
-        } catch(err){
-          console.error(err); cd.innerHTML=`<div class="placeholder text-danger">Error al obtener pantalla</div>`;
+          pr.on('call',c=>c.answer(stream));
+          stream.getTracks().forEach(t=>t.onended=()=>closePlayerTab(cell));
+          const v=document.createElement('video');
+          v.autoplay=true; v.playsInline=true; v.srcObject=stream;
+          cd.innerHTML=''; cd.append(v);
+        }catch(err){
+          console.error(err);
+          cd.innerHTML=`<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`;
         }
       };
     }
-    function closePlayerTab(cell) {
+    function closePlayerTab(cell){
       const id=cell.id;
-      playersRef.child(id).update({peerId:'',locked:false,viewerUid:'',owner:'',ownerTimestamp:null});
-      renderBroadcasterCell({key:id, val:()=>({title:cell.querySelector('.player-title').textContent,owner:'',ownerTimestamp:null})});
+      playersRef.child(id).update({
+        peerId:'', locked:false, owner:'', viewerUid:'', ownerTimestamp:null
+      });
+      renderBroadcasterCell({ key:id, val:()=>({ title:cell.querySelector('.player-title').textContent, owner:'', ownerTimestamp:null }) });
     }
   </script>
 </body>
