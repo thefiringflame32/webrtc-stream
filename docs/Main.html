@@ -171,6 +171,7 @@
     <!-- For viewers -->
     <div id="viewerUI" style="display:none;">
       <p class="mb-2">Selecciona qué pantalla visualizar:</p>
+      <p class="mb-2">Tus Players asignados (haz clic en Ver):</p>
       <div id="gridContainerViewer"></div>
     </div>
   </div>
@@ -280,6 +281,7 @@
         } else {
           document.getElementById('viewerUI').style.display = 'block';
           initViewer();
+          initSidebar(user.uid);
         }
       }
     });
@@ -512,6 +514,25 @@
 
     
     // ---------- Viewer Functions -----------
+
+    function initSidebar(uid) {
+      playersRef.on('value', snap => {
+        const list = $('#userPlayersList').empty();
+        const all = snap.val() || {};
+        Object.entries(all).forEach(([k,p]) => {
+          if (p.owner === uid) {
+            const li = $('<li>').addClass('list-group-item').text(p.title);
+            const btnV = $('<button>').addClass('btn btn-link btn-sm').text('Ver').click(()=> attachToMain(k,p.peerId));
+            const btnU = $('<button>').addClass('unbind-btn').text('Desasociar').click(()=> 
+              playersRef.child(k).update({locked:false,viewerUid:'',owner:'',ownerTimestamp:null})
+            );
+            li.append(btnV, btnU);
+            list.append(li);
+          }
+        });
+      });
+    }
+
     function initViewer() {
       // Initially add one viewer cell.
       addViewerCell();
