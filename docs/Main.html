@@ -12,7 +12,7 @@
     #mainArea { flex: 1; padding: 20px; overflow-y: auto; }
     #authContainer { max-width: 420px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
     #mainContainer { display: none; }
-    #gridContainer, #gridContainerViewer { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 200px; gap: 10px; margin-top: 20px; }
+    #gridContainer, #gridContainerViewer { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 200px; gap: 10px; margin-top: 10px; }
     .player-cell { position: relative; background: #fff; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; padding: 5px; }
     .player-title { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.7); color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; }
     .delete-player, .unbind-btn { position: absolute; top: 5px; right: 5px; background: #dc3545; color: #fff; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.8rem; cursor: pointer; }
@@ -71,13 +71,16 @@
       <!-- Main content -->
       <div id="mainArea">
         <h4 id="welcomeText"></h4>
+
         <!-- Broadcaster UI -->
         <div id="broadcasterUI" style="display:none;">
-          <button id="addPlayerBtn" class="btn btn-primary mb-3">Agregar Player</button>
+          <button id="addPlayerBtn" class="btn btn-primary mb-2">Agregar Player</button>
           <div id="gridContainer"></div>
         </div>
+
         <!-- Viewer UI -->
         <div id="viewerUI" style="display:none;">
+          <button id="addViewerSlotBtn" class="btn btn-secondary mb-2">Agregar Slot</button>
           <p class="mb-2">Tus Players asignados (haz clic en Ver):</p>
           <div id="gridContainerViewer"></div>
         </div>
@@ -129,160 +132,157 @@
 
     $('#login-form').submit(e => {
       e.preventDefault();
-      const email = $('#loginEmail').val();
-      const pwd = $('#loginPassword').val();
-      auth.signInWithEmailAndPassword(email, pwd)
-        .then(cred => showAuthMessage(`Bienvenido ${cred.user.email}`))
+      auth.signInWithEmailAndPassword($('#loginEmail').val(), $('#loginPassword').val())
+        .then(c => showAuthMessage(`Bienvenido ${c.user.email}`))
         .catch(err => showAuthMessage(err.message, true));
     });
     $('#signup-form').submit(e => {
       e.preventDefault();
-      const email = $('#signupEmail').val();
-      const pwd = $('#signupPassword').val();
-      auth.createUserWithEmailAndPassword(email, pwd)
-        .then(cred => showAuthMessage(`Registro exitoso. Bienvenido ${cred.user.email}`))
+      auth.createUserWithEmailAndPassword($('#signupEmail').val(), $('#signupPassword').val())
+        .then(c => showAuthMessage(`Registro exitoso. Bienvenido ${c.user.email}`))
         .catch(err => showAuthMessage(err.message, true));
     });
     $('#email-link-form').submit(e => {
       e.preventDefault();
-      const email = $('#emailLinkEmail').val();
-      auth.sendSignInLinkToEmail(email, { url: window.location.href, handleCodeInApp: true })
+      auth.sendSignInLinkToEmail($('#emailLinkEmail').val(), { url: location.href, handleCodeInApp: true })
         .then(() => {
-          window.localStorage.setItem('emailForSignIn', email);
-          showAuthMessage(`Se ha enviado un vínculo de acceso a ${email}. Revisa tu correo.`);
+          localStorage.setItem('emailForSignIn', $('#emailLinkEmail').val());
+          showAuthMessage(`Vínculo enviado.`);
         })
         .catch(err => showAuthMessage(err.message, true));
     });
-    if (auth.isSignInWithEmailLink(window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn');
-      if (!email) email = prompt('Ingresa tu correo para confirmar el enlace');
-      auth.signInWithEmailLink(email, window.location.href)
-        .then(cred => { window.localStorage.removeItem('emailForSignIn'); showAuthMessage(`Bienvenido ${cred.user.email}`); })
+    if (auth.isSignInWithEmailLink(location.href)) {
+      let em = localStorage.getItem('emailForSignIn') || prompt('Ingresa tu correo');
+      auth.signInWithEmailLink(em, location.href)
+        .then(c => { localStorage.removeItem('emailForSignIn'); showAuthMessage(`Bienvenido ${c.user.email}`); })
         .catch(err => showAuthMessage(err.message, true));
     }
 
     // ----------- Auth State Change -----------
     auth.onAuthStateChanged(user => {
-      if (user) {
-        cleanupExpired();
-        document.getElementById('authContainer').style.display = 'none';
-        document.getElementById('mainContainer').style.display = 'block';
-        document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
-        isBroadcaster = (user.email === 'thefiringflame32@gmail.com');
-        if (isBroadcaster) {
-          document.getElementById('broadcasterUI').style.display = 'block';
-          initBroadcaster();
-        } else {
-          document.getElementById('viewerUI').style.display = 'block';
-          initViewer();
-          initSidebar(user.uid);
-        }
+      if (!user) return;
+      cleanupExpired();
+      $('#authContainer').hide();
+      $('#mainContainer').show();
+      $('#welcomeText').text(`Bienvenido ${user.email}`);
+      isBroadcaster = (user.email === 'thefiringflame32@gmail.com');
+      if (isBroadcaster) {
+        $('#broadcasterUI').show();
+        initBroadcaster();
+      } else {
+        $('#viewerUI').show();
+        initViewer();
+        initSidebar(user.uid);
       }
     });
 
     // ----------- Sidebar for Viewer -----------
     function initSidebar(uid) {
       playersRef.on('value', snap => {
-        const list = document.getElementById('userPlayersList');
-        list.innerHTML = '';
+        const list = $('#userPlayersList').empty();
         const all = snap.val() || {};
-        Object.entries(all).forEach(([key, p]) => {
+        Object.entries(all).forEach(([k,p]) => {
           if (p.owner === uid) {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = p.title;
-            const btnVer = document.createElement('button'); btnVer.className = 'btn btn-link btn-sm'; btnVer.textContent = 'Ver';
-            btnVer.onclick = () => attachToMain(key, p.peerId);
-            const btnUn = document.createElement('button'); btnUn.className = 'unbind-btn'; btnUn.textContent = 'Desasociar';
-            btnUn.onclick = () => playersRef.child(key).update({ locked: false, viewerUid: '', owner: '', ownerTimestamp: null });
-            li.append(btnVer, btnUn);
-            list.appendChild(li);
+            const li = $('<li>').addClass('list-group-item').text(p.title);
+            const btnV = $('<button>').addClass('btn btn-link btn-sm').text('Ver').click(()=> attachToMain(k,p.peerId));
+            const btnU = $('<button>').addClass('unbind-btn').text('Desasociar').click(()=> 
+              playersRef.child(k).update({locked:false,viewerUid:'',owner:'',ownerTimestamp:null})
+            );
+            li.append(btnV, btnU);
+            list.append(li);
           }
         });
       });
     }
 
     function attachToMain(cellId, peerId) {
-      const cell = document.createElement('div'); cell.className = 'player-cell';
+      const cell = document.createElement('div'); cell.className='player-cell';
       document.getElementById('gridContainerViewer').appendChild(cell);
-      const peer = new Peer({ host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', port: 443, secure: true, config: { iceServers: [] } });
+      const peer = new Peer({ host:'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', port:443, secure:true, config:{iceServers:[]} });
       peer.on('open', () => peer.connect(peerId));
       peer.on('call', call => {
         call.answer();
-        call.on('stream', stream => {
-          const video = document.createElement('video'); video.autoplay = true; video.playsInline = true; video.srcObject = stream;
-          cell.innerHTML = '';
-          cell.appendChild(video);
+        call.on('stream', s => {
+          const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.srcObject=s;
+          cell.innerHTML=''; cell.appendChild(v);
         });
       });
     }
 
-    // ----------- Broadcaster -----------
+    // ----------- Viewer Slot Logic -----------
+    function initViewer() {
+      $('#addViewerSlotBtn').click(addViewerCell);
+    }
+    function addViewerCell() {
+      const cell = document.createElement('div'); cell.className='player-cell';
+      cell.innerHTML = `<div class="cell-content placeholder">Esperando selección</div>`;
+      document.getElementById('gridContainerViewer').appendChild(cell);
+    }
+
+    // ----------- Broadcaster Logic -----------
     let broadcasterPlayers = [];
-    function getNextPlayerNumber() { let num = 1; while (broadcasterPlayers.includes(num)) num++; return num; }
-    function addPlayerCell() {
-      const num = getNextPlayerNumber(); broadcasterPlayers.push(num);
-      const id = `player-${num}`;
-      playersRef.child(id).set({ title: `Player ${num}`, peerId: '', viewerUid: '', owner: '', ownerTimestamp: null });
-    }
-    function renderBroadcasterCell(snapshot) {
-      const data = snapshot.val(), id = snapshot.key;
-      let cell = document.getElementById(id);
-      if (!cell) {
-        cell = document.createElement('div'); cell.className = 'player-cell'; cell.id = id;
-        document.getElementById('gridContainer').appendChild(cell);
-      }
-      cell.innerHTML = `<div class="player-title">${data.title}</div>`;
-      const status = document.createElement('small'); status.style = 'position:absolute;bottom:5px;left:5px;';
-      status.textContent = data.owner ? `Usuario: ${data.owner}` : 'Libre'; cell.appendChild(status);
-      if (data.owner) {
-        const btnUn = document.createElement('button'); btnUn.className = 'unbind-btn'; btnUn.textContent = 'Desasociar';
-        btnUn.onclick = () => playersRef.child(id).update({ locked: false, viewerUid: '', owner: '', ownerTimestamp: null }); cell.appendChild(btnUn);
-      }
-      // Add-Tab and delete logic
-      const addBtn = document.createElement('button'); addBtn.className = 'add-tab-btn'; addBtn.textContent = 'Agregar Tab';
-      cell.appendChild(addBtn);
-      const delBtn = document.createElement('button'); delBtn.className = 'delete-player'; delBtn.textContent = 'X'; cell.appendChild(delBtn);
-      const contentDiv = document.createElement('div'); contentDiv.className = 'cell-content';
-      contentDiv.innerHTML = `<div class="placeholder text-center">Esperando Tab...</div>`; cell.appendChild(contentDiv);
-      delBtn.onclick = () => {
-        if (cell.querySelector('video')) closePlayerTab(cell);
-        else { playersRef.child(id).remove(); broadcasterPlayers = broadcasterPlayers.filter(n => n !== parseInt(data.title.replace(/\D/g, ''))); cell.remove(); }
-      };
-      addBtn.onclick = async () => {
-        contentDiv.innerHTML = `<div class="placeholder text-center">Obteniendo pantalla...</div>`;
-        try {
-          const stream = await navigator.mediaDevices.getDisplayMedia({ video: { width: 1280, height: 720, frameRate: 30 }, audio: false });
-          const peer = new Peer({ host: 'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', port: 443, secure: true, config: { iceServers: [] }, debug: 2 });
-          peer.on('open', idPeer => playersRef.child(id).update({ peerId: idPeer }));
-          peer.on('connection', conn => conn.on('open', () => {
-            playersRef.child(id).once('value', s => {
-              const d = s.val();
-              if (!d.locked) {
-                playersRef.child(id).update({ locked: true, viewerUid: auth.currentUser.uid, owner: auth.currentUser.uid, ownerTimestamp: Date.now() });
-                peer.call(conn.peer, stream).on('error', console.error);
-              } else conn.send('locked');
-            });
-          }));
-          peer.on('call', c => c.answer(stream));
-          stream.getTracks().forEach(t => t.onended = () => closePlayerTab(cell));
-          const videoEl = document.createElement('video'); videoEl.autoplay = true; videoEl.playsInline = true; videoEl.srcObject = stream;
-          contentDiv.innerHTML = ''; contentDiv.appendChild(videoEl);
-        } catch (err) { console.error(err); contentDiv.innerHTML = `<div class="placeholder text-danger text-center">Error al obtener pantalla</div>`; }
-      };
-    }
-    function closePlayerTab(cell) {
-      const id = cell.id; playersRef.child(id).update({ peerId: '', locked: false, viewerUid: '', ownerTimestamp: null, owner: '' });
-      renderBroadcasterCell({ key: id, val: () => ({ title: cell.querySelector('.player-title').textContent, owner: '', ownerTimestamp: null }) });
-    }
+    function getNextPlayerNumber() { let n=1; while(broadcasterPlayers.includes(n)) n++; return n; }
     function initBroadcaster() {
-      document.getElementById('addPlayerBtn').addEventListener('click', addPlayerCell);
+      $('#addPlayerBtn').click(()=>{
+        const num = getNextPlayerNumber(); broadcasterPlayers.push(num);
+        playersRef.child(`player-${num}`).set({ title:`Player ${num}`, peerId:'', viewerUid:'', owner:'', ownerTimestamp:null });
+      });
       playersRef.on('child_added', renderBroadcasterCell);
       playersRef.on('child_changed', renderBroadcasterCell);
     }
+    function renderBroadcasterCell(snap) {
+      const d=snap.val(), id=snap.key;
+      let cell=document.getElementById(id);
+      if(!cell) {
+        cell=document.createElement('div'); cell.id=id; cell.className='player-cell';
+        document.getElementById('gridContainer').appendChild(cell);
+      }
+      cell.innerHTML = `<div class="player-title">${d.title}</div>`;
+      // status + unbind
+      const st=document.createElement('small'); st.style='position:absolute;bottom:5px;left:5px;';
+      st.textContent = d.owner ? `Usuario: ${d.owner}` : 'Libre'; cell.appendChild(st);
+      if(d.owner){
+        const bu=document.createElement('button'); bu.className='unbind-btn'; bu.textContent='Desasociar';
+        bu.onclick=()=>playersRef.child(id).update({locked:false,viewerUid:'',owner:'',ownerTimestamp:null}); cell.appendChild(bu);
+      }
+      // add-tab, delete
+      const ba=document.createElement('button'); ba.className='add-tab-btn'; ba.textContent='Agregar Tab'; cell.appendChild(ba);
+      const bd=document.createElement('button'); bd.className='delete-player'; bd.textContent='X'; cell.appendChild(bd);
+      const cd=document.createElement('div'); cd.className='cell-content'; cd.innerHTML=`<div class="placeholder">Esperando Tab...</div>`; cell.appendChild(cd);
 
-    // ----------- Viewer (unused dropdown) -----------
-    function initViewer() { /* usamos sidebar para viewers */ }
+      bd.onclick = ()=>{
+        if(cell.querySelector('video')) closePlayerTab(cell);
+        else { playersRef.child(id).remove(); cell.remove(); broadcasterPlayers=broadcasterPlayers.filter(x=>x!==parseInt(d.title.replace(/\D/g,''))); }
+      };
+      ba.onclick = async ()=>{
+        cd.innerHTML=`<div class="placeholder">Obteniendo pantalla...</div>`;
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia({video:{width:1280,height:720,frameRate:30},audio:false});
+          const pr=new Peer({ host:'my-peerjs-server-thefiringflam-121a8798e654.herokuapp.com', port:443, secure:true, config:{iceServers:[]}, debug:2});
+          pr.on('open', peerId=> playersRef.child(id).update({peerId}));
+          pr.on('connection', conn=> conn.on('open', ()=>{
+            playersRef.child(id).once('value', s=>{
+              const dd=s.val();
+              if(!dd.locked){
+                playersRef.child(id).update({locked:true,viewerUid:auth.currentUser.uid,owner:auth.currentUser.uid,ownerTimestamp:Date.now()});
+                pr.call(conn.peer, stream).on('error',console.error);
+              } else conn.send('locked');
+            });
+          }));
+          pr.on('call', c=> c.answer(stream));
+          stream.getTracks().forEach(t=>t.onended=()=> closePlayerTab(cell));
+          const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.srcObject=stream;
+          cd.innerHTML=''; cd.appendChild(v);
+        } catch(err){
+          console.error(err); cd.innerHTML=`<div class="placeholder text-danger">Error al obtener pantalla</div>`;
+        }
+      };
+    }
+    function closePlayerTab(cell) {
+      const id=cell.id;
+      playersRef.child(id).update({peerId:'',locked:false,viewerUid:'',owner:'',ownerTimestamp:null});
+      renderBroadcasterCell({key:id, val:()=>({title:cell.querySelector('.player-title').textContent,owner:'',ownerTimestamp:null})});
+    }
   </script>
 </body>
 </html>
