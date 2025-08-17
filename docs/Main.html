@@ -1,582 +1,698 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <title>Live Tab Sharing — Mejorado</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.5.2/flatly/bootstrap.min.css"/>
   <style>
     :root{
-      --card-radius:14px;
+      --card-radius:12px;
       --muted:#6c757d;
+      --accent:#2563eb;
     }
-    body{background:linear-gradient(180deg,#eef6ff 0%, #f5f7fa 100%);font-family:Inter,Segoe UI,Roboto, system-ui, sans-serif;margin:0;padding:20px}
-    .app-shell{max-width:1150px;margin:0 auto}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:48px;height:48px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#2b6cb0;box-shadow:0 6px 18px rgba(85,85,85,.06)}
-    .hero {background:#fff;border-radius:var(--card-radius);padding:18px;box-shadow:0 10px 30px rgba(9,30,66,.04);display:flex;gap:20px;align-items:center}
-    .left{flex:1}
-    .right{width:320px}
+    body{background:linear-gradient(180deg,#f0f6ff 0%, #f8fafc 100%);font-family:Inter,Segoe UI,Roboto, system-ui, sans-serif;margin:0;padding:18px}
+    .app{max-width:1200px;margin:0 auto}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .logo{display:flex;align-items:center;gap:12px}
+    .brand-logo{width:46px;height:46px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:800;box-shadow:0 8px 22px rgba(30,60,120,.06)}
     .muted{color:var(--muted)}
-    #gridContainer{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px}
-    .player-cell{background:#fff;border-radius:12px;padding:8px;border:1px solid rgba(27,31,35,.06);position:relative;overflow:hidden;min-height:150px;display:flex;flex-direction:column}
-    .player-title{font-size:.95rem;font-weight:600;color:#2c3e50}
-    .player-meta{font-size:.8rem;color:var(--muted);margin-top:4px}
-    .cell-content{flex:1;display:flex;align-items:center;justify-content:center;margin-top:8px;border-radius:8px;background:linear-gradient(180deg,#f8fbff,#ffffff);overflow:hidden}
-    .cell-content video{width:100%;height:100%;object-fit:cover;border-radius:6px}
-    .controls-row{display:flex;gap:8px;align-items:center;margin-top:10px}
-    .btn-sm-wide{padding-left:10px;padding-right:10px}
-    .badge-status{position:absolute;top:10px;left:10px;font-size:.75rem}
-    .delete-player{position:absolute;top:10px;right:10px;border:none;background:transparent;color:#d9534f;font-weight:700}
-    .toast-wrap{position:fixed;right:20px;bottom:20px;z-index:2000}
-    footer{margin-top:22px;color:var(--muted);font-size:.85rem;text-align:center}
-    @media(max-width:600px){ .right{display:none} .hero{flex-direction:column} }
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:14px}
+    .main-card{border-radius:var(--card-radius);padding:14px;background:#fff;box-shadow:0 10px 30px rgba(28,41,77,.04)}
+    .controls{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+    #playersGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+    .player{background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;padding:10px;border:1px solid rgba(30,41,55,.06);position:relative;min-height:160px;display:flex;flex-direction:column}
+    .player .title{font-weight:700;color:#0b2b66}
+    .player .meta{font-size:.85rem;color:var(--muted);margin-top:6px}
+    .preview{flex:1;border-radius:8px;margin-top:8px;overflow:hidden;background:linear-gradient(180deg,#f7fbff,#ffffff);display:flex;align-items:center;justify-content:center}
+    .preview video{width:100%;height:100%;object-fit:cover}
+    .player .actions{display:flex;gap:6px;margin-top:8px}
+    .badge-status{position:absolute;top:10px;left:10px;font-size:.72rem}
+    .delete-btn{position:absolute;top:10px;right:10px;border:none;background:transparent;color:#e04b4b;font-weight:700}
+    .side{display:flex;flex-direction:column;gap:12px}
+    .side .card{padding:12px;border-radius:10px}
+    .connected-list{max-height:360px;overflow:auto}
+    .viewer-chip{display:flex;justify-content:space-between;align-items:center;padding:6px;border-radius:6px;background:#f4f7fb;margin-bottom:6px}
+    .small-muted{font-size:.85rem;color:var(--muted)}
+    .help-panel{display:none}
+    .register-panel{display:none}
+    .user-pill{background:#fff;padding:6px 8px;border-radius:999px;border:1px solid rgba(30,41,55,.06)}
+    .connected-side{display:flex;flex-direction:column;gap:10px}
+    @media(max-width:980px){ .grid{grid-template-columns:1fr} .side{order:2} }
   </style>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="app">
     <header>
-      <div class="brand">
-        <div class="logo">LTS</div>
+      <div class="logo">
+        <div class="brand-logo">LTS</div>
         <div>
-          <div style="font-weight:700;font-size:1.05rem">Live Tab Sharing</div>
-          <div class="muted">Compartir pantallas rápido — control opcional</div>
+          <div style="font-weight:800;font-size:1.05rem">Live Tab Sharing</div>
+          <div class="muted small-muted">Compartir pantallas — control opcional</div>
         </div>
       </div>
-      <div id="userActions" style="display:flex;gap:8px;align-items:center">
-        <div id="userBadge" class="muted small">No autenticado</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="userBadge" class="user-pill">No autenticado</div>
+        <button id="helpBtn" class="btn btn-outline-secondary btn-sm">Help</button>
+        <button id="toggleRegisterBtn" class="btn btn-outline-primary btn-sm">Crear cuenta</button>
+        <button id="logoutBtn" class="btn btn-outline-danger btn-sm" style="display:none">Cerrar sesión</button>
       </div>
     </header>
 
-    <div class="hero">
-      <div class="left">
-        <div id="authContainer" class="p-2">
-          <div class="card" style="border-radius:12px">
-            <div class="card-body">
-              <h5 class="card-title">Inicia Sesión / Regístrate</h5>
-              <div class="row">
-                <div class="col-sm-6">
-                  <form id="login-form">
-                    <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Correo" required>
-                    <input type="password" id="loginPassword" class="form-control mb-2" placeholder="Contraseña" required>
-                    <button class="btn btn-primary btn-block">Iniciar Sesión</button>
-                  </form>
-                </div>
-                <div class="col-sm-6">
-                  <form id="signup-form">
-                    <input type="email" id="signupEmail" class="form-control mb-2" placeholder="Correo" required>
-                    <input type="password" id="signupPassword" class="form-control mb-2" placeholder="Contraseña" required>
-                    <button class="btn btn-success btn-block">Registrarse</button>
-                  </form>
-                  <hr/>
-                  <form id="email-link-form">
-                    <input type="email" id="emailLinkEmail" class="form-control mb-2" placeholder="Correo para enlace" required>
-                    <button class="btn btn-warning btn-block">Enviar vínculo</button>
-                  </form>
-                </div>
+    <div class="grid">
+      <!-- Main column -->
+      <div class="main-card">
+        <!-- Auth area (login visible by default) -->
+        <div id="authArea" style="margin-bottom:12px">
+          <div id="loginPanel">
+            <div class="row">
+              <div class="col-sm-6">
+                <input id="loginEmail" class="form-control mb-2" placeholder="Correo" type="email" />
               </div>
-              <div id="authMessage" class="mt-2 text-center small muted"></div>
+              <div class="col-sm-6">
+                <input id="loginPassword" class="form-control mb-2" placeholder="Contraseña" type="password" />
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button id="loginBtn" class="btn btn-primary">Iniciar sesión</button>
+              <button id="emailLinkBtn" class="btn btn-outline-warning">Enviar enlace</button>
+              <div id="authMsg" class="muted small" style="align-self:center;margin-left:8px"></div>
+            </div>
+          </div>
+
+          <div id="registerPanel" class="register-panel mt-2">
+            <div class="card" style="padding:10px;border-radius:10px">
+              <h6>Crear cuenta</h6>
+              <input id="regEmail" class="form-control mb-2" placeholder="Correo" type="email" />
+              <input id="regPassword" class="form-control mb-2" placeholder="Contraseña" type="password" />
+              <input id="regUsername" class="form-control mb-2" placeholder="Nombre (username público)" type="text" />
+              <div style="display:flex;gap:8px">
+                <button id="registerBtn" class="btn btn-success">Registrarme</button>
+                <button id="cancelRegisterBtn" class="btn btn-light">Cancelar</button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div id="mainContainer" style="display:none">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-              <h5 id="welcomeText" style="margin:0">Bienvenido</h5>
-              <div class="muted small">Tu rol se detecta automáticamente</div>
-            </div>
-            <div>
-              <div class="btn-group">
-                <button id="btnAddPlayer" class="btn btn-outline-primary btn-sm">Agregar Player</button>
-                <div class="btn btn-sm btn-secondary small">Players: <span id="playerCount">0</span></div>
-              </div>
-            </div>
+        <div class="controls" style="justify-content:space-between;align-items:center">
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="addPlayer" class="btn btn-outline-primary btn-sm">Agregar Player</button>
+            <label class="muted small">Calidad</label>
+            <select id="quality" class="form-control form-control-sm" style="width:160px">
+              <option value="1280x720@30">720p@30</option>
+              <option value="1280x720@15">720p@15</option>
+              <option value="854x480@15">480p@15</option>
+            </select>
+            <button id="refreshBtn" class="btn btn-outline-info btn-sm">Refrescar</button>
           </div>
-
-          <div class="card p-3" style="border-radius:12px">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div class="controls-row">
-                <label class="muted small mr-2">Calidad</label>
-                <select id="qualitySelect" class="form-control form-control-sm" style="width:170px">
-                  <option value="1280x720@30">720p @ 30fps — balance</option>
-                  <option value="1280x720@15">720p @ 15fps — latencia</option>
-                  <option value="854x480@15">480p @ 15fps — rápido</option>
-                </select>
-                <button id="btnRefreshPlayers" class="btn btn-outline-info btn-sm btn-sm-wide">Actualizar</button>
-              </div>
-              <div class="muted small">STUN/TURN urable</div>
-            </div>
-
-            <div id="gridContainer" aria-live="polite"></div>
-          </div>
+          <div class="small-muted">Players: <span id="playersCount">0</span></div>
         </div>
+
+        <div id="playersGrid"></div>
       </div>
 
-      <div class="right">
-        <div class="card" style="border-radius:12px">
-          <div class="card-body">
-            <h6>Estado</h6>
-            <ul class="list-unstyled small muted">
-              <li>PeerJS signaling: <span id="peerServerLabel">Pendiente</span></li>
-              <li>Firebase: <span id="firebaseStatus">Pendiente</span></li>
-              <li>Control remoto: <span id="controlStatus">Desactivado</span></li>
-            </ul>
-            <hr/>
-            <h6>Instrucciones rápidas</h6>
-            <ol class="small">
-              <li>Autentícate (email/contraseña o enlace).</li>
-              <li>Como broadcaster: crea un Player y pulsa "Agregar Tab".</li>
-              <li>Como viewer: conecta a un Player desde la lista (en otra sesión).</li>
-            </ol>
+      <!-- Side column -->
+      <div class="side">
+        <div class="card help-panel" id="helpPanel">
+          <h6>Ayuda rápida</h6>
+          <p class="muted small">Inicia sesión, crea un Player como host y comparte la pantalla. Los viewers conectan y pueden enviar controles opcionales. El host puede ver y kickear viewers.</p>
+        </div>
+
+        <div class="card" id="connectedPanel">
+          <h6>Conexiones activas</h6>
+          <div class="connected-list" id="connectedList">
+            <div class="muted small">No estás conectado a ningún Player.</div>
           </div>
+        </div>
+
+        <div class="card">
+          <h6>Estado</h6>
+          <div class="small-muted">PeerJS: <span id="peerLabel">Cloud</span></div>
+          <div class="small-muted">Firebase: <span id="fbLabel">Desconocido</span></div>
         </div>
       </div>
     </div>
 
-    <div class="toast-wrap" id="toastWrap"></div>
-    <footer>Live Tab Sharing — mejorado &middot; Si quieres, despliego PeerJS server en Railway y configuro TURN.</footer>
+    <div id="toastWrap" style="position:fixed;right:18px;bottom:18px;z-index:2000"></div>
   </div>
 
-  <!-- Dependencias (compat para Firebase) -->
+  <!-- Firebase & PeerJS -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
   <script>
-  /**************************************************************************
-   *  CONFIGURACIÓN (cambia aquí según necesites)
-   **************************************************************************/
-  // 1) Firebase: reemplaza con tu firebaseConfig del nuevo proyecto
+  /*********************** CONFIG - reemplaza si hace falta ***********************/
   const firebaseConfig = {
     apiKey: "AIzaSyDLQGyXjRwrJ9O6RbVFtp-4uRNepAWdfrU",
     authDomain: "thefiringflame3210.firebaseapp.com",
     databaseURL: "https://thefiringflame3210-default-rtdb.firebaseio.com",
     projectId: "thefiringflame3210",
-    storageBucket: "thefiringflame3210.firebasestorage.app",
+    storageBucket: "thefiringflame3210.appspot.com",
     messagingSenderId: "759308762331",
-    appId: "1:759308762331:web:79725eda7c24b346eca0fe",
-    measurementId: "G-LST9D2H14R"
+    appId: "1:759308762331:web:79725eda7c24b346eca0fe"
   };
-
-  // 2) PeerJS / Signaling: elige una opción
-  //    A) Usar PeerServer Cloud (fácil): deja PEERJS_USE_CLOUD = true (no config adicional)
-  //    B) O desplegar tu propio peerjs-server y poner host/port/secure/path abajo
   const PEERJS_USE_CLOUD = true;
-  const PEERJS_CUSTOM = {
-    host: "your-peerjs-host.example.com",
-    port: 443,
-    path: "/peerjs",
-    secure: true
-  };
+  const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }];
+  /**************************************************************************/
 
-  // 3) ICE / STUN / TURN: puedes añadir tu TURN si tienes (recomendado para NATs)
-  const ICE_SERVERS = [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
-    // Si tienes coturn o Xirsys añade:
-    // { urls: 'turn:mi-turn.example.com:3478', username: 'user', credential:'pass' }
-  ];
-
-  /**************************************************************************
-   *  FIN CONFIG
-   **************************************************************************/
-
-  // --- init firebase compat
+  // Firebase init
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.database();
   const playersRef = db.ref('players');
+  const usersRef = db.ref('users');
 
-  // Peer options factory
-  function peerOptions(){
-    // if cloud, return {} so PeerJS connects to peerjs cloud automatically.
-    if (PEERJS_USE_CLOUD) {
-      return { config: { iceServers: ICE_SERVERS } };
-    }
-    // else use custom host (your deployed peerjs-server)
-    return {
-      host: PEERJS_CUSTOM.host,
-      port: PEERJS_CUSTOM.port,
-      path: PEERJS_CUSTOM.path || '/peerjs',
-      secure: !!PEERJS_CUSTOM.secure,
-      config: { iceServers: ICE_SERVERS }
-    };
-  }
+  // Peer factory
+  function peerOptions(){ return { config: { iceServers: ICE_SERVERS } }; }
 
   // UI helpers
-  const authMessage = document.getElementById('authMessage');
-  function toast(msg, type='info'){ // types: info, success, danger
+  function toast(msg, type='info'){
     const wrap = document.getElementById('toastWrap');
-    const id = 't'+Date.now();
     const div = document.createElement('div');
     div.className = `alert alert-${type} alert-dismissible fade show`;
+    div.style.minWidth = '220px';
     div.innerHTML = msg + `<button type="button" class="close" data-dismiss="alert">&times;</button>`;
     wrap.appendChild(div);
-    setTimeout(()=>{ try{ $(div).alert('close') }catch(e){ div.remove() } }, 5000);
-  }
-  function showAuthMessage(msg,isErr=false){ authMessage.textContent = msg; authMessage.style.color = isErr ? '#d9534f' : '#28a745' }
-
-  // attach forms
-  document.getElementById('login-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    auth.signInWithEmailAndPassword(email,password).then(cred=>{
-      showAuthMessage(`Bienvenido ${cred.user.email}`);
-    }).catch(err=>{ showAuthMessage(err.message,true); toast(err.message,'danger') });
-  });
-  document.getElementById('signup-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
-    auth.createUserWithEmailAndPassword(email,password).then(cred=>{
-      showAuthMessage(`Registro exitoso: ${cred.user.email}`);
-    }).catch(err=>{ showAuthMessage(err.message,true); toast(err.message,'danger') });
-  });
-  const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
-  document.getElementById('email-link-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const email = document.getElementById('emailLinkEmail').value;
-    auth.sendSignInLinkToEmail(email, actionCodeSettings).then(()=>{
-      window.localStorage.setItem('emailForSignIn', email);
-      toast(`Vínculo enviado a ${email}`, 'success');
-    }).catch(err=>{ toast(err.message,'danger') });
-  });
-
-  // safety: avoid double-attach control listeners
-  let viewerControlListenersAdded = false;
-
-  // state
-  let isBroadcaster = false;
-  let broadcasterPlayers = [];
-  function getNextPlayerNumber(){ let n=1; while(broadcasterPlayers.includes(n)) n++; return n; }
-
-  // On auth state
-  auth.onAuthStateChanged(user=>{
-    if (!user) return;
-    document.getElementById('authContainer').style.display = 'none';
-    document.getElementById('mainContainer').style.display = 'block';
-    document.getElementById('welcomeText').textContent = `Bienvenido ${user.email}`;
-    document.getElementById('userBadge').textContent = user.email;
-    // Decide role; update this logic as you wish:
-    isBroadcaster = (user.email === "thefiringflame32@gmail.com"); // ajusta si quieres otra regla
-    document.getElementById('peerServerLabel').textContent = PEERJS_USE_CLOUD ? 'PeerJS Cloud' : `${PEERJS_CUSTOM.host}:${PEERJS_CUSTOM.port}${PEERJS_CUSTOM.path||''}`;
-    document.getElementById('firebaseStatus').textContent = 'Conectado';
-    if (isBroadcaster) {
-      document.getElementById('btnAddPlayer').style.display='inline-block';
-      initBroadcaster();
-    } else {
-      document.getElementById('btnAddPlayer').style.display='none';
-      initViewer();
-    }
-  });
-
-  // ---- Broadcaster code (mejorado)
-  document.getElementById('btnAddPlayer').addEventListener('click', addPlayerCell);
-  document.getElementById('btnRefreshPlayers').addEventListener('click', ()=>{ loadPlayersList(); toast('Refrescado', 'info') });
-
-  playersRef.on('value', snap=>{
-    const players = snap.val() || {};
-    const count = Object.keys(players).length;
-    document.getElementById('playerCount').textContent = count;
-  });
-
-  function initBroadcaster(){
-    // listen children added/removed
-    playersRef.on('child_added', snap=>{
-      const key = snap.key;
-      const data = snap.val();
-      if (!document.getElementById(key)){
-        const playerNumber = parseInt((data.title||'').replace(/\D/g,'')) || getNextPlayerNumber();
-        broadcasterPlayers.push(playerNumber);
-        renderPlayerFromData(key, data, playerNumber);
-      }
-    });
-    playersRef.on('child_removed', snap=>{
-      const key = snap.key;
-      const el = document.getElementById(key);
-      if (el) el.remove();
-    });
+    setTimeout(()=>{ try{ div.remove(); }catch(e){} }, 4500);
   }
 
-  function renderPlayerFromData(firebaseKey, data, playerNumber){
-    const grid = document.getElementById('gridContainer');
-    const cell = document.createElement('div');
-    cell.className = 'player-cell';
-    cell.id = firebaseKey;
-    cell.dataset.playerNumber = playerNumber;
-    cell.innerHTML = `
-      <div class="player-title">${data.title || 'Player ' + playerNumber}</div>
-      <div class="player-meta">ID: <span class="meta-peerid">${data.peerId || '—'}</span></div>
-      <div class="cell-content"><div class="placeholder muted small">Player listo — sin compartir</div></div>
-      <div class="controls-row">
-        <button class="btn btn-sm btn-outline-primary add-tab-btn">Compartir Tab</button>
-        <button class="btn btn-sm btn-outline-secondary copy-peer-btn">Copiar PeerID</button>
-      </div>
-      <button class="delete-player">&times;</button>
-      <span class="badge badge-secondary badge-status">idle</span>
-    `;
-    grid.prepend(cell);
+  // State
+  let currentUser = null;             // Firebase user (auth)
+  let currentProfile = null;          // { username }
+  let broadcasterPlayers = [];        // list of player numbers
+  let peerIdToPlayer = {};            // mapping peerId -> playerId (keeps updated)
+  let viewerPeer = null;              // single Peer instance for viewer side
+  let connectedMap = {};              // playerId -> { dataConn, call, videoEl, peerId }
 
-    const badge = cell.querySelector('.badge-status');
-    const metaPeer = cell.querySelector('.meta-peerid');
+  // Keep a live snapshot of players (for mapping peerId->player)
+  let playersSnapshot = {};
 
-    // delete
-    cell.querySelector('.delete-player').addEventListener('click', ()=>{
-      // stop stream if active
-      if (cell._stream) {
-        cell._stream.getTracks().forEach(t=>t.stop());
-      }
-      // destroy peer if exists
-      if (cell._playerPeer) {
-        try { cell._playerPeer.destroy(); } catch(e) {}
-      }
-      playersRef.child(firebaseKey).remove();
-      cell.remove();
-    });
+  // ---------- UI wiring ----------
+  const helpBtn = document.getElementById('helpBtn');
+  const helpPanel = document.getElementById('helpPanel');
+  const toggleRegisterBtn = document.getElementById('toggleRegisterBtn');
+  const registerPanel = document.getElementById('registerPanel');
+  const loginPanel = document.getElementById('loginPanel');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-    // copy peer id
-    cell.querySelector('.copy-peer-btn').addEventListener('click', ()=>{
-      navigator.clipboard.writeText(metaPeer.textContent || '').then(()=>toast('PeerID copiado','success')).catch(()=>toast('No se pudo copiar','danger'));
-    });
+  helpBtn.addEventListener('click', ()=> {
+    helpPanel.style.display = helpPanel.style.display === 'block' ? 'none' : 'block';
+  });
 
-    // add-tab (share screen)
-    cell.querySelector('.add-tab-btn').addEventListener('click', async ()=>{
-      const contentDiv = cell.querySelector('.cell-content');
-      contentDiv.innerHTML = `<div class="placeholder muted small">Solicitando pantalla...</div>`;
-      badge.className = 'badge badge-info badge-status';
-      badge.textContent = 'preparing';
+  toggleRegisterBtn.addEventListener('click', ()=> {
+    // Show register, hide login
+    registerPanel.style.display = registerPanel.style.display === 'block' ? 'none' : 'block';
+    loginPanel.style.display = registerPanel.style.display === 'block' ? 'none' : 'block';
+  });
+  document.getElementById('cancelRegisterBtn').addEventListener('click', ()=>{
+    registerPanel.style.display = 'none';
+    loginPanel.style.display = 'block';
+  });
 
-      const q = document.getElementById('qualitySelect').value.split('@')[0].split('x');
-      const fps = parseInt(document.getElementById('qualitySelect').value.split('@')[1]) || 15;
-      const width = parseInt(q[0]) || 1280;
-      const height = parseInt(q[1]) || 720;
-
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: { width, height, frameRate: fps },
-          audio: false
-        });
-        cell._stream = stream;
-
-        // create peer for this player
-        const peer = new Peer(peerOptions());
-        cell._playerPeer = peer;
-
-        peer.on('error', err=>{ console.error('Peer error', err); toast('Peer error: '+ (err.message || err),'danger') });
-
-        peer.on('open', id=>{
-          metaPeer.textContent = id;
-          playersRef.child(cell.id).update({ peerId: id, title: `Player ${playerNumber}` });
-          badge.className = 'badge badge-success badge-status';
-          badge.textContent = 'sharing';
-        });
-
-        // handle data connections
-        peer.on('connection', conn=>{
-          conn.on('open', ()=>{
-            conn.on('data', msg=>{
-              if (msg && msg.type === 'request'){
-                playersRef.child(cell.id).once('value').then(snap=>{
-                  const d = snap.val() || {};
-                  if (!d.locked){
-                    playersRef.child(cell.id).update({ locked: true, viewerUid: msg.viewerUid || msg.viewerId || 'unknown' });
-                    // call viewer
-                    const call = peer.call(conn.peer, stream);
-                    call.on('error', e=>console.error('Call error', e));
-                  } else {
-                    conn.send({ type:'locked' });
-                  }
-                });
-              } else if (msg && msg.type === 'control'){
-                // Emit custom event so page (if embedding Roblox web) can react
-                const ev = new CustomEvent('remote-control', { detail: msg });
-                window.dispatchEvent(ev);
-              }
-            });
-          });
-        });
-
-        // answer incoming calls (if viewer initiates)
-        peer.on('call', call => call.answer(stream));
-
-        // when stream ends
-        stream.getTracks().forEach(t=>t.onended = ()=> stopStreamAndCleanup(cell));
-
-        // show local preview
-        const v = document.createElement('video');
-        v.autoplay = true; v.playsInline = true; v.muted = true;
-        v.srcObject = stream;
-        contentDiv.innerHTML = ''; contentDiv.appendChild(v);
-
-        // toggle button to stop
-        const addBtn = cell.querySelector('.add-tab-btn');
-        addBtn.textContent = 'Detener';
-        addBtn.classList.remove('btn-outline-primary'); addBtn.classList.add('btn-outline-danger');
-        addBtn.onclick = ()=> { stream.getTracks().forEach(t=>t.stop()); stopStreamAndCleanup(cell); };
-
-      } catch (err) {
-        console.error('getDisplayMedia error', err);
-        contentDiv.innerHTML = `<div class="placeholder muted small text-danger">Error: ${err.message}</div>`;
-        badge.className = 'badge badge-danger badge-status';
-        badge.textContent = 'error';
-        toast('No se pudo compartir pantalla: ' + (err.message||err),'danger');
-      }
-    });
-  }
-
-  function stopStreamAndCleanup(cell){
+  // Auth actions
+  document.getElementById('loginBtn').addEventListener('click', async ()=>{
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPassword').value;
     try {
-      if (cell._playerPeer) { cell._playerPeer.destroy(); cell._playerPeer = null; }
-    } catch(e){}
-    if (cell._stream) {
-      cell._stream.getTracks().forEach(t=>t.stop());
-      cell._stream = null;
+      await auth.signInWithEmailAndPassword(email, pass);
+      toast('Sesión iniciada','success');
+    } catch(e){ toast('Login: '+(e.message||e),'danger') }
+  });
+
+  document.getElementById('emailLinkBtn').addEventListener('click', async ()=>{
+    const email = document.getElementById('loginEmail').value.trim();
+    if (!email) return toast('Introduce un correo','info');
+    try {
+      const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+      await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', email);
+      toast('Enlace enviado','success');
+    } catch(e){ toast('Error: '+(e.message||e),'danger') }
+  });
+
+  document.getElementById('registerBtn').addEventListener('click', async ()=>{
+    const email = document.getElementById('regEmail').value.trim();
+    const pass = document.getElementById('regPassword').value;
+    const username = document.getElementById('regUsername').value.trim();
+    if (!email || !pass || !username) return toast('Rellena todos los campos','info');
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      const uid = cred.user.uid;
+      // store username profile
+      await usersRef.child(uid).set({ username });
+      toast('Cuenta creada','success');
+      registerPanel.style.display = 'none';
+      loginPanel.style.display = 'block';
+    } catch(e){ toast('Registro: '+(e.message||e),'danger') }
+  });
+
+  logoutBtn.addEventListener('click', ()=> auth.signOut());
+
+  // ---------- Auth state handling ----------
+  auth.onAuthStateChanged(async user=>{
+    if (!user) {
+      currentUser = null; currentProfile = null;
+      document.getElementById('userBadge').textContent = 'No autenticado';
+      logoutBtn.style.display = 'none';
+      document.getElementById('playersGrid').innerHTML = '';
+      playersSnapshot = {};
+      document.getElementById('fbLabel').textContent = 'Desconectado';
+      return;
     }
-    playersRef.child(cell.id).update({ peerId:'', locked:false, viewerUid:'' });
-    const content = cell.querySelector('.cell-content');
-    if (content) content.innerHTML = `<div class="placeholder muted small">Player listo — sin compartir</div>`;
-    const addBtn = cell.querySelector('.add-tab-btn');
-    if (addBtn) { addBtn.textContent = 'Compartir Tab'; addBtn.classList.remove('btn-outline-danger'); addBtn.classList.add('btn-outline-primary'); addBtn.onclick = null; }
-    const badge = cell.querySelector('.badge-status');
-    if (badge) { badge.className = 'badge badge-secondary badge-status'; badge.textContent = 'idle'; }
-  }
+    currentUser = user;
+    logoutBtn.style.display = 'inline-block';
+    // load profile (username)
+    const snap = await usersRef.child(user.uid).once('value');
+    currentProfile = snap.val() || { username: user.email.split('@')[0] };
+    document.getElementById('userBadge').textContent = currentProfile.username;
+    document.getElementById('fbLabel').textContent = 'Conectado';
+    // initialize UI role-aware
+    initAppForUser();
+  });
 
-  function addPlayerCell(){
-    const playerNumber = getNextPlayerNumber();
-    broadcasterPlayers.push(playerNumber);
-    const cellId = `player-${playerNumber}`;
-    playersRef.child(cellId).set({ title:`Player ${playerNumber}`, peerId:'', viewerUid:'', locked:false });
-    toast('Player creado: ' + cellId, 'success');
-  }
+  // ---------- App initialization ----------
+  function initAppForUser(){
+    // load players list & keep snapshot
+    playersRef.off(); // remove previous listeners to avoid duplicate
+    playersRef.on('value', snap=>{
+      playersSnapshot = snap.val() || {};
+      // rebuild player UI
+      renderPlayers(playersSnapshot);
+      // update mapping peerId->playerId
+      peerIdToPlayer = {};
+      for (const pid in playersSnapshot){
+        const p = playersSnapshot[pid] || {};
+        if (p.peerId) peerIdToPlayer[p.peerId] = pid;
+      }
+      document.getElementById('playersCount').textContent = Object.keys(playersSnapshot).length;
+    });
 
-  // ---- Viewer code (mejoras: reusar un peer, evitar listeners duplicados) ----
-  let viewerPeer = null;
-  function initViewer(){
-    const container = document.getElementById('gridContainer');
-    // clear only viewer-specific UIs (we'll create a small UI row)
-    const viewerRow = document.createElement('div');
-    viewerRow.className = 'card p-2';
-    viewerRow.innerHTML = `
-      <div class="d-flex flex-column">
-        <div class="d-flex gap-2 align-items-center mb-2">
-          <select class="form-control player-select" style="flex:1"><option value="">Selecciona un Player</option></select>
-          <button class="btn btn-primary btn-sm connect-btn">Conectar</button>
-          <button class="btn btn-outline-secondary btn-sm disconnect-btn" style="display:none">Desconectar</button>
-        </div>
-        <div class="viewer-area" style="min-height:220px;display:flex;align-items:center;justify-content:center">Sin conexión</div>
-      </div>
-    `;
-    container.prepend(viewerRow);
-
-    const selectElem = viewerRow.querySelector('.player-select');
-    const connectBtn = viewerRow.querySelector('.connect-btn');
-    const disconnectBtn = viewerRow.querySelector('.disconnect-btn');
-    const viewerArea = viewerRow.querySelector('.viewer-area');
-
-    function refreshOptions(){
-      playersRef.once('value').then(snap=>{
-        const players = snap.val() || {};
-        selectElem.innerHTML = '<option value="">Selecciona un Player</option>';
-        for (const key in players){
-          const opt = document.createElement('option');
-          opt.value = key;
-          opt.textContent = players[key].title || key;
-          selectElem.appendChild(opt);
-        }
-      });
-    }
-    refreshOptions();
-    document.getElementById('btnRefreshPlayers').addEventListener('click', refreshOptions);
-
+    // start viewerPeer if null
     if (!viewerPeer){
       viewerPeer = new Peer(peerOptions());
-      viewerPeer.on('error', e=>{ console.error('Viewer peer error', e); toast('Viewer Peer error: ' + (e.message||e),'danger') });
-      viewerPeer.on('open', id=> console.log('Viewer ready', id));
-      // when remote stream arrives
-      viewerPeer.on('call', call=>{
-        call.answer(); // no local stream
-        call.on('stream', remoteStream=>{
-          viewerArea.innerHTML = '';
-          const v = document.createElement('video');
-          v.autoplay = true; v.playsInline = true; v.srcObject = remoteStream;
-          viewerArea.appendChild(v);
-          disconnectBtn.style.display = 'inline-block';
+      viewerPeer.on('open', id=> console.log('Viewer peer open', id));
+      viewerPeer.on('error', err=> toast('Peer error: '+(err.message||err),'danger'));
+      viewerPeer.on('call', call => {
+        // When a remote stream arrives, find player by call.peer using latest snapshot
+        const remotePeerId = call.peer;
+        const playerId = peerIdToPlayer[remotePeerId];
+        call.on('stream', remoteStream => {
+          // attach stream to connectedMap for that player
+          if (playerId && connectedMap[playerId]) {
+            const container = connectedMap[playerId].container;
+            container.innerHTML = '';
+            const video = document.createElement('video');
+            video.autoplay = true; video.playsInline = true;
+            video.srcObject = remoteStream;
+            container.appendChild(video);
+            connectedMap[playerId].call = call;
+            connectedMap[playerId].videoEl = video;
+            // monitor track ended
+            remoteStream.getTracks().forEach(t => {
+              t.onended = () => {
+                // stream ended - remove UI for that player
+                detachPlayerView(playerId);
+              }
+            });
+          } else {
+            // unknown player: still show stream in connected panel
+            console.warn('Stream for unknown player', remotePeerId);
+            // create temp container
+            const tempId = 'temp-' + Date.now();
+            const tempDiv = document.createElement('div');
+            tempDiv.innerText = 'Stream (unknown)';
+            document.getElementById('connectedList').appendChild(tempDiv);
+            // attach once
+            const video = document.createElement('video');
+            video.autoplay = true; video.playsInline = true;
+            video.srcObject = remoteStream;
+            tempDiv.appendChild(video);
+          }
         });
-        call.on('error', e=>{ console.error('Call error on viewer', e); toast('Call error','danger') });
+        call.on('close', ()=> {
+          // call closed -> detach
+          const pid = peerIdToPlayer[call.peer];
+          if (pid) detachPlayerView(pid);
+        });
+        call.on('error', e => console.error('call error', e));
       });
     }
 
-    // connect
-    connectBtn.addEventListener('click', ()=>{
-      const nodeKey = selectElem.value;
-      if (!nodeKey) { toast('Selecciona un Player','info'); return; }
-      playersRef.child(nodeKey).once('value').then(snap=>{
-        const d = snap.val() || {};
-        if (!d.peerId) { toast('Ese Player no está compartiendo aún','danger'); return; }
-        // claim viewer
-        playersRef.child(nodeKey).update({ viewerUid: auth.currentUser.uid });
-        // open data connection to request stream/control
-        const dataConn = viewerPeer.connect(d.peerId);
-        dataConn.on('open', ()=>{
-          dataConn.send({ type:'request', viewerUid: auth.currentUser.uid });
-          viewerRow._dataConn = dataConn;
-          toast('Solicitud enviada', 'success');
-        });
-        dataConn.on('error', e=>{ console.error('DataConn error', e); toast('DataConn error','danger') });
-      });
-    });
+    // ensure connected list UI cleared
+    renderConnectedList();
+  }
 
-    disconnectBtn.addEventListener('click', ()=>{
-      // close dataConn
-      try {
-        if (viewerRow._dataConn) { viewerRow._dataConn.close(); viewerRow._dataConn = null; }
-      } catch(e){}
-      // destroy peer (optional) — we'll keep peer alive but clear UI
-      viewerArea.innerHTML = 'Desconectado';
-      disconnectBtn.style.display = 'none';
-      toast('Desconectado', 'info');
-    });
+  // ---------- Render players (host view + info) ----------
+  function renderPlayers(snapshot){
+    const container = document.getElementById('playersGrid');
+    container.innerHTML = '';
+    broadcasterPlayers = [];
+    for (const playerId in snapshot){
+      const p = snapshot[playerId] || {};
+      // create DOM
+      const el = document.createElement('div');
+      el.className = 'player';
+      el.id = 'pl-' + playerId;
+      const title = p.title || playerId;
+      const ownerUid = p.owner || '—';
+      const ownerName = (p.owner && p.ownerName) ? p.ownerName : ownerUid;
+      const peerId = p.peerId || '';
+      const viewers = p.viewers || {};
+      el.innerHTML = `
+        <div class="title">${title}</div>
+        <div class="meta">Owner: <strong>${ownerName}</strong> • Peer: <span class="peer-id">${peerId || '—'}</span></div>
+        <div class="preview"><div class="muted small">No se comparte</div></div>
+        <div class="actions">
+          <button class="btn btn-sm btn-outline-primary share-btn">${peerId ? 'Compartiendo' : 'Compartir'}</button>
+          <button class="btn btn-sm btn-outline-secondary copy-btn">Copiar Peer</button>
+          <button class="btn btn-sm btn-outline-danger kick-all-btn">Kick All</button>
+        </div>
+        <button class="delete-btn" title="Eliminar">×</button>
+        <div style="margin-top:8px">
+          <div class="small-muted">Conectados:</div>
+          <div class="viewer-list small-muted" style="margin-top:6px;max-height:90px;overflow:auto"></div>
+        </div>
+      `;
+      // show viewer list
+      const viewerListDiv = el.querySelector('.viewer-list');
+      if (Object.keys(viewers).length === 0) {
+        viewerListDiv.innerHTML = `<div class="muted small">Nadie conectado</div>`;
+      } else {
+        viewerListDiv.innerHTML = '';
+        for (const uid in viewers) {
+          const v = viewers[uid] || {};
+          const item = document.createElement('div');
+          item.style.display = 'flex';
+          item.style.justifyContent = 'space-between';
+          item.style.alignItems = 'center';
+          item.style.marginBottom = '6px';
+          item.innerHTML = `<div>${v.username || uid} ${v.kicked ? '(kicked)' : v.active ? '(activo)' : '(inactivo)'}</div>
+                            <div><button class="btn btn-sm btn-outline-danger kick-btn">Kick</button></div>`;
+          // kick handler - only owner can kick
+          const kickBtn = item.querySelector('.kick-btn');
+          kickBtn.addEventListener('click', ()=> {
+            if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger');
+            playersRef.child(playerId).child('viewers').child(uid).update({ kicked: true, active: false });
+            toast('Kick enviado a ' + (v.username||uid),'info');
+          });
+          viewerListDiv.appendChild(item);
+        }
+      }
 
-    // control messages: send keyboard/mouse only once per page (avoid duplicates)
-    if (!viewerControlListenersAdded){
-      viewerControlListenersAdded = true;
-      window.addEventListener('keydown', e=>{
-        // find active viewerRow with open dataConn
-        const el = document.querySelector('.card .disconnect-btn[style*="display: inline-block"]');
-        if (!el) return; // no active disconnect => not connected
-        // navigate to parent to retrieve dataConn
-        const parent = el.closest('.card');
-        if (!parent || !parent._dataConn || parent._dataConn.open !== true) return;
-        parent._dataConn.send({ type:'control', kind:'key', key:e.key, code:e.code, meta:{ctrl:e.ctrlKey, alt:e.altKey, shift:e.shiftKey} });
+      // attach actions
+      el.querySelector('.share-btn').addEventListener('click', async ()=>{
+        // only owner should start sharing -> but we allow starting if currentUser is owner
+        if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede compartir','danger');
+        // simulate click on actual share flow: show getDisplayMedia
+        startSharingForExistingPlayer(playerId, el);
       });
-      window.addEventListener('click', e=>{
-        const el = document.querySelector('.card .disconnect-btn[style*="display: inline-block"]');
-        if (!el) return;
-        const parent = el.closest('.card');
-        if (!parent || !parent._dataConn || parent._dataConn.open !== true) return;
-        parent._dataConn.send({ type:'control', kind:'mouse', x:e.clientX, y:e.clientY, button:e.button });
+
+      el.querySelector('.copy-btn').addEventListener('click', ()=>{
+        const pid = el.querySelector('.peer-id').textContent;
+        if (!pid || pid === '—') return toast('No hay PeerID','info');
+        navigator.clipboard.writeText(pid).then(()=>toast('PeerID copiado','success')).catch(()=>toast('No se pudo copiar','danger'));
       });
+
+      el.querySelector('.delete-btn').addEventListener('click', ()=>{
+        if (!currentUser) return toast('No autenticado','info');
+        // Only owner can delete
+        if (p.owner && currentUser.uid !== p.owner) return toast('Solo el owner puede eliminar','danger');
+        playersRef.child(playerId).remove();
+        toast('Player eliminado','info');
+      });
+
+      el.querySelector('.kick-all-btn').addEventListener('click', ()=>{
+        if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger');
+        const viewersNode = playersRef.child(playerId).child('viewers');
+        // set kicked = true for all
+        for (const uid in viewers) {
+          viewersNode.child(uid).update({ kicked: true, active: false });
+        }
+        toast('Kick all enviado','info');
+      });
+
+      // preview: if peerId exists, show small "live" placeholder (but we will update when stream arrives)
+      if (peerId) {
+        const preview = el.querySelector('.preview');
+        preview.innerHTML = `<div class="muted small">Player está compartiendo — espera conexión</div>`;
+      }
+
+      container.appendChild(el);
     }
   }
 
-  // small helper to load list (used by refresh)
-  function loadPlayersList(){ playersRef.once('value').then(()=>{}).catch(()=>{}); }
+  // ---------- Add player (owner creates) ----------
+  document.getElementById('addPlayer').addEventListener('click', ()=>{
+    if (!currentUser) return toast('Inicia sesión para crear Player','info');
+    const idx = getNextPlayerNumber();
+    const pid = `player-${Date.now()}-${Math.floor(Math.random()*999)}`;
+    const ownerName = currentProfile.username;
+    playersRef.child(pid).set({
+      owner: currentUser.uid,
+      ownerName: ownerName,
+      title: `Player ${idx}`,
+      peerId: '',
+      viewers: {},
+      locked: false,
+      createdAt: Date.now()
+    });
+    toast('Player creado','success');
+  });
 
-  // React to remote-control on broadcaster page (useful if embedding Roblox web inside)
-  window.addEventListener('remote-control', ev=>{
-    const d = ev.detail || {};
-    console.log('remote-control', d);
-    if (d.kind === 'key') {
-      const ke = new KeyboardEvent('keydown', { key: d.key, code: d.code, bubbles: true });
-      (document.activeElement || document.body).dispatchEvent(ke);
-    } else if (d.kind === 'mouse') {
-      const me = new MouseEvent('click', { clientX: d.x, clientY: d.y, button: d.button, bubbles: true });
-      (document.elementFromPoint(d.x, d.y) || document.body).dispatchEvent(me);
+  function getNextPlayerNumber(){
+    // simple count
+    return Object.keys(playersSnapshot || {}).length + 1;
+  }
+
+  // ---------- Start sharing for an existing player (owner flow) ----------
+  async function startSharingForExistingPlayer(playerId, elDom){
+    // This is used when owner clicks "Compartir" on existing player element.
+    // The page running this code must be the owner (we check).
+    const pSnap = playersSnapshot[playerId] || {};
+    if (!currentUser || pSnap.owner !== currentUser.uid) return toast('No eres el owner','danger');
+
+    try {
+      const quality = document.getElementById('quality').value.split('@')[0].split('x');
+      const fps = parseInt(document.getElementById('quality').value.split('@')[1] || '15');
+      const width = parseInt(quality[0]) || 1280;
+      const height = parseInt(quality[1]) || 720;
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video:{ width, height, frameRate: fps }, audio:false });
+      // create Peer for this player
+      const peer = new Peer(peerOptions());
+      // store peer on DOM for cleanup
+      elDom._playerPeer = peer;
+      elDom._stream = stream;
+      peer.on('open', id=>{
+        playersRef.child(playerId).update({ peerId: id, title: pSnap.title || 'Player' });
+        toast('Peer listo: ' + id, 'success');
+      });
+      peer.on('connection', conn=>{
+        conn.on('open', ()=>{
+          conn.on('data', data=>{
+            // expect { type:'request', viewerUid, username }
+            if (data && data.type === 'request') {
+              const viewerUid = data.viewerUid;
+              const username = data.username || 'guest';
+              // register viewer in DB (keeps record even if disconnect)
+              const viewerRef = playersRef.child(playerId).child('viewers').child(viewerUid);
+              viewerRef.update({ username, connectedAt: Date.now(), active: true, kicked: false });
+              // send call to viewer
+              const call = peer.call(conn.peer, stream);
+              call.on('error', e=>console.error('Call err', e));
+            } else if (data && data.type === 'control') {
+              // forward event to page (useful if embedding Roblox web)
+              window.dispatchEvent(new CustomEvent('remote-control', { detail: data }));
+            }
+          });
+          conn.on('close', ()=>{
+            // When dataConn closes, find viewer UID - can't rely on conn meta, so rely on DB presence; we will mark as inactive
+            // we might not know UID here; better rely on DB presence and viewer heartbeats (viewer will set active:false)
+          });
+        });
+      });
+      peer.on('call', call => call.answer(stream));
+      // when stream ends
+      stream.getTracks().forEach(t => t.onended = ()=> {
+        // clear peerId and mark viewers inactive
+        playersRef.child(playerId).update({ peerId: '' });
+        // mark viewers active=false (but keep record)
+        playersRef.child(playerId).child('viewers').once('value').then(snap=>{
+          const vs = snap.val() || {};
+          for (const uid in vs) playersRef.child(playerId).child('viewers').child(uid).update({ active: false });
+        });
+        if (elDom._playerPeer) try { elDom._playerPeer.destroy(); } catch(e){}
+      });
+
+      // attach preview locally
+      const preview = elDom.querySelector('.preview');
+      preview.innerHTML = '';
+      const v = document.createElement('video');
+      v.autoplay = true; v.playsInline = true; v.muted = true;
+      v.srcObject = stream;
+      preview.appendChild(v);
+
+    } catch(e){
+      toast('Error compartiendo: ' + (e.message || e), 'danger');
     }
+  }
+
+  // ---------- Viewer: connect to player(s) (multiple) ----------
+  document.getElementById('refreshBtn').addEventListener('click', ()=> {
+    // just refresh players snapshot is automatic via on('value'), but we can show toast
+    toast('Lista actualizada', 'info');
+  });
+
+  // function to connect to a player by id (viewer)
+  async function connectToPlayerAsViewer(playerId){
+    if (!currentUser) return toast('Inicia sesión para conectar','info');
+    const p = playersSnapshot[playerId] || {};
+    if (!p.peerId) return toast('Ese player no está compartiendo','info');
+    const peerId = p.peerId;
+    // open data connection
+    const conn = viewerPeer.connect(peerId, { reliable:true });
+    conn.on('open', ()=>{
+      // send request with uid and username
+      conn.send({ type:'request', viewerUid: currentUser.uid, username: currentProfile.username });
+      // write to DB viewers map to persist connection even if disconnects later
+      playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ username: currentProfile.username, connectedAt: Date.now(), active:true, kicked:false });
+      // store mapping
+      const container = createConnectedUIEntry(playerId, p.title || playerId, peerId);
+      connectedMap[playerId] = { dataConn: conn, container, peerId };
+      toast('Conectado: ' + (p.title || playerId), 'success');
+      // listen for kicked flag
+      playersRef.child(playerId).child('viewers').child(currentUser.uid).on('value', snap=>{
+        const val = snap.val();
+        if (!val) return;
+        if (val.kicked) {
+          toast('Has sido kickeado del player ' + (p.title || playerId),'danger');
+          // close dataConn and remove UI
+          try { if (connectedMap[playerId] && connectedMap[playerId].dataConn) connectedMap[playerId].dataConn.close(); } catch(e){}
+          detachPlayerView(playerId);
+          // mark active false
+          playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ active:false });
+        }
+      });
+    });
+    conn.on('error', e=> { console.error('dataConn error', e); toast('Error de conexión','danger') });
+    // the actual media call will be answered and viewerPeer.on('call') will handle stream attach
+  }
+
+  // create UI entry on side for connected players
+  function createConnectedUIEntry(playerId, title, peerId){
+    const list = document.getElementById('connectedList');
+    // clear placeholder
+    if (list.children.length === 1 && list.children[0].classList.contains('muted')) list.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'viewer-chip';
+    const left = document.createElement('div'); left.innerHTML = `<strong>${title}</strong><div class="muted small">${playerId}</div>`;
+    const right = document.createElement('div');
+    right.innerHTML = `<button class="btn btn-sm btn-outline-danger disconnect-btn">Desconectar</button>`;
+    card.appendChild(left); card.appendChild(right);
+    list.appendChild(card);
+    // a container for video below title (for inline preview)
+    const preview = document.createElement('div'); preview.style.marginTop = '6px'; preview.style.minHeight = '100px';
+    card.appendChild(preview);
+    // disconnect handler
+    right.querySelector('.disconnect-btn').addEventListener('click', ()=>{
+      // close dataConn and call
+      if (connectedMap[playerId] && connectedMap[playerId].dataConn) {
+        try { connectedMap[playerId].dataConn.close(); } catch(e){}
+      }
+      // mark active false in DB
+      playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ active:false });
+      // remove UI
+      card.remove();
+      delete connectedMap[playerId];
+      if (Object.keys(connectedMap).length === 0) {
+        document.getElementById('connectedList').innerHTML = '<div class="muted small">No estás conectado a ningún Player.</div>';
+      }
+    });
+    return preview;
+  }
+
+  // detach player view when stream ends or call closed
+  function detachPlayerView(playerId){
+    if (connectedMap[playerId]) {
+      const ent = connectedMap[playerId];
+      if (ent.videoEl && ent.videoEl.srcObject) {
+        try {
+          ent.videoEl.srcObject.getTracks().forEach(t => t.stop());
+        } catch(e){}
+      }
+      // remove UI entry
+      const list = document.getElementById('connectedList');
+      // find the corresponding card by checking child text
+      for (const child of Array.from(list.children)) {
+        if (child.innerText && child.innerText.includes(playerId)) {
+          child.remove();
+        }
+      }
+      delete connectedMap[playerId];
+      if (Object.keys(connectedMap).length === 0) document.getElementById('connectedList').innerHTML = '<div class="muted small">No estás conectado a ningún Player.</div>';
+    }
+    // also mark viewer DB entry active=false
+    if (currentUser) playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ active:false });
+  }
+
+  // ---------- Watch for players where peerId becomes empty (host stopped sharing) ----------
+  playersRef.on('child_changed', snap=>{
+    const pid = snap.key;
+    const data = snap.val() || {};
+    // if peerId cleared, notify all viewers that were connected and detach local UI if viewer
+    if (!data.peerId) {
+      // find all connectedMap entries matching this pid and detach
+      if (connectedMap[pid]) detachPlayerView(pid);
+      // mark viewers inactive (DB)
+      playersRef.child(pid).child('viewers').once('value').then(snap2=>{
+        const vs = snap2.val() || {};
+        for (const uid in vs) playersRef.child(pid).child('viewers').child(uid).update({ active:false });
+      });
+      // update UI preview to "no share"
+      const dom = document.getElementById('pl-' + pid);
+      if (dom) {
+        const preview = dom.querySelector('.preview');
+        preview.innerHTML = `<div class="muted small">No se comparte</div>`;
+        const peerSpan = dom.querySelector('.peer-id');
+        if (peerSpan) peerSpan.textContent = '—';
+      }
+    } else {
+      // peerId present -> update mapping
+      peerIdToPlayer[data.peerId] = pid;
+      const dom = document.getElementById('pl-' + pid);
+      if (dom) {
+        const peerSpan = dom.querySelector('.peer-id');
+        if (peerSpan) peerSpan.textContent = data.peerId;
+      }
+    }
+  });
+
+  // ---------- Utility: connect UI (click on player preview to connect as viewer) ----------
+  document.addEventListener('click', e=>{
+    const el = e.target;
+    // If clicked inside a player card and not owner actions, try to connect as viewer
+    const card = el.closest('.player');
+    if (!card) return;
+    const playerDomId = card.id; // 'pl-' + playerId
+    const playerId = playerDomId.replace(/^pl-/, '');
+    // if clicked on buttons, ignore
+    if (el.closest('button')) return;
+    // if current user is owner of that player, do nothing
+    const p = playersSnapshot[playerId] || {};
+    if (p.owner && currentUser && p.owner === currentUser.uid) return;
+    // else connect to player as viewer (multiple allowed)
+    connectToPlayerAsViewer(playerId);
+  });
+
+  // ---------- Initial small UI setup ----------
+  document.getElementById('peerLabel').textContent = PEERJS_USE_CLOUD ? 'PeerJS Cloud' : 'Custom';
+  // set initial connectedList placeholder
+  document.getElementById('connectedList').innerHTML = '<div class="muted small">No estás conectado a ningún Player.</div>';
+  // show firebase status if possible
+  db.ref('.info/connected').on('value', snap=> {
+    const v = snap.val();
+    document.getElementById('fbLabel').textContent = v ? 'Conectado' : 'Desconectado';
   });
 
   </script>
