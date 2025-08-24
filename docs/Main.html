@@ -2,81 +2,98 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Live Tab Sharing — Mejorado (Auth exact + features)</title>
+  <title>Live Tab Sharing — Mejorado (Auth + Viewer)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.5.2/flatly/bootstrap.min.css"/>
   <style>
-    :root{ --card-radius:18px; --muted:#8b8b8b; --accent:#2563eb; --star-color:#f59e0b; }
+    :root{
+      --card-radius:18px;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --bg:#f6f8fb;
+      --panel:#ffffff;
+      --star-color:#f59e0b;
+      --accent-2:#0ea5a4;
+    }
     html,body{height:100%;}
-    body{background:#ffffff;font-family: 'Segoe UI', Roboto, Arial, sans-serif;margin:0;padding:18px;color:#222}
+    body{background:linear-gradient(180deg,#eef6ff 0%, #fbfcff 100%);font-family:Inter,Segoe UI,Roboto, system-ui, sans-serif;margin:0;padding:18px;color:#111}
 
-    /* stage layout similar to the provided image */
+    /* Stage */
     .stage{max-width:1320px;margin:0 auto;height:calc(100vh - 36px);display:flex;align-items:flex-start;gap:28px}
 
     /* LEFT info column */
-    .left-col{width:220px;display:flex;flex-direction:column;gap:14px}
-    .logo-top{height:56px;width:180px;border-radius:12px;background:#f1f1f1;display:flex;align-items:center;padding:8px 12px;font-weight:800;color:#666}
-    .info-card{flex:1;border-radius:14px;background:#f5f5f5;border:2px solid rgba(0,0,0,.06);padding:18px;box-sizing:border-box;position:relative;overflow:hidden}
+    .left-col{width:260px;display:flex;flex-direction:column;gap:14px}
+    .logo-top{height:66px;width:220px;border-radius:12px;background:var(--panel);display:flex;align-items:center;padding:10px 14px;font-weight:900;color:var(--accent);box-shadow:0 8px 22px rgba(16,24,40,.06)}
+    .info-card{flex:1;border-radius:14px;background:var(--panel);padding:18px;box-shadow:0 10px 30px rgba(16,24,40,.04);position:relative;overflow:hidden}
     .info-card h5{margin:0 0 8px 0}
-    .info-dots{color:rgba(0,0,0,.4);line-height:20px}
-    .bottom-questions-hidden{position:absolute;left:18px;right:18px;bottom:18px}
-    .wide-btn{height:44px;border-radius:8px;border:2px solid rgba(0,0,0,.08);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer}
+    .info-dots{color:rgba(0,0,0,.45);line-height:20px}
+    .big-answer{
+      margin-top:12px;
+      background:linear-gradient(180deg,#fbfdff,#f8fbff);
+      border-radius:12px;padding:18px;border:2px solid rgba(0,0,0,.05);min-height:200px;box-sizing:border-box;color:#1f2937
+    }
+    .question-buttons{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .q-btn{height:48px;border-radius:10px;border:2px solid rgba(0,0,0,.06);background:var(--panel);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer}
+    .q-btn:hover{box-shadow:0 6px 20px rgba(16,24,40,.06)}
 
     /* CENTER auth card */
     .center-col{flex:1;display:flex;align-items:center;justify-content:center}
-    .auth-card{width:780px;border-radius:28px;background:#f3f3f3;padding:28px 28px 40px 28px;box-shadow:0 18px 60px rgba(20,30,60,.06);position:relative}
-    .auth-card .corner-logo{position:absolute;left:18px;top:12px;width:110px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.04)}
+    .auth-card{width:820px;border-radius:28px;background:linear-gradient(180deg,#f8fbff,#f4f8ff);padding:28px 28px 44px 28px;box-shadow:0 24px 80px rgba(12,30,60,.06);position:relative}
+    .corner-logo{position:absolute;left:18px;top:12px;width:140px;height:40px;border-radius:10px;background:var(--panel);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--accent);box-shadow:0 8px 24px rgba(12,30,60,.04)}
     .auth-tabs{display:flex;gap:12px;justify-content:flex-start;margin-bottom:28px}
-    .tab{flex:1;padding:10px 18px;border-radius:8px;background:#fff;border:2px solid rgba(0,0,0,.12);text-align:center;font-weight:800;font-size:1.05rem;cursor:default}
-    .active{box-shadow:inset 0 -3px 0 rgba(0,0,0,.06)}
-    .auth-body{display:flex;flex-direction:column;align-items:center;gap:18px}
-    .big-input{width:420px;padding:16px;border-radius:12px;border:2px solid rgba(0,0,0,.12);background:#fff;font-size:1rem}
+    .tab{padding:12px 22px;border-radius:12px;background:var(--panel);border:2px solid rgba(0,0,0,.06);text-align:center;font-weight:800;font-size:1.02rem;cursor:pointer}
+    .tab.active{border-color:rgba(37,99,235,.18);box-shadow:inset 0 -4px 0 rgba(37,99,235,.06)}
+    .auth-body{display:flex;flex-direction:column;align-items:center;gap:12px}
+    .big-input{width:460px;padding:16px;border-radius:12px;border:2px solid rgba(0,0,0,.08);background:var(--panel);font-size:1rem}
     .muted-link{font-size:0.95rem;color:var(--muted);text-decoration:underline;cursor:pointer}
-    .submit-btn{margin-top:6px;width:300px;padding:14px;border-radius:12px;border:2px solid rgba(0,0,0,.16);background:#fff;font-weight:800;cursor:pointer}
-    .small-muted{font-size:.85rem;color:var(--muted)}
+    .submit-btn{margin-top:8px;width:320px;padding:14px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;font-weight:800;cursor:pointer;box-shadow:0 8px 30px rgba(37,99,235,.14)}
 
-    /* RIGHT reviews rail */
-    .right-col{width:120px;display:flex;flex-direction:column;align-items:center}
-    .reviews-rail{width:120px;border-radius:8px;background:#fff;border:2px solid rgba(0,0,0,.06);padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:520px}
-    .stars-h{display:flex;gap:6px;align-items:center}
-    .star{width:22px;height:22px}
-    .rating-bubble{background:#fff;border-radius:10px;padding:8px 10px;font-weight:800;border:2px solid rgba(0,0,0,.08);font-size:.95rem}
+    /* RIGHT reviews rail (vertical stars) */
+    .right-col{width:140px;display:flex;flex-direction:column;align-items:center}
+    .reviews-rail{width:140px;border-radius:12px;background:var(--panel);padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:calc(100vh - 120px);box-shadow:0 12px 36px rgba(12,30,60,.04)}
+    .reviews-rail h5{margin:0;font-weight:800;letter-spacing:0.6px}
+    .stars-vertical{display:flex;flex-direction:column;gap:12px;margin-top:16px;align-items:center}
+    .star-big{width:40px;height:40px}
+    .rating-bubble{background:linear-gradient(90deg,#fff,#fbfdff);border-radius:12px;padding:8px 12px;font-weight:800;border:1px solid rgba(0,0,0,.06);font-size:1rem;box-shadow:0 8px 20px rgba(12,30,60,.04)}
 
-    /* questions modal / panel */
-    .questions-panel{padding:12px}
-    .questions-list{display:grid;grid-template-columns:1fr;gap:8px;max-height:260px;overflow:auto;padding:6px;border-radius:8px;border:1px dashed rgba(0,0,0,.06);background:#fff}
-    .question-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fbfdff;border:1px solid rgba(0,0,0,.04)}
-    .selected-list{margin-top:12px;padding:8px;border-radius:8px;background:#fff;border:1px solid rgba(0,0,0,.04);min-height:44px}
-    .finish-btn{margin-top:8px;display:inline-block;padding:8px 10px;border-radius:8px;border:1px solid rgba(0,0,0,.08);background:#f8fafc;cursor:pointer}
+    /* Viewer area center content */
+    .viewer-main{background:var(--panel);border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(12,30,60,.05);min-height:500px}
+    #playersGridViewer{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 
-    /* small responsive */
-    @media(max-width:1100px){ .auth-card{width:92%;border-radius:18px;padding:18px} .stage{padding:12px;flex-direction:column;align-items:stretch} .left-col,.right-col{width:100%} }
+    /* Connected list */
+    .connected-list{margin-top:16px;max-height:180px;overflow:auto}
+
+    /* Responsive */
+    @media(max-width:1100px){
+      .stage{flex-direction:column;align-items:stretch;height:auto}
+      .left-col,.right-col{width:100%}
+      .auth-card{width:100%;border-radius:18px;padding:18px}
+      .reviews-rail{height:360px}
+    }
   </style>
 </head>
 <body>
 
+  <!-- AUTH stage -->
   <div class="stage" id="authStart">
-    <!-- LEFT column -->
+    <!-- LEFT: viewer Q&A -->
     <div class="left-col">
-      <div class="logo-top">Roblox<br>Life SHARE</div>
-      <div class="info-card" id="infoCard">
-        <h5>What is this for?</h5>
-        <p class="small-muted">This is for</p>
-        <div class="info-dots">........................................<br>........................................<br>........................................<br>.....</div>
+      <div class="logo-top">Roblox Life SHARE</div>
 
-        <!-- bottom questions area initially hidden until user finishes selection -->
-        <div class="bottom-questions-hidden" id="bottomQuestions" style="display:none">
-          <div style="margin-bottom:8px;font-weight:700">Selected questions</div>
-          <div id="selectedQuestionsList" style="font-size:.95rem;color:#333"></div>
+      <div class="info-card" id="infoCard">
+        <h5 id="mainQTitle">What is this for?</h5>
+        <div class="big-answer" id="mainAnswer">
+          Live Tab Sharing allows a host to share a browser tab or screen in real-time with viewers. Hosts create a Player, start sharing their screen (video-only), and the viewers can connect to watch. The host keeps control over viewers (can kick) and can optionally enable remote controls. Streams use WebRTC (encrypted), and connection metadata is stored in Firebase for session management.
+        </div>
+
+        <div class="question-buttons" style="margin-top:14px">
+          <div id="qBtn1" class="q-btn">Why choose us?</div>
+          <div id="qBtn2" class="q-btn">What about privacy?</div>
         </div>
       </div>
-
-      <!-- Buttons that open the questions selector -->
-      <div class="wide-btn" id="openQuestionsBtn">Why choose us?</div>
-      <div class="wide-btn" id="openQuestionsBtn2">Why choose us?</div>
     </div>
 
-    <!-- CENTER auth card -->
+    <!-- CENTER: auth card -->
     <div class="center-col">
       <div class="auth-card" role="main" aria-labelledby="authTitle">
         <div class="corner-logo">R L SHARE</div>
@@ -87,7 +104,7 @@
         </div>
 
         <div class="auth-body" id="authBody">
-          <!-- Login form (default) -->
+          <!-- LOGIN -->
           <div id="loginForm" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px">
             <input id="visualEmail" class="big-input" placeholder="Username/Email..." type="email" />
             <input id="visualPassword" class="big-input" placeholder="Password..." type="password" />
@@ -96,14 +113,14 @@
             <div id="loginMsg" class="small-muted" style="margin-top:6px"></div>
           </div>
 
-          <!-- Register form (hidden by default) -->
+          <!-- REGISTER -->
           <div id="registerForm" style="width:100%;display:none;flex-direction:column;align-items:center;gap:12px">
             <input id="regEmail" class="big-input" placeholder="Correo" type="email" />
             <input id="regPassword" class="big-input" placeholder="Contraseña" type="password" />
             <input id="regUsername" class="big-input" placeholder="Nombre (username público)" type="text" />
             <div style="display:flex;gap:8px">
               <button id="registerBtnVisual" class="submit-btn" style="width:140px">Crear</button>
-              <button id="cancelRegVisual" class="submit-btn" style="width:140px;background:#fff;border-color:rgba(0,0,0,.08)">Cancelar</button>
+              <button id="cancelRegVisual" class="submit-btn" style="width:140px;background:#fff;color:#111;border:1px solid rgba(0,0,0,.06)">Cancelar</button>
             </div>
             <div id="regMsg" class="small-muted"></div>
           </div>
@@ -111,77 +128,67 @@
       </div>
     </div>
 
-    <!-- RIGHT reviews column -->
+    <!-- RIGHT: reviews rail -->
     <div class="right-col">
       <div class="reviews-rail" aria-hidden="false">
-        <div style="font-weight:800;letter-spacing:0.6px">REVIEWS</div>
-
-        <div style="display:flex;flex-direction:column;gap:14px;align-items:center;">
-          <!-- Stars: four full + one partially filled (92%) -->
-          <div class="stars-h">
-            <!-- we'll use svg star shapes and clip the fill on the last one -->
-            <svg class="star" viewBox="0 0 24 24"><path fill="#f59e0b" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
-            <svg class="star" viewBox="0 0 24 24"><path fill="#f59e0b" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
-            <svg class="star" viewBox="0 0 24 24"><path fill="#f59e0b" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
-            <svg class="star" viewBox="0 0 24 24"><path fill="#f59e0b" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
-
-            <!-- partial star: create full star background in gray and overlay colored rect clipped to 92% width -->
-            <svg class="star" viewBox="0 0 24 24" style="position:relative">
-              <defs>
-                <linearGradient id="gPartial">
-                  <stop offset="0%" stop-color="#f59e0b"/>
-                  <stop offset="92%" stop-color="#f59e0b"/>
-                  <stop offset="92.1%" stop-color="#e6e6e6"/>
-                  <stop offset="100%" stop-color="#e6e6e6"/>
-                </linearGradient>
-              </defs>
-              <path fill="url(#gPartial)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/>
-            </svg>
-          </div>
-
+        <div style="text-align:center"><h5>REVIEWS</h5></div>
+        <div class="stars-vertical" id="starsRail" style="margin-top:12px">
+          <!-- 4 full stars -->
+          <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+          <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+          <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+          <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+          <!-- partial star (92%) -->
+          <svg class="star-big" viewBox="0 0 24 24">
+            <defs>
+              <linearGradient id="gPartialV" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stop-color="var(--star-color)"/>
+                <stop offset="92%" stop-color="var(--star-color)"/>
+                <stop offset="92.1%" stop-color="#e6e6e6"/>
+                <stop offset="100%" stop-color="#e6e6e6"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#gPartialV)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/>
+          </svg>
         </div>
 
-        <div class="rating-bubble">4.92 / 5</div>
+        <div class="rating-bubble" style="margin-top:18px">4.92 / 5</div>
       </div>
     </div>
   </div>
 
-  <!-- Questions selection modal/panel (hidden) -->
-  <div id="questionsModal" style="display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.35);align-items:center;justify-content:center;z-index:3000">
-    <div style="background:#fff;border-radius:12px;padding:18px;width:680px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="font-weight:800">Selecciona preguntas (máx. 10)</div>
-        <div style="display:flex;gap:8px">
-          <button id="closeQuestions" class="btn btn-light btn-sm">Cerrar</button>
-        </div>
-      </div>
+  <!-- VIEWER UI (shown after login if user is not owner) -->
+  <div id="viewerFull" style="display:none;max-width:1320px;margin:18px auto;">
+    <div class="viewer-main">
+      <h4 style="text-align:center;margin-bottom:12px">Available Players</h4>
+      <div id="playersGridViewer" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px"></div>
 
-      <div class="questions-panel">
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
-          <div style="font-weight:700">Disponibles</div>
-          <div style="color:var(--muted);font-size:.9rem">Haz click en 'Añadir' para seleccionar</div>
-        </div>
-
-        <div class="questions-list" id="availableQuestions"></div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
-          <div>
-            <div style="font-weight:700">Seleccionadas</div>
-            <div class="selected-list" id="selectedList">Ninguna</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:12px">
+        <div style="flex:1;margin-right:12px">
+          <h6>Connections</h6>
+          <div id="connectedList" class="connected-list">
+            <div class="small-muted">No estás conectado a ningún Player.</div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:.85rem;color:var(--muted)">Total permitidas: 10</div>
-            <button id="finishQuestions" class="btn btn-primary btn-sm finish-btn">Finalizar</button>
-          </div>
+        </div>
+        <div style="width:220px">
+          <h6>Status</h6>
+          <div class="small-muted">PeerJS: <span id="peerLabel">Cloud</span></div>
+          <div class="small-muted">Firebase: <span id="fbLabel">Desconocido</span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Placeholder for the rest of the app (kept; original markup will be shown when needed) -->
-  <div id="appMain" style="display:none"></div>
+  <!-- APP (host) area placeholder; original appMain markup preserved from your original code -->
+  <div id="appMain" style="display:none">
+    <!-- keep original "appMain" markup here if needed; for now we simply show a placeholder -->
+    <div style="max-width:1200px;margin:18px auto;padding:18px;background:var(--panel);border-radius:12px;box-shadow:0 12px 36px rgba(12,30,60,.04)">
+      <h3>Host view (Players)</h3>
+      <div id="playersGrid" style="margin-top:12px"></div>
+    </div>
+  </div>
 
-  <!-- Firebase & PeerJS -->
+  <!-- Firebase & PeerJS libs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -201,166 +208,77 @@
     const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }];
     /**************************************************************************/
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
     const playersRef = db.ref('players');
     const usersRef = db.ref('users');
 
-    // small helpers
     function el(id){ return document.getElementById(id); }
-    function showAuthStart(){ el('authStart').style.display='flex'; el('appMain').style.display='none'; }
-    function showAppMain(){ el('authStart').style.display='none'; el('appMain').style.display='block'; }
-    function showViewerMain(){ el('authStart').style.display='none'; el('appMain').style.display='block'; } // kept simple
+    function showAuthStart(){ el('authStart').style.display='flex'; el('appMain').style.display='none'; el('viewerFull').style.display='none'; }
+    function showViewerFull(){ el('authStart').style.display='none'; el('viewerFull').style.display='block'; el('appMain').style.display='none'; }
+    function showAppMain(){ el('authStart').style.display='none'; el('viewerFull').style.display='none'; el('appMain').style.display='block'; }
 
-    // --- QUESTIONS logic ---
-    const allQuestionsPool = [
-      "¿Cómo protegen mi privacidad las sesiones compartidas?",
-      "¿Puedo revocar el acceso a espectadores después?",
-      "¿Qué calidad de video se recomienda para presentaciones?",
-      "¿Se graba la sesión por defecto?",
-      "¿Puedo compartir audio además de pantalla?",
-      "¿Hay límites de espectadores por Player?",
-      "¿Qué pasa si el host pierde conexión?",
-      "¿Cómo se manejan los permisos de control remoto?",
-      "¿Funciona en móviles y tablets?",
-      "¿Cómo me autentico si pierdo el enlace de acceso?",
-      "¿Se cifran las conexiones entre peers?",
-      "¿Puedo cambiar el título del Player en cualquier momento?",
-      "¿Hay logs de conexión para administradores?",
-      "¿Soportan varios monitores simultáneos?",
-      "¿Cómo reporto un comportamiento inapropiado?"
-    ]; // reasonable answers will be provided when the user finishes
-
-    let availablePool = [...allQuestionsPool];
-    let selectedQuestions = [];
-
-    function renderAvailableQuestions(){
-      const container = el('availableQuestions');
-      container.innerHTML = '';
-      // show up to 6 items in the available list to choose from
-      for(let i=0;i<Math.min(6, availablePool.length); i++){
-        const q = availablePool[i];
-        const item = document.createElement('div');
-        item.className = 'question-item';
-        item.innerHTML = `<div style="flex:1">${q}</div><div><button class="btn btn-sm btn-outline-primary add-q">Añadir</button></div>`;
-        const btn = item.querySelector('.add-q');
-        btn.addEventListener('click', ()=>{
-          if (selectedQuestions.length >= 10) return alert('Ya has seleccionado 10 preguntas.');
-          selectedQuestions.push(q);
-          // remove from pool
-          availablePool.splice(i,1);
-          // if pool exhausted but selected < 10, refill from master excluding selected
-          refillPoolIfNeeded();
-          renderAvailableQuestions();
-          renderSelectedList();
-        });
-        container.appendChild(item);
-      }
-      if (availablePool.length === 0) {
-        const no = document.createElement('div');
-        no.className = 'small-muted';
-        no.innerText = 'No hay más preguntas disponibles';
-        container.appendChild(no);
-      }
+    // toast helper
+    function toast(msg, type='info'){
+      console.log(type, msg);
+      // simple toast fallback
+      const t = document.createElement('div');
+      t.style.position='fixed'; t.style.right='18px'; t.style.bottom='18px';
+      t.style.background='rgba(0,0,0,.75)'; t.style.color='white'; t.style.padding='10px 12px'; t.style.borderRadius='8px';
+      t.style.zIndex = 9999; t.innerText = msg;
+      document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
     }
 
-    function refillPoolIfNeeded(){
-      // ensure availablePool + selectedQuestions draws from master up to allow selection to 10
-      const used = new Set(selectedQuestions);
-      availablePool = allQuestionsPool.filter(q => !used.has(q));
+    // --- QUESTIONS (10) ---
+    const questions = [
+      { q: "What is this for?", a: "Live Tab Sharing lets a host share a browser tab or screen to viewers in real-time using WebRTC. Hosts create Players, start sharing, and viewers connect to watch. Hosts manage viewers and can stop sharing any time."},
+      { q: "Why choose us?", a: "Fast peer-to-peer streams, simple viewer controls, optional remote control features and lightweight integration — ideal for presentations and demos."},
+      { q: "How is privacy handled?", a: "Streams are direct WebRTC connections (DTLS/SRTP). We only store session metadata in Firebase (no stream storage by default). Always share consciously — do not share sensitive windows."},
+      { q: "Can I revoke access after sharing?", a: "Yes — the host stops sharing or kicks viewers; when sharing stops viewers are disconnected automatically."},
+      { q: "What quality should I use?", a: "720p@30 is recommended for clarity. If bandwidth is limited, choose 480p@15 to reduce data usage."},
+      { q: "Does it record sessions?", a: "No automatic recording. If recording is needed, the host must enable/announce it explicitly. Otherwise streams are transient."},
+      { q: "Can I share audio too?", a: "Depending on browser/OS, you can share tab audio when choosing the tab/window and allowing audio capture."},
+      { q: "What if the host disconnects?", a: "Viewers will be disconnected; the host can restart a new Player to resume sharing."},
+      { q: "How many viewers are supported?", a: "No hard limit, but overall experience depends on the host's upload and network conditions."},
+      { q: "Are connections encrypted?", a: "Yes — WebRTC encrypts media channels by default. Metadata stored in Firebase is typical session info (timestamps, peer IDs)."}
+    ];
+    let mainIndex = 0, btn1 = 1, btn2 = 2, nextPointer = 3;
+
+    function setMainQuestion(index){
+      mainIndex = index;
+      el('mainQTitle').innerText = questions[index].q;
+      el('mainAnswer').innerText = questions[index].a;
     }
-
-    function renderSelectedList(){
-      const sel = el('selectedList');
-      sel.innerHTML = '';
-      if (selectedQuestions.length === 0) {
-        sel.innerText = 'Ninguna';
-        return;
-      }
-      selectedQuestions.forEach((q, idx) => {
-        const div = document.createElement('div');
-        div.style.display = 'flex';
-        div.style.justifyContent = 'space-between';
-        div.style.alignItems = 'center';
-        div.style.padding = '6px 8px';
-        div.style.borderBottom = '1px solid rgba(0,0,0,.04)';
-        div.innerHTML = `<div style="flex:1">${idx+1}. ${q}</div><div><button class="btn btn-sm btn-outline-danger remove-q">Quitar</button></div>`;
-        div.querySelector('.remove-q').addEventListener('click', ()=>{
-          selectedQuestions.splice(idx,1);
-          refillPoolIfNeeded();
-          renderAvailableQuestions();
-          renderSelectedList();
-        });
-        sel.appendChild(div);
-      });
+    function setButtons(){
+      el('qBtn1').innerText = questions[btn1].q;
+      el('qBtn2').innerText = questions[btn2].q;
     }
-
-    // open questions modal
-    el('openQuestionsBtn').addEventListener('click', ()=>{ el('questionsModal').style.display='flex'; renderAvailableQuestions(); renderSelectedList(); });
-    el('openQuestionsBtn2').addEventListener('click', ()=>{ el('questionsModal').style.display='flex'; renderAvailableQuestions(); renderSelectedList(); });
-
-    // close
-    el('closeQuestions').addEventListener('click', ()=> el('questionsModal').style.display='none');
-
-    // finish button: when finished, show the bottom questions area with answers
-    el('finishQuestions').addEventListener('click', ()=>{
-      if (selectedQuestions.length === 0) return alert('Selecciona al menos 1 pregunta.');
-      // show bottom questions area
-      const bottom = el('bottomQuestions');
-      bottom.style.display = 'block';
-      // populate selectedQuestionsList with question + a reasonable answer
-      const list = el('selectedQuestionsList');
-      list.innerHTML = '';
-      selectedQuestions.forEach((q, i) => {
-        const answer = generateReasonableAnswer(q);
-        const div = document.createElement('div');
-        div.style.marginBottom='8px';
-        div.innerHTML = `<div style="font-weight:700">${i+1}. ${q}</div><div style="color:var(--muted);font-size:.95rem;margin-top:4px">${answer}</div>`;
-        list.appendChild(div);
-      });
-      el('questionsModal').style.display='none';
-      // hide the two "Why choose us?" buttons now that bottom is shown
-      el('openQuestionsBtn').style.display='none';
-      el('openQuestionsBtn2').style.display='none';
+    // clicking buttons: make their question main and replace that button with next in line
+    el('qBtn1').addEventListener('click', ()=>{
+      const oldBtnIndex = btn1;
+      setMainQuestion(oldBtnIndex);
+      btn1 = nextPointer % questions.length;
+      nextPointer = (nextPointer + 1) % questions.length;
+      setButtons();
+    });
+    el('qBtn2').addEventListener('click', ()=>{
+      const oldBtnIndex = btn2;
+      setMainQuestion(oldBtnIndex);
+      btn2 = nextPointer % questions.length;
+      nextPointer = (nextPointer + 1) % questions.length;
+      setButtons();
     });
 
-    function generateReasonableAnswer(q){
-      // short heuristic answers matching the question themes
-      if (q.includes('privacidad')) return 'Todas las sesiones usan conexiones punto a punto y no compartimos datos personales fuera de Firebase. Revisa las políticas de privacidad.';
-      if (q.includes('revocar')) return 'El host puede dejar de compartir en cualquier momento; al detenerse, las conexiones se desconectan automáticamente.';
-      if (q.includes('calidad')) return 'Recomendamos 720p@30 para presentaciones; usa 480p si tienes ancho de banda limitado.';
-      if (q.includes('graba')) return 'No, las sesiones no se graban por defecto. Si se graba, lo indicará el host y quedará registrado en la app.';
-      if (q.includes('audio')) return 'Sí, es posible compartir audio desde la pantalla si el navegador/OS lo permite al capturar la pestaña o ventana.';
-      if (q.includes('límites')) return 'No imponemos límites estrictos, pero la experiencia depende del ancho de banda del host y la cantidad de viewers.';
-      if (q.includes('conexión')) return 'Si el host pierde conexión, los viewers se desconectan; el host puede volver a iniciar un nuevo Player.';
-      if (q.includes('permisos')) return 'El host decide si habilitar control remoto; los viewers solo reciben controles si el host acepta.';
-      if (q.includes('móviles')) return 'Funciona en algunos navegadores móviles, pero la experiencia es mejor en escritorio.';
-      if (q.includes('autentico')) return 'Usa correo y contraseña o enlace mágico. Si pierdes el enlace, solicita un nuevo acceso por correo.';
-      if (q.includes('cifran')) return 'Las conexiones usan WebRTC, que cifra los streams por defecto (DTLS/SRTP).';
-      if (q.includes('cambiar')) return 'Sí, el host puede editar el título del Player desde la interfaz mientras esté disponible.';
-      if (q.includes('logs')) return 'El sistema guarda metadatos en Firebase (conexiones, timestamps) para administración y auditoría.';
-      if (q.includes('monitores')) return 'Puedes crear un Player por pantalla; cada Player genera su propio PeerID y stream.';
-      if (q.includes('reporto')) return 'Hay una opción para reportar usuarios; contacta con el soporte desde la app con la evidencia.';
-      // default fallback
-      return 'Información detallada disponible en la documentación. Contacta soporte si necesitas más ayuda.';
-    }
+    // initial question setup
+    setMainQuestion(0);
+    setButtons();
 
-    // --- REVIEWS star partial fill already set by SVG gradient: nothing else required ---
+    // AUTH UI wiring (tabs)
+    el('tabLogin').addEventListener('click', ()=>{ el('tabLogin').classList.add('active'); el('tabRegister').classList.remove('active'); el('loginForm').style.display='flex'; el('registerForm').style.display='none'; });
+    el('tabRegister').addEventListener('click', ()=>{ el('tabRegister').classList.add('active'); el('tabLogin').classList.remove('active'); el('loginForm').style.display='none'; el('registerForm').style.display='flex'; });
 
-    // --- AUTH logic (login & register actually working) ---
-    // toggle login/register forms visually
-    el('tabLogin').addEventListener('click', ()=>{
-      el('tabLogin').classList.add('active'); el('tabRegister').classList.remove('active');
-      el('loginForm').style.display='flex'; el('registerForm').style.display='none';
-    });
-    el('tabRegister').addEventListener('click', ()=>{
-      el('tabRegister').classList.add('active'); el('tabLogin').classList.remove('active');
-      el('loginForm').style.display='none'; el('registerForm').style.display='flex';
-    });
-
-    // Visual Submit -> Login with firebase
+    // LOGIN
     el('visualSubmit').addEventListener('click', async ()=>{
       const email = el('visualEmail').value.trim();
       const pass = el('visualPassword').value;
@@ -374,7 +292,7 @@
       }
     });
 
-    // Register visual
+    // REGISTER
     el('registerBtnVisual').addEventListener('click', async ()=>{
       const email = el('regEmail').value.trim();
       const pass = el('regPassword').value;
@@ -386,17 +304,15 @@
         const uid = cred.user.uid;
         await usersRef.child(uid).set({ username });
         el('regMsg').innerText = 'Cuenta creada. Inicia sesión.';
-        // auto-switch to login view and populate fields
         el('tabLogin').click();
         el('visualEmail').value = email;
       } catch(e){
         el('regMsg').innerText = 'Error: ' + (e.message||e);
       }
     });
+    el('cancelRegVisual').addEventListener('click', ()=> el('tabLogin').click() );
 
-    el('cancelRegVisual').addEventListener('click', ()=>{ el('tabLogin').click(); });
-
-    // Forgot password: send reset email
+    // Forgot password
     el('forgotLink').addEventListener('click', async (ev)=>{
       ev.preventDefault();
       const email = el('visualEmail').value.trim();
@@ -409,44 +325,131 @@
       }
     });
 
-    // Auth state handler to show/hide views (keeps original app behavior)
-    let currentUser = null;
-    let currentProfile = null;
-    let playersSnapshot = {};
+    // --- Firebase & Peer/players logic (viewer + host) ---
+    let currentUser = null, currentProfile = null, playersSnapshot = {}, viewerPeer = null, connectedMap = {};
 
+    // init viewer Peer
+    function createViewerPeer(){
+      if (viewerPeer) return;
+      viewerPeer = new Peer({ config:{ iceServers: ICE_SERVERS } });
+      viewerPeer.on('open', id=>console.log('viewer peer open', id));
+      viewerPeer.on('error', err=> toast('Peer error: '+(err.message||err),'danger'));
+      viewerPeer.on('call', call=> {
+        const pid = call.peer;
+        call.on('stream', remoteStream=>{
+          // create UI entry in connectedList
+          const list = el('connectedList');
+          // create card
+          const card = document.createElement('div');
+          card.style.marginBottom='8px';
+          card.style.border='1px solid rgba(0,0,0,.04)';
+          card.style.padding='8px';
+          card.style.borderRadius='8px';
+          const head = document.createElement('div');
+          head.style.fontWeight='700'; head.innerText = 'Player: ' + pid;
+          const video = document.createElement('video'); video.autoplay = true; video.playsInline = true; video.srcObject = remoteStream; video.style.width='100%'; video.style.maxHeight='180px'; video.style.marginTop='8px'; card.appendChild(head); card.appendChild(video);
+          list.appendChild(card);
+          // when track ends remove
+          remoteStream.getTracks().forEach(t=> t.onended = ()=> { try{ card.remove(); }catch(e){} });
+        });
+      });
+    }
+
+    // render small viewer players grid
+    function renderPlayersViewer(snapshot){
+      const container = el('playersGridViewer');
+      if (!container) return;
+      container.innerHTML = '';
+      const keys = Object.keys(snapshot||{});
+      if (keys.length === 0){
+        container.innerHTML = '<div class="small-muted">No hay Players disponibles.</div>'; return;
+      }
+      keys.forEach(pid=>{
+        const p = snapshot[pid] || {};
+        const card = document.createElement('div');
+        card.style.border = '1px solid rgba(0,0,0,.06)';
+        card.style.borderRadius='12px'; card.style.padding='12px'; card.style.background='#fbfdff';
+        const title = document.createElement('div'); title.style.fontWeight='700'; title.innerText = p.title || pid;
+        const owner = document.createElement('div'); owner.style.color='var(--muted)'; owner.style.fontSize='.9rem'; owner.innerText = 'Owner: ' + (p.ownerName||p.owner||'—');
+        const preview = document.createElement('div'); preview.style.marginTop='8px'; preview.style.height='120px'; preview.style.borderRadius='8px'; preview.style.display='flex'; preview.style.alignItems='center'; preview.style.justifyContent='center'; preview.style.background='linear-gradient(180deg,#fff,#f7fbff)'; preview.innerText = p.peerId ? 'Compartiendo' : 'No comparte';
+        card.appendChild(title); card.appendChild(owner); card.appendChild(preview);
+        card.style.cursor='pointer';
+        card.addEventListener('click', ()=> connectToPlayerAsViewer(pid));
+        container.appendChild(card);
+      });
+    }
+
+    // connect as viewer (data + call)
+    function connectToPlayerAsViewer(playerId){
+      if (!currentUser) return toast('Inicia sesión para conectar','danger');
+      const p = playersSnapshot[playerId] || {};
+      if (!p.peerId) return toast('Ese player no está compartiendo','info');
+      createViewerPeer();
+      const peerId = p.peerId;
+      // open data conn
+      const conn = viewerPeer.connect(peerId, { reliable:true });
+      conn.on('open', ()=> {
+        conn.send({ type:'request', viewerUid: currentUser.uid, username: currentProfile.username });
+        // mark db entry
+        playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ username: currentProfile.username, connectedAt: Date.now(), active:true, kicked:false });
+        toast('Conectado: ' + (p.title || playerId),'success');
+      });
+      conn.on('error', e=> { console.error('dataConn error', e); toast('Error de conexión','danger'); });
+    }
+
+    // Listen players snapshot
+    playersRef.on('value', snap=>{
+      playersSnapshot = snap.val() || {};
+      // update viewer grid & host grid
+      renderPlayersViewer(playersSnapshot);
+      renderPlayersHost(playersSnapshot);
+    });
+
+    // basic host renderer (keeps original layout concept)
+    function renderPlayersHost(snapshot){
+      const container = el('playersGrid');
+      if (!container) return;
+      container.innerHTML = '';
+      for (const pid in snapshot){
+        const p = snapshot[pid] || {};
+        const card = document.createElement('div');
+        card.style.border='1px solid rgba(0,0,0,.06)'; card.style.borderRadius='10px'; card.style.padding='10px'; card.style.marginBottom='8px';
+        card.innerHTML = `<div style="font-weight:700">${p.title||pid}</div><div style="color:var(--muted)">Owner: ${p.ownerName||p.owner||'—'}</div>`;
+        container.appendChild(card);
+      }
+    }
+
+    // small DB connected indicator
+    db.ref('.info/connected').on('value', snap=> {
+      const v = snap.val();
+      const fb = el('fbLabel');
+      if (fb) fb.textContent = v ? 'Conectado' : 'Desconectado';
+    });
+
+    // Auth state changes: show appropriate UI
     auth.onAuthStateChanged(async user=>{
       if (!user){
         currentUser = null; currentProfile = null;
-        // show start auth page
         showAuthStart();
         return;
       }
       currentUser = user;
-      // load profile
+      // load username
       const snap = await usersRef.child(user.uid).once('value');
       currentProfile = snap.val() || { username: user.email.split('@')[0] };
-      // Decide which view to show: if user owns players show appMain (host experience), else show viewer experience (use same appMain placeholder)
-      playersRef.once('value').then(snap2=>{
-        playersSnapshot = snap2.val() || {};
-        const owns = Object.values(playersSnapshot||{}).some(p=>p && p.owner === currentUser.uid);
-        // For now, show the appMain placeholder (your original #appMain markup is preserved above in your real project)
-        showAppMain();
-      });
+      // decide view
+      const playersSnapshotNow = (await playersRef.once('value')).val() || {};
+      const owns = Object.values(playersSnapshotNow || {}).some(p => p && p.owner === currentUser.uid);
+      if (owns) showAppMain();
+      else {
+        showViewerFull();
+        createViewerPeer();
+      }
     });
 
-    // --- preserve original app functionality: load players snapshot and keep it up-to-date ---
-    playersRef.on('value', snap=>{
-      playersSnapshot = snap.val() || {};
-      // you can integrate render logic to a compact viewer grid if needed
-      // (kept out of scope here to keep the auth page exact and functional)
-    });
+    // login/register helpers existing in UI call firebase: (already wired above)
 
-    // PeerJS, viewer logic, and the rest of your original code can be appended here unchanged.
-    // For concision I kept auth + questions + UI adjustments in this file.
-    // If you want, I can reinject the full player/peer code from your original file under this script tag,
-    // or keep it external and reuse it exactly as in your original project.
-
-    // Ensure the page starts showing the auth start UI
+    // initial UI
     showAuthStart();
   </script>
 </body>
