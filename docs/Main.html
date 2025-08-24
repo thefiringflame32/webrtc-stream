@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head> 
+<head>
   <meta charset="utf-8" />
   <title>Live Tab Sharing — Final</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -57,11 +57,16 @@
     .star-big{width:54px;height:54px}
     .rating-bubble{background:linear-gradient(90deg,#fff,#fbfdff);border-radius:12px;padding:10px 14px;font-weight:800;border:1px solid rgba(0,0,0,.06);font-size:1rem;box-shadow:0 8px 20px rgba(12,30,60,.04)}
 
-    /* viewer area */
-    .viewer-main{background:var(--panel);border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(12,30,60,.05);min-height:500px}
-    #playersGridViewer{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    /* viewer area (replicating picture2) */
+    .viewer-wrap{display:grid;grid-template-columns:220px 1fr 160px;gap:18px;height:calc(100vh - 36px)}
+    .left-rail{display:flex;flex-direction:column;gap:12px}
+    .square-panel{background:var(--panel);border-radius:12px;padding:12px;height:340px;box-shadow:0 8px 22px rgba(16,24,40,.04)}
+    .square-block{background:#fbfdff;border-radius:10px;padding:12px;margin-bottom:12px;border:2px solid rgba(0,0,0,.06);height:120px}
+    .big-center{background:var(--panel);border-radius:22px;padding:22px;box-shadow:0 20px 60px rgba(12,30,60,.06);display:flex;flex-direction:column;align-items:center}
+    .big-center h4{margin:8px 0 16px 0}
+    .player-thumb{border-radius:10px;padding:12px;background:linear-gradient(180deg,#fff,#f7fbff);border:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column}
 
-    /* host player card (kept consistent) */
+    /* host player styling preserved */
     .player{background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;padding:10px;border:1px solid rgba(30,41,55,.06);position:relative;min-height:160px;display:flex;flex-direction:column}
 
     /* responsive */
@@ -70,17 +75,18 @@
       .left-col,.right-col{width:100%}
       .auth-card{width:100%;border-radius:18px;padding:18px}
       .reviews-rail{height:340px}
-      #playersGridViewer{grid-template-columns:repeat(2,1fr)}
+      .viewer-wrap{grid-template-columns:1fr}
+      .square-panel{height:auto}
     }
   </style>
 </head>
 <body>
 
+  <!-- AUTH stage -->
   <div class="stage" id="authStart">
-    <!-- LEFT: Q&A viewer area -->
+    <!-- LEFT: Q&A viewer area (hidden logo when on authStart if desired) -->
     <div class="left-col">
       <div class="logo-top" id="leftLogo">
-        <!-- tries to load image if present, fallback to text -->
         <img id="leftLogoImg" src="LogoInit.jpg" alt="Logo" onerror="this.style.display='none'">
         <div class="logo-fallback" id="leftLogoFallback" style="display:none">
           <div class="line1">R<span style="color:var(--accent)">oblox</span></div>
@@ -92,7 +98,7 @@
         <h5 id="mainQTitle">What is this for?</h5>
         <div class="big-answer" id="mainAnswer">
           <div class="answer-text">
-            Live Tab Sharing lets a host share a browser tab or entire screen in real time with viewers. A host creates a Player, starts sharing (video-only by default), and viewers connect with the Player's PeerID. Hosts control who stays (kick), choose stream quality, and may enable optional remote control. Streams are encrypted via WebRTC; Firebase is used only for session metadata and viewer bookkeeping.
+            Live Tab Sharing lets a host share a browser tab or entire screen in real time with viewers. A host creates a Player, starts sharing (video-only by default), and viewers connect using the Player's PeerID. Hosts control who stays (kick), select stream quality, and may enable remote control. Streams use WebRTC (encrypted); Firebase stores only session metadata (no media recordings are stored by default).
           </div>
         </div>
 
@@ -103,7 +109,7 @@
       </div>
     </div>
 
-    <!-- CENTER: auth card -->
+    <!-- CENTER: auth card (corner logo only) -->
     <div class="center-col">
       <div class="auth-card" role="main" aria-labelledby="authTitle">
         <div class="corner-logo" id="cornerLogo">
@@ -161,23 +167,37 @@
     </div>
   </div>
 
-  <!-- VIEWER UI -->
+  <!-- VIEWER area (replicated to match picture 2 more closely) -->
   <div id="viewerFull" style="display:none;max-width:1320px;margin:18px auto;">
-    <div class="viewer-main">
-      <h4 style="text-align:center;margin-bottom:12px">Available Players</h4>
-      <div id="playersGridViewer" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px"></div>
-
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:12px">
-        <div style="flex:1;margin-right:12px">
-          <h6>Connections</h6>
-          <div id="connectedList" class="connected-list">
-            <div class="small-muted">No estás conectado a ningún Player.</div>
-          </div>
+    <div class="viewer-wrap">
+      <div class="left-rail">
+        <div class="square-panel">
+          <h6>What is this for?</h6>
+          <p class="small-muted">This is for</p>
+          <div style="height:220px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff);margin-top:8px;display:flex;align-items:center;justify-content:center">Main Q&A content</div>
         </div>
-        <div style="width:220px">
-          <h6>Status</h6>
-          <div class="small-muted">PeerJS: <span id="peerLabel">Cloud</span></div>
-          <div class="small-muted">Firebase: <span id="fbLabel">Desconocido</span></div>
+        <div class="square-panel" style="height:180px;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:14px">
+          <div class="square-block">Why choose us?</div>
+          <div class="square-block">Why choose us?</div>
+        </div>
+      </div>
+
+      <div class="big-center">
+        <h4>Available Players</h4>
+        <div id="playersGridViewer" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:100%"></div>
+      </div>
+
+      <div class="right-col">
+        <div class="reviews-rail">
+          <div style="text-align:center"><h5>REVIEWS</h5></div>
+          <div class="stars-vertical" style="margin-top:12px">
+            <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+            <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+            <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+            <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+            <svg class="star-big" viewBox="0 0 24 24"><defs><linearGradient id="gPartialV2" x1="0" x2="1" y1="0" y2="0"><stop offset="0%" stop-color="var(--star-color)"/><stop offset="92%" stop-color="var(--star-color)"/><stop offset="92.1%" stop-color="#e6e6e6"/><stop offset="100%" stop-color="#e6e6e6"/></linearGradient></defs><path fill="url(#gPartialV2)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+          </div>
+          <div class="rating-bubble" style="margin-top:18px">4.92 / 5</div>
         </div>
       </div>
     </div>
@@ -218,26 +238,20 @@
     const usersRef = db.ref('users');
 
     function el(id){ return document.getElementById(id); }
-    function showAuthStart(){ el('authStart').style.display='flex'; el('appMain').style.display='none'; el('viewerFull').style.display='none'; }
-    function showViewerFull(){ el('authStart').style.display='none'; el('viewerFull').style.display='block'; el('appMain').style.display='none'; }
-    function showAppMain(){ el('authStart').style.display='none'; el('viewerFull').style.display='none'; el('appMain').style.display='block'; }
+    function showAuthStart(){ el('authStart').style.display='flex'; el('appMain').style.display='none'; el('viewerFull').style.display='none'; // hide left logo inside auth to avoid duplicate
+      const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'hidden'; }
+    function showViewerFull(){ el('authStart').style.display='none'; el('viewerFull').style.display='block'; el('appMain').style.display='none'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'visible'; }
+    function showAppMain(){ el('authStart').style.display='none'; el('viewerFull').style.display='none'; el('appMain').style.display='block'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'visible'; }
 
     // show fallback logos if image not found (runs after DOM load)
     window.addEventListener('load', ()=>{
-      // left
-      const leftImg = el('leftLogoImg');
-      if (!leftImg || leftImg.naturalWidth === 0) {
-        const lf = el('leftLogoFallback'); if (lf) lf.style.display='block';
-      }
-      const cornerImg = el('cornerLogoImg');
-      if (!cornerImg || cornerImg.naturalWidth === 0) {
-        const cf = el('cornerLogoFallback'); if (cf) cf.style.display='block';
-      }
+      const leftImg = el('leftLogoImg'); if (!leftImg || leftImg.naturalWidth === 0) { const lf = el('leftLogoFallback'); if (lf) lf.style.display='block'; }
+      const cornerImg = el('cornerLogoImg'); if (!cornerImg || cornerImg.naturalWidth === 0) { const cf = el('cornerLogoFallback'); if (cf) cf.style.display='block'; }
     });
 
-    // QUESTIONS (10) ordered list + robust cycling logic
+    // QUESTIONS logic (unchanged)
     const questions = [
-      { q: "What is this for?", a: "Live Tab Sharing lets a host share a browser tab or entire screen in real time with viewers. Hosts create Players, start sharing, and viewers connect to watch. Hosts control access (kick), select quality, and optionally enable remote control. Streams use WebRTC and are encrypted. Firebase stores non-media session metadata."},
+      { q: "What is this for?", a: "Live Tab Sharing lets a host share a browser tab or entire screen in real time with viewers. Hosts create Players, start sharing, and viewers connect to watch. Hosts control access (kick), select quality, and optionally enable remote control. Streams use WebRTC and are encrypted. Firebase stores only session metadata (no media recordings)."},
       { q: "Why choose us?", a: "Fast peer-to-peer streaming for low latency, simple viewer management, optional remote controls and lightweight integration — great for demos and collaborative sessions."},
       { q: "How is privacy handled?", a: "Streams are WebRTC (encrypted). We only store minimal session metadata in Firebase. We don't record streams by default; hosts must explicitly enable recording."},
       { q: "Can I revoke access?", a: "Yes — the host can kick viewers or stop sharing; when sharing stops all viewers disconnect automatically."},
@@ -249,298 +263,53 @@
       { q: "Are connections encrypted?", a: "Yes — media uses WebRTC (DTLS/SRTP). Metadata in Firebase is standard session info (peer IDs, timestamps)."}
     ];
 
-    // indexes for current main and the two buttons and pointer for next in order
     let mainIndex = 0, btnA = 1, btnB = 2, nextPointer = 3;
+    function setMainQuestion(i){ mainIndex = i % questions.length; el('mainQTitle').innerText = questions[mainIndex].q; el('mainAnswer').querySelector('.answer-text').innerText = questions[mainIndex].a; }
+    function setButtonTexts(){ el('qBtn1').innerText = questions[btnA % questions.length].q; el('qBtn2').innerText = questions[btnB % questions.length].q; }
+    el('qBtn1').addEventListener('click', ()=>{ const clickedIndex = btnA % questions.length; setMainQuestion(clickedIndex); btnA = nextPointer % questions.length; nextPointer = (nextPointer + 1) % questions.length; setButtonTexts(); });
+    el('qBtn2').addEventListener('click', ()=>{ const clickedIndex = btnB % questions.length; setMainQuestion(clickedIndex); btnB = nextPointer % questions.length; nextPointer = (nextPointer + 1) % questions.length; setButtonTexts(); });
+    setMainQuestion(0); setButtonTexts();
 
-    function setMainQuestion(i){
-      mainIndex = i % questions.length;
-      el('mainQTitle').innerText = questions[mainIndex].q;
-      el('mainAnswer').querySelector('.answer-text').innerText = questions[mainIndex].a;
-    }
-    function setButtonTexts(){
-      el('qBtn1').innerText = questions[btnA % questions.length].q;
-      el('qBtn2').innerText = questions[btnB % questions.length].q;
-    }
+    // AUTH wiring
+    el('tabLogin').addEventListener('click', ()=>{ el('tabLogin').classList.add('active'); el('tabRegister').classList.remove('active'); el('loginForm').style.display = 'flex'; el('registerForm').style.display = 'none'; });
+    el('tabRegister').addEventListener('click', ()=>{ el('tabRegister').classList.add('active'); el('tabLogin').classList.remove('active'); el('loginForm').style.display = 'none'; el('registerForm').style.display = 'flex'; });
 
-    // on click: promote clicked button to main; replace clicked button with nextPointer (cyclical)
-    el('qBtn1').addEventListener('click', ()=>{
-      const clickedIndex = btnA % questions.length;
-      setMainQuestion(clickedIndex);
-      // replace the button with nextPointer, then advance pointer
-      btnA = nextPointer % questions.length;
-      nextPointer = (nextPointer + 1) % questions.length;
-      setButtonTexts();
-    });
-    el('qBtn2').addEventListener('click', ()=>{
-      const clickedIndex = btnB % questions.length;
-      setMainQuestion(clickedIndex);
-      btnB = nextPointer % questions.length;
-      nextPointer = (nextPointer + 1) % questions.length;
-      setButtonTexts();
-    });
+    el('visualSubmit').addEventListener('click', async ()=>{ const email = el('visualEmail').value.trim(); const pass = el('visualPassword').value; if (!email || !pass) { el('loginMsg').innerText = 'Introduce email y contraseña'; return; } el('loginMsg').innerText = 'Iniciando sesión...'; try { await auth.signInWithEmailAndPassword(email, pass); el('loginMsg').innerText = 'Sesión iniciada'; } catch(e){ el('loginMsg').innerText = 'Error: ' + (e.message||e); } });
 
-    // initialize question UI
-    setMainQuestion(0);
-    setButtonTexts();
-
-    // AUTH UI: center tabs & forms
-    el('tabLogin').addEventListener('click', ()=>{
-      el('tabLogin').classList.add('active'); el('tabRegister').classList.remove('active');
-      el('loginForm').style.display = 'flex'; el('registerForm').style.display = 'none';
-    });
-    el('tabRegister').addEventListener('click', ()=>{
-      el('tabRegister').classList.add('active'); el('tabLogin').classList.remove('active');
-      el('loginForm').style.display = 'none'; el('registerForm').style.display = 'flex';
-    });
-
-    // AUTH handlers (login/register/reset)
-    el('visualSubmit').addEventListener('click', async ()=>{
-      const email = el('visualEmail').value.trim();
-      const pass = el('visualPassword').value;
-      if (!email || !pass) { el('loginMsg').innerText = 'Introduce email y contraseña'; return; }
-      el('loginMsg').innerText = 'Iniciando sesión...';
-      try { await auth.signInWithEmailAndPassword(email, pass); el('loginMsg').innerText = 'Sesión iniciada'; } catch(e){ el('loginMsg').innerText = 'Error: ' + (e.message||e); }
-    });
-
-    el('registerBtnVisual').addEventListener('click', async ()=>{
-      const email = el('regEmail').value.trim(); const pass = el('regPassword').value; const username = el('regUsername').value.trim();
-      if (!email || !pass || !username){ el('regMsg').innerText = 'Rellena todos los campos'; return; }
-      el('regMsg').innerText = 'Creando cuenta...';
-      try {
-        const cred = await auth.createUserWithEmailAndPassword(email, pass);
-        const uid = cred.user.uid;
-        await usersRef.child(uid).set({ username });
-        el('regMsg').innerText = 'Cuenta creada. Inicia sesión.';
-        el('tabLogin').click(); el('visualEmail').value = email;
-      } catch(e){ el('regMsg').innerText = 'Error: ' + (e.message||e); }
-    });
+    el('registerBtnVisual').addEventListener('click', async ()=>{ const email = el('regEmail').value.trim(); const pass = el('regPassword').value; const username = el('regUsername').value.trim(); if (!email || !pass || !username){ el('regMsg').innerText = 'Rellena todos los campos'; return; } el('regMsg').innerText = 'Creando cuenta...'; try { const cred = await auth.createUserWithEmailAndPassword(email, pass); const uid = cred.user.uid; await usersRef.child(uid).set({ username }); el('regMsg').innerText = 'Cuenta creada. Inicia sesión.'; el('tabLogin').click(); el('visualEmail').value = email; } catch(e){ el('regMsg').innerText = 'Error: ' + (e.message||e); } });
     el('cancelRegVisual').addEventListener('click', ()=> el('tabLogin').click() );
 
-    el('forgotLink').addEventListener('click', async (ev)=>{
-      ev.preventDefault();
-      const email = el('visualEmail').value.trim();
-      if (!email) return alert('Introduce tu correo en el campo de email para recibir un enlace de recuperación.');
-      try { await auth.sendPasswordResetEmail(email); alert('Se ha enviado un correo para restablecer la contraseña.'); } catch(e){ alert('Error: ' + (e.message||e)); }
-    });
+    el('forgotLink').addEventListener('click', async (ev)=>{ ev.preventDefault(); const email = el('visualEmail').value.trim(); if (!email) return alert('Introduce tu correo en el campo de email para recibir un enlace de recuperación.'); try { await auth.sendPasswordResetEmail(email); alert('Se ha enviado un correo para restablecer la contraseña.'); } catch(e){ alert('Error: ' + (e.message||e)); } });
 
-    // --- PeerJS & Players (full integration) ---
+    // Peer + players integration (restored)
     let currentUser = null, currentProfile = null, viewerPeer = null, playersSnapshot = {}, connectedMap = {};
-
     function peerOptions(){ return { config:{ iceServers: ICE_SERVERS } }; }
 
-    function ensureViewerPeer(){
-      if (viewerPeer) return;
-      viewerPeer = new Peer(peerOptions());
-      viewerPeer.on('open', id=> console.log('viewer peer open', id));
-      viewerPeer.on('error', err=> console.warn('viewer peer err', err));
-      viewerPeer.on('call', call => {
-        call.on('stream', remoteStream => {
-          const list = el('connectedList');
-          if (list.children.length === 1 && list.children[0].classList.contains('small-muted')) list.innerHTML = '';
-          const wrapper = document.createElement('div');
-          wrapper.style.border='1px solid rgba(0,0,0,.06)'; wrapper.style.padding='8px'; wrapper.style.borderRadius='8px'; wrapper.style.marginBottom='8px';
-          const title = document.createElement('div'); title.style.fontWeight='700'; title.innerText = 'Stream from: ' + call.peer;
-          const video = document.createElement('video'); video.autoplay=true; video.playsInline=true; video.srcObject = remoteStream; video.style.width='100%'; video.style.maxHeight='200px'; video.style.marginTop='8px';
-          wrapper.appendChild(title); wrapper.appendChild(video); list.appendChild(wrapper);
-          remoteStream.getTracks().forEach(t=> t.onended = ()=> wrapper.remove());
-        });
-      });
-    }
+    function ensureViewerPeer(){ if (viewerPeer) return; viewerPeer = new Peer(peerOptions()); viewerPeer.on('open', id=> console.log('viewer peer open', id)); viewerPeer.on('error', err=> console.warn('viewer peer err', err)); viewerPeer.on('call', call=>{ call.on('stream', remoteStream=>{ const list = el('connectedList'); if (list.children.length === 1 && list.children[0].classList.contains('small-muted')) list.innerHTML = ''; const wrapper = document.createElement('div'); wrapper.style.border='1px solid rgba(0,0,0,.06)'; wrapper.style.padding='8px'; wrapper.style.borderRadius='8px'; wrapper.style.marginBottom='8px'; const title = document.createElement('div'); title.style.fontWeight='700'; title.innerText = 'Stream from: ' + call.peer; const video = document.createElement('video'); video.autoplay=true; video.playsInline=true; video.srcObject = remoteStream; video.style.width='100%'; video.style.maxHeight='200px'; video.style.marginTop='8px'; wrapper.appendChild(title); wrapper.appendChild(video); list.appendChild(wrapper); remoteStream.getTracks().forEach(t=> t.onended = ()=> wrapper.remove()); }); }); }
 
-    // render viewer players grid
-    function renderPlayersViewer(snapshot){
-      const container = el('playersGridViewer');
-      if (!container) return;
-      container.innerHTML = '';
-      const keys = Object.keys(snapshot || {});
-      if (keys.length === 0){ container.innerHTML = '<div class="small-muted">No hay Players disponibles.</div>'; return; }
-      keys.forEach(pid=>{
-        const p = snapshot[pid] || {};
-        const card = document.createElement('div');
-        card.style.border='1px solid rgba(0,0,0,.06)'; card.style.borderRadius='12px'; card.style.padding='12px'; card.style.background='#fbfdff';
-        card.style.cursor='pointer';
-        const title = document.createElement('div'); title.style.fontWeight='700'; title.innerText = p.title || pid;
-        const owner = document.createElement('div'); owner.style.color='var(--muted)'; owner.style.fontSize='.9rem'; owner.innerText = 'Owner: ' + (p.ownerName||p.owner||'—');
-        const preview = document.createElement('div'); preview.style.marginTop='8px'; preview.style.height='110px'; preview.style.borderRadius='8px'; preview.style.display='flex'; preview.style.alignItems='center'; preview.style.justifyContent='center'; preview.style.background='linear-gradient(180deg,#fff,#f7fbff)';
-        preview.innerText = p.peerId ? 'Compartiendo' : 'No comparte';
-        card.appendChild(title); card.appendChild(owner); card.appendChild(preview);
-        card.addEventListener('click', ()=> connectToPlayerAsViewer(pid));
-        container.appendChild(card);
-      });
-    }
+    function renderPlayersViewer(snapshot){ const container = el('playersGridViewer'); if (!container) return; container.innerHTML = ''; const keys = Object.keys(snapshot || {}); if (keys.length === 0){ container.innerHTML = '<div class="small-muted">No hay Players disponibles.</div>'; return; } keys.forEach(pid=>{ const p = snapshot[pid] || {}; const card = document.createElement('div'); card.className='player-thumb'; card.style.border='1px solid rgba(0,0,0,.06)'; card.style.borderRadius='12px'; card.style.padding='12px'; card.style.background='#fbfdff'; card.style.cursor='pointer'; const title = document.createElement('div'); title.style.fontWeight='700'; title.innerText = p.title || pid; const owner = document.createElement('div'); owner.style.color='var(--muted)'; owner.style.fontSize='.9rem'; owner.innerText = 'Owner: ' + (p.ownerName||p.owner||'—'); const preview = document.createElement('div'); preview.style.marginTop='8px'; preview.style.height='90px'; preview.style.borderRadius='8px'; preview.style.display='flex'; preview.style.alignItems='center'; preview.style.justifyContent='center'; preview.style.background='linear-gradient(180deg,#fff,#f7fbff)'; preview.innerText = p.peerId ? 'Compartiendo' : 'No comparte'; card.appendChild(title); card.appendChild(owner); card.appendChild(preview); card.addEventListener('click', ()=> connectToPlayerAsViewer(pid)); container.appendChild(card); }); }
 
-    // render host players (original full UI)
-    function renderPlayersHost(snapshot){
-      const container = el('playersGrid');
-      if (!container) return;
-      container.innerHTML = '';
-      for (const playerId in snapshot){
-        const p = snapshot[playerId] || {};
-        const elDiv = document.createElement('div');
-        elDiv.className = 'player';
-        elDiv.id = 'pl-' + playerId;
-        elDiv.innerHTML = `<div class="title" style="font-weight:700;color:#0b2b66">${p.title || playerId}</div>
-          <div class="meta" style="font-size:.85rem;color:var(--muted);margin-top:6px">Owner: <strong>${p.ownerName||p.owner||'—'}</strong> • Peer: <span class="peer-id">${p.peerId || '—'}</span></div>
-          <div class="preview" style="flex:1;border-radius:8px;margin-top:8px;overflow:hidden;background:linear-gradient(180deg,#f7fbff,#ffffff);display:flex;align-items:center;justify-content:center"><div class="muted small">No se comparte</div></div>
-          <div class="actions" style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-sm btn-outline-primary share-btn">${p.peerId ? 'Compartiendo' : 'Compartir'}</button><button class="btn btn-sm btn-outline-secondary copy-btn">Copiar Peer</button><button class="btn btn-sm btn-outline-danger kick-all-btn">Kick All</button></div>
-          <button class="delete-btn" title="Eliminar" style="position:absolute;top:10px;right:10px;border:none;background:transparent;color:#e04b4b;font-weight:700">×</button>
-          <div style="margin-top:8px"><div class="small-muted">Conectados:</div><div class="viewer-list small-muted" style="margin-top:6px;max-height:90px;overflow:auto"></div></div>`;
-        container.appendChild(elDiv);
+    function renderPlayersHost(snapshot){ const container = el('playersGrid'); if (!container) return; container.innerHTML = ''; for (const playerId in snapshot){ const p = snapshot[playerId] || {}; const elDiv = document.createElement('div'); elDiv.className='player'; elDiv.id = 'pl-' + playerId; elDiv.innerHTML = `<div class="title" style="font-weight:700;color:#0b2b66">${p.title || playerId}</div><div class="meta" style="font-size:.85rem;color:var(--muted);margin-top:6px">Owner: <strong>${p.ownerName||p.owner||'—'}</strong> • Peer: <span class="peer-id">${p.peerId || '—'}</span></div><div class="preview" style="flex:1;border-radius:8px;margin-top:8px;overflow:hidden;background:linear-gradient(180deg,#f7fbff,#ffffff);display:flex;align-items:center;justify-content:center"><div class="muted small">No se comparte</div></div><div class="actions" style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-sm btn-outline-primary share-btn">${p.peerId ? 'Compartiendo' : 'Compartir'}</button><button class="btn btn-sm btn-outline-secondary copy-btn">Copiar Peer</button><button class="btn btn-sm btn-outline-danger kick-all-btn">Kick All</button></div><button class="delete-btn" title="Eliminar" style="position:absolute;top:10px;right:10px;border:none;background:transparent;color:#e04b4b;font-weight:700">×</button><div style="margin-top:8px"><div class="small-muted">Conectados:</div><div class="viewer-list small-muted" style="margin-top:6px;max-height:90px;overflow:auto"></div></div>`; container.appendChild(elDiv);
+      const viewers = p.viewers || {}; const viewerListDiv = elDiv.querySelector('.viewer-list'); if (Object.keys(viewers).length === 0) viewerListDiv.innerHTML = `<div class="muted small">Nadie conectado</div>`; else { viewerListDiv.innerHTML=''; for (const uid in viewers){ const v = viewers[uid] || {}; const item = document.createElement('div'); item.style.display='flex'; item.style.justifyContent='space-between'; item.style.alignItems='center'; item.style.marginBottom='6px'; item.innerHTML = `<div>${v.username || uid} ${v.kicked ? '(kicked)' : v.active ? '(activo)' : '(inactivo)'}</div><div><button class="btn btn-sm btn-outline-danger kick-btn">Kick</button></div>`; const kickBtn = item.querySelector('.kick-btn'); kickBtn.addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger'); playersRef.child(playerId).child('viewers').child(uid).update({ kicked: true, active:false }); toast('Kick enviado a ' + (v.username||uid),'info'); }); viewerListDiv.appendChild(item); } }
 
-        const viewers = p.viewers || {};
-        const viewerListDiv = elDiv.querySelector('.viewer-list');
-        if (Object.keys(viewers).length === 0) viewerListDiv.innerHTML = `<div class="muted small">Nadie conectado</div>`;
-        else {
-          viewerListDiv.innerHTML = '';
-          for (const uid in viewers){
-            const v = viewers[uid] || {};
-            const item = document.createElement('div');
-            item.style.display='flex'; item.style.justifyContent='space-between'; item.style.alignItems='center'; item.style.marginBottom='6px';
-            item.innerHTML = `<div>${v.username || uid} ${v.kicked ? '(kicked)' : v.active ? '(activo)' : '(inactivo)'}</div><div><button class="btn btn-sm btn-outline-danger kick-btn">Kick</button></div>`;
-            const kickBtn = item.querySelector('.kick-btn');
-            kickBtn.addEventListener('click', ()=> {
-              if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger');
-              playersRef.child(playerId).child('viewers').child(uid).update({ kicked: true, active:false });
-              toast('Kick enviado a ' + (v.username||uid),'info');
-            });
-            viewerListDiv.appendChild(item);
-          }
-        }
+      // attach actions
+      const shareBtn = elDiv.querySelector('.share-btn'); shareBtn.addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede compartir','danger'); startSharingForExistingPlayer(playerId, elDiv); }); elDiv.querySelector('.copy-btn').addEventListener('click', ()=>{ const pid = elDiv.querySelector('.peer-id').textContent; if (!pid || pid === '—') return toast('No hay PeerID','info'); navigator.clipboard.writeText(pid).then(()=>toast('PeerID copiado','success')).catch(()=>toast('No se pudo copiar','danger')); }); elDiv.querySelector('.delete-btn').addEventListener('click', ()=>{ if (!currentUser) return toast('No autenticado','info'); if (p.owner && currentUser.uid !== p.owner) return toast('Solo el owner puede eliminar','danger'); playersRef.child(playerId).remove(); toast('Player eliminado','info'); }); elDiv.querySelector('.kick-all-btn').addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger'); for (const uid in viewers) playersRef.child(playerId).child('viewers').child(uid).update({ kicked:true, active:false }); toast('Kick all enviado','info'); });
+    } }
 
-        // attach handlers after DOM insertion
-        const shareBtn = elDiv.querySelector('.share-btn');
-        shareBtn.addEventListener('click', ()=> {
-          if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede compartir','danger');
-          startSharingForExistingPlayer(playerId, elDiv);
-        });
-        elDiv.querySelector('.copy-btn').addEventListener('click', ()=> {
-          const pid = elDiv.querySelector('.peer-id').textContent;
-          if (!pid || pid === '—') return toast('No hay PeerID','info');
-          navigator.clipboard.writeText(pid).then(()=>toast('PeerID copiado','success')).catch(()=>toast('No se pudo copiar','danger'));
-        });
-        elDiv.querySelector('.delete-btn').addEventListener('click', ()=> {
-          if (!currentUser) return toast('No autenticado','info');
-          if (p.owner && currentUser.uid !== p.owner) return toast('Solo el owner puede eliminar','danger');
-          playersRef.child(playerId).remove(); toast('Player eliminado','info');
-        });
-        elDiv.querySelector('.kick-all-btn').addEventListener('click', ()=> {
-          if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger');
-          for (const uid in viewers) playersRef.child(playerId).child('viewers').child(uid).update({ kicked:true, active:false });
-          toast('Kick all enviado','info');
-        });
-
-        // preview placeholder
-        if (p.peerId){
-          const preview = elDiv.querySelector('.preview');
-          preview.innerHTML = `<div class="muted small">Player está compartiendo — espera conexión</div>`;
-        }
-      }
-    }
-
-    // add player button preserved: listens for click events on elements with id 'addPlayer' (if you keep that button)
     function getNextPlayerNumber(){ return Object.keys(playersSnapshot || {}).length + 1; }
-    document.addEventListener('click', function(e){
-      if (e.target && e.target.id === 'addPlayer'){
-        if (!currentUser) return toast('Inicia sesión para crear Player','info');
-        const idx = getNextPlayerNumber();
-        const pid = `player-${Date.now()}-${Math.floor(Math.random()*999)}`;
-        const ownerName = currentProfile.username;
-        playersRef.child(pid).set({ owner: currentUser.uid, ownerName: ownerName, title: `Player ${idx}`, peerId: '', viewers: {}, locked: false, createdAt: Date.now() });
-        toast('Player creado','success');
-      }
-    });
+    document.addEventListener('click', function(e){ if (e.target && e.target.id === 'addPlayer'){ if (!currentUser) return toast('Inicia sesión para crear Player','info'); const idx = getNextPlayerNumber(); const pid = `player-${Date.now()}-${Math.floor(Math.random()*999)}`; const ownerName = currentProfile.username; playersRef.child(pid).set({ owner: currentUser.uid, ownerName: ownerName, title: `Player ${idx}`, peerId: '', viewers: {}, locked: false, createdAt: Date.now() }); toast('Player creado','success'); } });
 
-    // start sharing (owner)
-    async function startSharingForExistingPlayer(playerId, elDom){
-      const pSnap = playersSnapshot[playerId] || {};
-      if (!currentUser || pSnap.owner !== currentUser.uid) return toast('No eres el owner','danger');
-      try {
-        // choose quality if available
-        let width=1280, height=720, fps=15;
-        const qualityEl = document.getElementById('quality');
-        if (qualityEl) { const q = qualityEl.value.split('@')[0].split('x'); width = parseInt(q[0])||1280; height = parseInt(q[1])||720; fps = parseInt(qualityEl.value.split('@')[1]||'15'); }
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video:{ width, height, frameRate: fps }, audio:false });
-        const peer = new Peer(peerOptions());
-        elDom._playerPeer = peer; elDom._stream = stream;
-        peer.on('open', id=>{
-          playersRef.child(playerId).update({ peerId: id, title: pSnap.title || 'Player' });
-          toast('Peer listo: ' + id, 'success');
-        });
-        peer.on('connection', conn=>{
-          conn.on('open', ()=>{
-            conn.on('data', data=>{
-              if (data && data.type === 'request'){
-                const viewerUid = data.viewerUid;
-                const username = data.username || 'guest';
-                const viewerRef = playersRef.child(playerId).child('viewers').child(viewerUid);
-                viewerRef.update({ username, connectedAt: Date.now(), active: true, kicked: false });
-                const call = peer.call(conn.peer, stream);
-                call.on('error', e=>console.error('Call err', e));
-              } else if (data && data.type === 'control'){
-                window.dispatchEvent(new CustomEvent('remote-control', { detail: data }));
-              }
-            });
-          });
-        });
-        peer.on('call', call => call.answer(stream));
-        stream.getTracks().forEach(t => t.onended = ()=> {
-          playersRef.child(playerId).update({ peerId: '' });
-          playersRef.child(playerId).child('viewers').once('value').then(snap=>{
-            const vs = snap.val() || {};
-            for (const uid in vs) playersRef.child(playerId).child('viewers').child(uid).update({ active:false });
-          });
-          if (elDom._playerPeer) try { elDom._playerPeer.destroy(); } catch(e){ }
-        });
-        const preview = elDom.querySelector('.preview');
-        if (preview){
-          preview.innerHTML = '';
-          const v = document.createElement('video'); v.autoplay=true; v.playsInline=true; v.muted=true; v.srcObject = stream; v.style.width='100%'; preview.appendChild(v);
-        }
-      } catch(e){
-        toast('Error compartiendo: ' + (e.message || e),'danger');
-      }
-    }
+    async function startSharingForExistingPlayer(playerId, elDom){ const pSnap = playersSnapshot[playerId] || {}; if (!currentUser || pSnap.owner !== currentUser.uid) return toast('No eres el owner','danger'); try { let width=1280,height=720,fps=15; const qualityEl=document.getElementById('quality'); if (qualityEl){ const q=qualityEl.value.split('@')[0].split('x'); width=parseInt(q[0])||1280;height=parseInt(q[1])||720;fps=parseInt(qualityEl.value.split('@')[1]||'15'); } const stream = await navigator.mediaDevices.getDisplayMedia({ video:{ width, height, frameRate: fps }, audio:false }); const peer = new Peer(peerOptions()); elDom._playerPeer = peer; elDom._stream = stream; peer.on('open', id=>{ playersRef.child(playerId).update({ peerId: id, title: pSnap.title || 'Player' }); toast('Peer listo: ' + id, 'success'); }); peer.on('connection', conn=>{ conn.on('open', ()=>{ conn.on('data', data=>{ if (data && data.type === 'request'){ const viewerUid = data.viewerUid; const username = data.username || 'guest'; const viewerRef = playersRef.child(playerId).child('viewers').child(viewerUid); viewerRef.update({ username, connectedAt: Date.now(), active: true, kicked: false }); const call = peer.call(conn.peer, stream); call.on('error', e=>console.error('Call err', e)); } else if (data && data.type === 'control'){ window.dispatchEvent(new CustomEvent('remote-control', { detail: data })); } }); }); }); peer.on('call', call => call.answer(stream)); stream.getTracks().forEach(t => t.onended = ()=> { playersRef.child(playerId).update({ peerId: '' }); playersRef.child(playerId).child('viewers').once('value').then(snap=>{ const vs = snap.val() || {}; for (const uid in vs) playersRef.child(playerId).child('viewers').child(uid).update({ active:false }); }); if (elDom._playerPeer) try { elDom._playerPeer.destroy(); } catch(e){} }); const preview = elDom.querySelector('.preview'); if (preview){ preview.innerHTML=''; const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.muted=true; v.srcObject = stream; v.style.width='100%'; preview.appendChild(v); }
+    } catch(e){ toast('Error compartiendo: ' + (e.message || e),'danger'); } }
 
-    // viewer connect
-    function connectToPlayerAsViewer(playerId){
-      if (!currentUser) return toast('Inicia sesión para conectar','danger');
-      const p = playersSnapshot[playerId] || {};
-      if (!p.peerId) return toast('Ese player no está compartiendo','info');
-      ensureViewerPeer();
-      const peerId = p.peerId;
-      const conn = viewerPeer.connect(peerId, { reliable:true });
-      conn.on('open', ()=>{
-        conn.send({ type:'request', viewerUid: currentUser.uid, username: currentProfile.username });
-        playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ username: currentProfile.username, connectedAt: Date.now(), active:true, kicked:false });
-        toast('Conectado: ' + (p.title || playerId),'success');
-      });
-      conn.on('error', e=> { console.error('dataConn error', e); toast('Error de conexión','danger') });
-    }
+    function connectToPlayerAsViewer(playerId){ if (!currentUser) return toast('Inicia sesión para conectar','danger'); const p = playersSnapshot[playerId] || {}; if (!p.peerId) return toast('Ese player no está compartiendo','info'); ensureViewerPeer(); const peerId = p.peerId; const conn = viewerPeer.connect(peerId, { reliable:true }); conn.on('open', ()=>{ conn.send({ type:'request', viewerUid: currentUser.uid, username: currentProfile.username }); playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ username: currentProfile.username, connectedAt: Date.now(), active:true, kicked:false }); toast('Conectado: ' + (p.title || playerId),'success'); }); conn.on('error', e=> { console.error('dataConn error', e); toast('Error de conexión','danger') }); }
 
-    // players snapshot listener
-    playersRef.on('value', snap=>{
-      playersSnapshot = snap.val() || {};
-      renderPlayersViewer(playersSnapshot);
-      renderPlayersHost(playersSnapshot);
-    });
+    playersRef.on('value', snap=>{ playersSnapshot = snap.val() || {}; renderPlayersViewer(playersSnapshot); renderPlayersHost(playersSnapshot); });
+    db.ref('.info/connected').on('value', snap=>{ const v=snap.val(); const fb = el('fbLabel'); if (fb) fb.textContent = v ? 'Conectado' : 'Desconectado'; });
 
-    // db connected indicator
-    db.ref('.info/connected').on('value', snap=> {
-      const v = snap.val(); const fb = el('fbLabel'); if (fb) fb.textContent = v ? 'Conectado' : 'Desconectado';
-    });
+    auth.onAuthStateChanged(async user=>{ if (!user){ currentUser=null; currentProfile=null; showAuthStart(); return; } currentUser=user; const snap=await usersRef.child(user.uid).once('value'); currentProfile = snap.val() || { username: user.email.split('@')[0] }; const playersNow = (await playersRef.once('value')).val() || {}; const owns = Object.values(playersNow||{}).some(p=> p && p.owner === currentUser.uid); if (owns) showAppMain(); else { showViewerFull(); ensureViewerPeer(); } });
 
-    // auth state
-    auth.onAuthStateChanged(async user=>{
-      if (!user){ currentUser = null; currentProfile = null; showAuthStart(); return; }
-      currentUser = user;
-      const snap = await usersRef.child(user.uid).once('value');
-      currentProfile = snap.val() || { username: user.email.split('@')[0] };
-      const playersNow = (await playersRef.once('value')).val() || {};
-      const owns = Object.values(playersNow || {}).some(p => p && p.owner === currentUser.uid);
-      if (owns) showAppMain(); else { showViewerFull(); ensureViewerPeer(); }
-    });
-
-    // initial UI
+    // initial
     showAuthStart();
   </script>
 </body>
