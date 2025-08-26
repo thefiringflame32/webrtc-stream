@@ -57,17 +57,29 @@
     .star-big{width:54px;height:54px}
     .rating-bubble{background:linear-gradient(90deg,#fff,#fbfdff);border-radius:12px;padding:10px 14px;font-weight:800;border:1px solid rgba(0,0,0,.06);font-size:1rem;box-shadow:0 8px 20px rgba(12,30,60,.04)}
 
-    /* viewer area (replicating picture2) */
-    .viewer-wrap{display:grid;grid-template-columns:220px 1fr 160px;gap:18px;height:calc(100vh - 36px)}
-    .left-rail{display:flex;flex-direction:column;gap:12px}
-    .square-panel{background:var(--panel);border-radius:12px;padding:12px;height:340px;box-shadow:0 8px 22px rgba(16,24,40,.04)}
-    .square-block{background:#fbfdff;border-radius:10px;padding:12px;margin-bottom:12px;border:2px solid rgba(0,0,0,.06);height:120px}
-    .big-center{background:var(--panel);border-radius:22px;padding:22px;box-shadow:0 20px 60px rgba(12,30,60,.06);display:flex;flex-direction:column;align-items:center}
-    .big-center h4{margin:8px 0 16px 0}
-    .player-thumb{border-radius:10px;padding:12px;background:linear-gradient(180deg,#fff,#f7fbff);border:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column}
+    /* viewer area (replicating the 'old' image) */
+    .viewer-old { display:flex; gap:20px; align-items:flex-start; height:calc(100vh - 36px); max-width:1320px; margin:18px auto; }
+    .players-panel { width:220px; background:#f3f3f3; border-radius:20px; padding:14px; border:2px solid #bdbdbd; box-shadow: inset 0 2px 0 rgba(255,255,255,.6); }
+    .players-panel h3 { margin:0; font-size:22px; text-align:center; font-weight:900; }
+    .players-list { margin-top:12px; display:flex; flex-direction:column; gap:10px; padding:6px; border-radius:12px; background:linear-gradient(180deg,#fff,#f4f4f4); border:2px solid rgba(0,0,0,.06); height:420px; overflow:auto; }
+    .player-item { display:flex; align-items:center; justify-content:space-between; padding:12px 10px; border-radius:10px; border:2px solid rgba(0,0,0,.08); background:#fbfbfb; cursor:pointer; }
+    .player-item.selected { outline:4px solid rgba(0,0,0,.04); box-shadow: inset 0 0 0 4px rgba(0,0,0,.02); background:#f0f8ef; }
+    .player-item .name { font-weight:700; font-size:16px; }
+    .status-dot { width:18px; height:18px; border-radius:4px; border:2px solid rgba(0,0,0,.06); }
+    .add-player-btn { margin-top:12px; width:100%; padding:10px; border-radius:8px; background:#e8e8e8; border:2px solid rgba(0,0,0,.08); font-weight:800; cursor:pointer; }
 
-    /* host player styling preserved */
-    .player{background:linear-gradient(180deg,#ffffff,#fbfdff);border-radius:10px;padding:10px;border:1px solid rgba(30,41,55,.06);position:relative;min-height:160px;display:flex;flex-direction:column}
+    .center-panel { flex:1; background:#ececec; border-radius:22px; padding:18px; border:3px solid rgba(0,0,0,.08); min-height:560px; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; position:relative; }
+    .current-player-badge { display:inline-block; padding:8px 12px; border-radius:8px; border:2px solid rgba(0,0,0,.12); background:#f6f6f6; font-weight:800; margin-bottom:12px; width:260px; text-align:left; }
+    .share-canvas { flex:1; border-radius:18px; background:#efefef; display:flex; align-items:center; justify-content:center; font-size:36px; color:#666; text-align:center; margin-top:8px; }
+    .downtime { margin-top:14px; color:#c00; font-weight:800; text-decoration:underline; cursor:default; }
+
+    .right-mini { width:72px; display:flex; align-items:flex-start; justify-content:center; }
+    .back-btn { width:48px; height:48px; border-radius:8px; border:2px solid rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; font-weight:800; cursor:pointer; background:#f7f7f7; }
+
+    /* small utility */
+    .small-muted{color:var(--muted);font-size:.95rem}
+    .muted{color:var(--muted)}
+    .toast{position:fixed;right:18px;bottom:18px;background:#111;color:white;padding:10px 14px;border-radius:8px;opacity:.95}
 
     /* responsive */
     @media(max-width:1100px){
@@ -75,14 +87,16 @@
       .left-col,.right-col{width:100%}
       .auth-card{width:100%;border-radius:18px;padding:18px}
       .reviews-rail{height:340px}
-      .viewer-wrap{grid-template-columns:1fr}
-      .square-panel{height:auto}
+      .viewer-old{flex-direction:column; gap:12px}
+      .players-panel{width:100%}
+      .right-mini{width:100%; display:flex; justify-content:flex-end}
+      .center-panel{min-height:320px}
     }
   </style>
 </head>
 <body>
 
-  <!-- AUTH stage -->
+  <!-- AUTH stage (unchanged) -->
   <div class="stage" id="authStart">
     <!-- LEFT: Q&A viewer area (hidden logo when on authStart if desired) -->
     <div class="left-col">
@@ -109,7 +123,7 @@
       </div>
     </div>
 
-    <!-- CENTER: auth card (corner logo only) -->
+    <!-- CENTER: auth card (unchanged) -->
     <div class="center-col">
       <div class="auth-card" role="main" aria-labelledby="authTitle">
         <div class="corner-logo" id="cornerLogo">
@@ -150,7 +164,7 @@
       </div>
     </div>
 
-    <!-- RIGHT: reviews rail -->
+    <!-- RIGHT: reviews rail (unchanged) -->
     <div class="right-col">
       <div class="reviews-rail" aria-hidden="false">
         <div style="text-align:center"><h5>REVIEWS</h5></div>
@@ -167,43 +181,44 @@
     </div>
   </div>
 
-  <!-- VIEWER area (replicated to match picture 2 more closely) -->
-  <div id="viewerFull" style="display:none;max-width:1320px;margin:18px auto;">
-    <div class="viewer-wrap">
-      <div class="left-rail">
-        <div class="square-panel">
-          <h6>What is this for?</h6>
-          <p class="small-muted">This is for</p>
-          <div style="height:220px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff);margin-top:8px;display:flex;align-items:center;justify-content:center">Main Q&A content</div>
+  <!-- NEW VIEWER layout (matches the image) -->
+  <div id="viewerFull" style="display:none;">
+    <div class="viewer-old">
+      <!-- LEFT: Players column -->
+      <div class="players-panel" aria-label="Players panel">
+        <h3>PLAYERS</h3>
+        <div class="players-list" id="playersListViewer">
+          <!-- rendered by renderPlayersViewer() -->
         </div>
-        <div class="square-panel" style="height:180px;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:14px">
-          <div class="square-block">Why choose us?</div>
-          <div class="square-block">Why choose us?</div>
-        </div>
+        <button id="addPlayer" class="add-player-btn">Add Player</button>
       </div>
 
-      <div class="big-center">
-        <h4>Available Players</h4>
-        <div id="playersGridViewer" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:100%"></div>
-      </div>
-
-      <div class="right-col">
-        <div class="reviews-rail">
-          <div style="text-align:center"><h5>REVIEWS</h5></div>
-          <div class="stars-vertical" style="margin-top:12px">
-            <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
-            <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
-            <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
-            <svg class="star-big" viewBox="0 0 24 24"><path fill="var(--star-color)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
-            <svg class="star-big" viewBox="0 0 24 24"><defs><linearGradient id="gPartialV2" x1="0" x2="1" y1="0" y2="0"><stop offset="0%" stop-color="var(--star-color)"/><stop offset="92%" stop-color="var(--star-color)"/><stop offset="92.1%" stop-color="#e6e6e6"/><stop offset="100%" stop-color="#e6e6e6"/></linearGradient></defs><path fill="url(#gPartialV2)" d="M12 .587l3.668 7.431L23.5 9.75l-5.667 5.535L19.335 24 12 19.897 4.665 24l1.502-8.715L.5 9.75l7.832-1.732z"/></svg>
+      <!-- CENTER: large sharing canvas -->
+      <div class="center-panel" id="centerShare">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="current-player-badge" id="currentPlayerBadge">Current Player: —</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="muted small" id="shareStatusLabel">Status: Not connected</div>
           </div>
-          <div class="rating-bubble" style="margin-top:18px">4.92 / 5</div>
         </div>
+
+        <div id="viewerVideoContainer" class="share-canvas">
+          <div id="noShareMessage">
+            —NOT CURRENTLY SHARING—<br/>
+            <span style="font-size:18px;color:#444">(Fixing Soon &amp; Compensating Time)</span><br/>
+            <span class="downtime" id="downtimeDisplay">DOWN TIME: 3h 2m 45s</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: small nav / back -->
+      <div class="right-mini">
+        <div class="back-btn" id="viewerBackBtn" title="Back">◀</div>
       </div>
     </div>
   </div>
 
-  <!-- HOST APP area -->
+  <!-- HOST APP area (unchanged) -->
   <div id="appMain" style="display:none">
     <div style="max-width:1200px;margin:18px auto;padding:18px;background:var(--panel);border-radius:12px;box-shadow:0 12px 36px rgba(12,30,60,.04)">
       <h3>Host view (Players)</h3>
@@ -218,7 +233,7 @@
   <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
   <script>
-    /*********************** CONFIG ***********************/
+    /*********************** CONFIG (unchanged) ***********************/
     const firebaseConfig = {
       apiKey: "AIzaSyDLQGyXjRwrJ9O6RbVFtp-4uRNepAWdfrU",
       authDomain: "thefiringflame3210.firebaseapp.com",
@@ -238,8 +253,7 @@
     const usersRef = db.ref('users');
 
     function el(id){ return document.getElementById(id); }
-    function showAuthStart(){ el('authStart').style.display='flex'; el('appMain').style.display='none'; el('viewerFull').style.display='none'; // hide left logo inside auth to avoid duplicate
-      const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'hidden'; }
+    function showAuthStart(){ el('authStart').style.display='flex'; el('appMain').style.display='none'; el('viewerFull').style.display='none'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'hidden'; }
     function showViewerFull(){ el('authStart').style.display='none'; el('viewerFull').style.display='block'; el('appMain').style.display='none'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'visible'; }
     function showAppMain(){ el('authStart').style.display='none'; el('viewerFull').style.display='none'; el('appMain').style.display='block'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'visible'; }
 
@@ -270,7 +284,7 @@
     el('qBtn2').addEventListener('click', ()=>{ const clickedIndex = btnB % questions.length; setMainQuestion(clickedIndex); btnB = nextPointer % questions.length; nextPointer = (nextPointer + 1) % questions.length; setButtonTexts(); });
     setMainQuestion(0); setButtonTexts();
 
-    // AUTH wiring
+    // AUTH wiring (unchanged)
     el('tabLogin').addEventListener('click', ()=>{ el('tabLogin').classList.add('active'); el('tabRegister').classList.remove('active'); el('loginForm').style.display = 'flex'; el('registerForm').style.display = 'none'; });
     el('tabRegister').addEventListener('click', ()=>{ el('tabRegister').classList.add('active'); el('tabLogin').classList.remove('active'); el('loginForm').style.display = 'none'; el('registerForm').style.display = 'flex'; });
 
@@ -281,14 +295,143 @@
 
     el('forgotLink').addEventListener('click', async (ev)=>{ ev.preventDefault(); const email = el('visualEmail').value.trim(); if (!email) return alert('Introduce tu correo en el campo de email para recibir un enlace de recuperación.'); try { await auth.sendPasswordResetEmail(email); alert('Se ha enviado un correo para restablecer la contraseña.'); } catch(e){ alert('Error: ' + (e.message||e)); } });
 
-    // Peer + players integration (restored)
+    // Peer + players integration
     let currentUser = null, currentProfile = null, viewerPeer = null, playersSnapshot = {}, connectedMap = {};
     function peerOptions(){ return { config:{ iceServers: ICE_SERVERS } }; }
 
-    function ensureViewerPeer(){ if (viewerPeer) return; viewerPeer = new Peer(peerOptions()); viewerPeer.on('open', id=> console.log('viewer peer open', id)); viewerPeer.on('error', err=> console.warn('viewer peer err', err)); viewerPeer.on('call', call=>{ call.on('stream', remoteStream=>{ const list = el('connectedList'); if (list.children.length === 1 && list.children[0].classList.contains('small-muted')) list.innerHTML = ''; const wrapper = document.createElement('div'); wrapper.style.border='1px solid rgba(0,0,0,.06)'; wrapper.style.padding='8px'; wrapper.style.borderRadius='8px'; wrapper.style.marginBottom='8px'; const title = document.createElement('div'); title.style.fontWeight='700'; title.innerText = 'Stream from: ' + call.peer; const video = document.createElement('video'); video.autoplay=true; video.playsInline=true; video.srcObject = remoteStream; video.style.width='100%'; video.style.maxHeight='200px'; video.style.marginTop='8px'; wrapper.appendChild(title); wrapper.appendChild(video); list.appendChild(wrapper); remoteStream.getTracks().forEach(t=> t.onended = ()=> wrapper.remove()); }); }); }
+    // ensure viewer peer — updated to attach incoming stream to center big area
+    function ensureViewerPeer(){
+      if (viewerPeer) return;
+      viewerPeer = new Peer(peerOptions());
+      viewerPeer.on('open', id=> console.log('viewer peer open', id));
+      viewerPeer.on('error', err=> console.warn('viewer peer err', err));
 
-    function renderPlayersViewer(snapshot){ const container = el('playersGridViewer'); if (!container) return; container.innerHTML = ''; const keys = Object.keys(snapshot || {}); if (keys.length === 0){ container.innerHTML = '<div class="small-muted">No hay Players disponibles.</div>'; return; } keys.forEach(pid=>{ const p = snapshot[pid] || {}; const card = document.createElement('div'); card.className='player-thumb'; card.style.border='1px solid rgba(0,0,0,.06)'; card.style.borderRadius='12px'; card.style.padding='12px'; card.style.background='#fbfdff'; card.style.cursor='pointer'; const title = document.createElement('div'); title.style.fontWeight='700'; title.innerText = p.title || pid; const owner = document.createElement('div'); owner.style.color='var(--muted)'; owner.style.fontSize='.9rem'; owner.innerText = 'Owner: ' + (p.ownerName||p.owner||'—'); const preview = document.createElement('div'); preview.style.marginTop='8px'; preview.style.height='90px'; preview.style.borderRadius='8px'; preview.style.display='flex'; preview.style.alignItems='center'; preview.style.justifyContent='center'; preview.style.background='linear-gradient(180deg,#fff,#f7fbff)'; preview.innerText = p.peerId ? 'Compartiendo' : 'No comparte'; card.appendChild(title); card.appendChild(owner); card.appendChild(preview); card.addEventListener('click', ()=> connectToPlayerAsViewer(pid)); container.appendChild(card); }); }
+      // when a host calls us, attach the remote stream into the big center canvas
+      viewerPeer.on('call', call=>{
+        call.on('stream', remoteStream=>{
+          // clear the center area and show video
+          const container = el('viewerVideoContainer');
+          if (!container) return;
+          container.innerHTML = ''; // remove placeholder
+          const video = document.createElement('video');
+          video.autoplay = true;
+          video.playsInline = true;
+          video.srcObject = remoteStream;
+          video.style.width = '100%';
+          video.style.height = '100%';
+          video.style.objectFit = 'contain';
+          container.appendChild(video);
 
+          // when stream ends, restore placeholder
+          remoteStream.getTracks().forEach(t => {
+            t.onended = ()=>{
+              const placeholder = el('noShareMessage');
+              if (container && placeholder) {
+                container.innerHTML = '';
+                container.appendChild(placeholder);
+                // NOTE: we cloned the original placeholder; ensure it reappears
+                // If placeholder was removed, recreate fallback text:
+                if (!el('noShareMessage')) {
+                  const fallback = document.createElement('div');
+                  fallback.id = 'noShareMessage';
+                  fallback.innerHTML = '—NOT CURRENTLY SHARING—<br/><span style="font-size:18px;color:#444">(Fixing Soon &amp; Compensating Time)</span><br/><span class="downtime" id="downtimeDisplay">DOWN TIME: 3h 2m 45s</span>';
+                  container.appendChild(fallback);
+                }
+                // update status label
+                const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Not sharing';
+              }
+          }});
+          const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Playing';
+        });
+
+        call.on('error', e=> console.warn('call error', e));
+      });
+    }
+
+    // render players for the viewer left column (matches image)
+    function renderPlayersViewer(snapshot){
+      const container = el('playersListViewer');
+      if (!container) return;
+      container.innerHTML = '';
+      const keys = Object.keys(snapshot || {});
+      if (keys.length === 0){
+        container.innerHTML = '<div class="small-muted" style="padding:12px">No Players available.</div>';
+        return;
+      }
+
+      // sort deterministically (by createdAt or by key)
+      keys.sort((a,b)=>{
+        const pa = snapshot[a] || {}, pb = snapshot[b] || {};
+        return (pa.createdAt || 0) - (pb.createdAt || 0);
+      });
+
+      keys.forEach((pid, idx)=>{
+        const p = snapshot[pid] || {};
+        const item = document.createElement('div');
+        item.className = 'player-item';
+        item.dataset.pid = pid;
+
+        // left: name
+        const left = document.createElement('div');
+        left.style.display = 'flex';
+        left.style.alignItems = 'center';
+        left.style.gap = '10px';
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.innerText = p.title || `Player ${idx+1}`;
+        left.appendChild(name);
+
+        // right: status dot
+        const right = document.createElement('div');
+        const dot = document.createElement('div');
+        dot.className = 'status-dot';
+        // status logic: green = available/not sharing, orange = selected, red = error/offline
+        if (p.peerId) dot.style.background = '#0f9d58'; // sharing -> green
+        else dot.style.background = '#2dd4bf'; // not sharing -> teal/greenish
+        // if viewers limit or locked can change color; example: set red if locked
+        if (p.locked) dot.style.background = '#ef4444';
+
+        right.appendChild(dot);
+
+        item.appendChild(left);
+        item.appendChild(right);
+
+        // click behavior: select and attempt connect
+        item.addEventListener('click', ()=>{
+          // mark selected visually
+          const alreadySelected = item.classList.contains('selected');
+          // clear previous
+          const prev = container.querySelector('.player-item.selected');
+          if (prev && prev !== item) prev.classList.remove('selected');
+          if (!alreadySelected) item.classList.add('selected');
+
+          // update current player badge
+          const badge = el('currentPlayerBadge');
+          if (badge) badge.innerText = 'Current Player: ' + (p.title || pid);
+
+          // Try to connect if peerId exists
+          if (p.peerId) {
+            connectToPlayerAsViewer(pid);
+          } else {
+            // show not sharing message
+            const center = el('viewerVideoContainer');
+            if (center) {
+              center.innerHTML = '';
+              const placeholder = document.createElement('div');
+              placeholder.id = 'noShareMessage';
+              placeholder.innerHTML = '—NOT CURRENTLY SHARING—<br/><span style="font-size:18px;color:#444">(Fixing Soon &amp; Compensating Time)</span><br/><span class="downtime" id="downtimeDisplay">DOWN TIME: 3h 2m 45s</span>';
+              center.appendChild(placeholder);
+            }
+            const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Not sharing';
+            toast('Ese player no está compartiendo', 'info');
+          }
+        });
+
+        container.appendChild(item);
+      });
+    }
+
+    // Host rendering left as-is (preserved)
     function renderPlayersHost(snapshot){ const container = el('playersGrid'); if (!container) return; container.innerHTML = ''; for (const playerId in snapshot){ const p = snapshot[playerId] || {}; const elDiv = document.createElement('div'); elDiv.className='player'; elDiv.id = 'pl-' + playerId; elDiv.innerHTML = `<div class="title" style="font-weight:700;color:#0b2b66">${p.title || playerId}</div><div class="meta" style="font-size:.85rem;color:var(--muted);margin-top:6px">Owner: <strong>${p.ownerName||p.owner||'—'}</strong> • Peer: <span class="peer-id">${p.peerId || '—'}</span></div><div class="preview" style="flex:1;border-radius:8px;margin-top:8px;overflow:hidden;background:linear-gradient(180deg,#f7fbff,#ffffff);display:flex;align-items:center;justify-content:center"><div class="muted small">No se comparte</div></div><div class="actions" style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-sm btn-outline-primary share-btn">${p.peerId ? 'Compartiendo' : 'Compartir'}</button><button class="btn btn-sm btn-outline-secondary copy-btn">Copiar Peer</button><button class="btn btn-sm btn-outline-danger kick-all-btn">Kick All</button></div><button class="delete-btn" title="Eliminar" style="position:absolute;top:10px;right:10px;border:none;background:transparent;color:#e04b4b;font-weight:700">×</button><div style="margin-top:8px"><div class="small-muted">Conectados:</div><div class="viewer-list small-muted" style="margin-top:6px;max-height:90px;overflow:auto"></div></div>`; container.appendChild(elDiv);
       const viewers = p.viewers || {}; const viewerListDiv = elDiv.querySelector('.viewer-list'); if (Object.keys(viewers).length === 0) viewerListDiv.innerHTML = `<div class="muted small">Nadie conectado</div>`; else { viewerListDiv.innerHTML=''; for (const uid in viewers){ const v = viewers[uid] || {}; const item = document.createElement('div'); item.style.display='flex'; item.style.justifyContent='space-between'; item.style.alignItems='center'; item.style.marginBottom='6px'; item.innerHTML = `<div>${v.username || uid} ${v.kicked ? '(kicked)' : v.active ? '(activo)' : '(inactivo)'}</div><div><button class="btn btn-sm btn-outline-danger kick-btn">Kick</button></div>`; const kickBtn = item.querySelector('.kick-btn'); kickBtn.addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger'); playersRef.child(playerId).child('viewers').child(uid).update({ kicked: true, active:false }); toast('Kick enviado a ' + (v.username||uid),'info'); }); viewerListDiv.appendChild(item); } }
 
@@ -299,15 +442,54 @@
     function getNextPlayerNumber(){ return Object.keys(playersSnapshot || {}).length + 1; }
     document.addEventListener('click', function(e){ if (e.target && e.target.id === 'addPlayer'){ if (!currentUser) return toast('Inicia sesión para crear Player','info'); const idx = getNextPlayerNumber(); const pid = `player-${Date.now()}-${Math.floor(Math.random()*999)}`; const ownerName = currentProfile.username; playersRef.child(pid).set({ owner: currentUser.uid, ownerName: ownerName, title: `Player ${idx}`, peerId: '', viewers: {}, locked: false, createdAt: Date.now() }); toast('Player creado','success'); } });
 
+    // startSharingForExistingPlayer (unchanged)
     async function startSharingForExistingPlayer(playerId, elDom){ const pSnap = playersSnapshot[playerId] || {}; if (!currentUser || pSnap.owner !== currentUser.uid) return toast('No eres el owner','danger'); try { let width=1280,height=720,fps=15; const qualityEl=document.getElementById('quality'); if (qualityEl){ const q=qualityEl.value.split('@')[0].split('x'); width=parseInt(q[0])||1280;height=parseInt(q[1])||720;fps=parseInt(qualityEl.value.split('@')[1]||'15'); } const stream = await navigator.mediaDevices.getDisplayMedia({ video:{ width, height, frameRate: fps }, audio:false }); const peer = new Peer(peerOptions()); elDom._playerPeer = peer; elDom._stream = stream; peer.on('open', id=>{ playersRef.child(playerId).update({ peerId: id, title: pSnap.title || 'Player' }); toast('Peer listo: ' + id, 'success'); }); peer.on('connection', conn=>{ conn.on('open', ()=>{ conn.on('data', data=>{ if (data && data.type === 'request'){ const viewerUid = data.viewerUid; const username = data.username || 'guest'; const viewerRef = playersRef.child(playerId).child('viewers').child(viewerUid); viewerRef.update({ username, connectedAt: Date.now(), active: true, kicked: false }); const call = peer.call(conn.peer, stream); call.on('error', e=>console.error('Call err', e)); } else if (data && data.type === 'control'){ window.dispatchEvent(new CustomEvent('remote-control', { detail: data })); } }); }); }); peer.on('call', call => call.answer(stream)); stream.getTracks().forEach(t => t.onended = ()=> { playersRef.child(playerId).update({ peerId: '' }); playersRef.child(playerId).child('viewers').once('value').then(snap=>{ const vs = snap.val() || {}; for (const uid in vs) playersRef.child(playerId).child('viewers').child(uid).update({ active:false }); }); if (elDom._playerPeer) try { elDom._playerPeer.destroy(); } catch(e){} }); const preview = elDom.querySelector('.preview'); if (preview){ preview.innerHTML=''; const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.muted=true; v.srcObject = stream; v.style.width='100%'; preview.appendChild(v); }
     } catch(e){ toast('Error compartiendo: ' + (e.message || e),'danger'); } }
 
-    function connectToPlayerAsViewer(playerId){ if (!currentUser) return toast('Inicia sesión para conectar','danger'); const p = playersSnapshot[playerId] || {}; if (!p.peerId) return toast('Ese player no está compartiendo','info'); ensureViewerPeer(); const peerId = p.peerId; const conn = viewerPeer.connect(peerId, { reliable:true }); conn.on('open', ()=>{ conn.send({ type:'request', viewerUid: currentUser.uid, username: currentProfile.username }); playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ username: currentProfile.username, connectedAt: Date.now(), active:true, kicked:false }); toast('Conectado: ' + (p.title || playerId),'success'); }); conn.on('error', e=> { console.error('dataConn error', e); toast('Error de conexión','danger') }); }
+    // connectToPlayerAsViewer — updated to send request and update UI
+    function connectToPlayerAsViewer(playerId){
+      if (!currentUser) return toast('Inicia sesión para conectar','danger');
+      const p = playersSnapshot[playerId] || {};
+      if (!p.peerId) return toast('Ese player no está compartiendo','info');
 
+      ensureViewerPeer();
+
+      // first, update current player badge
+      const badge = el('currentPlayerBadge'); if (badge) badge.innerText = 'Current Player: ' + (p.title || playerId);
+      const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Connecting...';
+
+      try {
+        const peerId = p.peerId;
+        const conn = viewerPeer.connect(peerId, { reliable:true });
+        conn.on('open', ()=>{
+          conn.send({ type:'request', viewerUid: currentUser.uid, username: currentProfile.username });
+          playersRef.child(playerId).child('viewers').child(currentUser.uid).update({ username: currentProfile.username, connectedAt: Date.now(), active:true, kicked:false });
+          toast('Conectado: ' + (p.title || playerId),'success');
+          if (st) st.innerText = 'Status: Request sent';
+        });
+        conn.on('error', e=> { console.error('dataConn error', e); toast('Error de conexión','danger'); if (st) st.innerText = 'Status: Error'; });
+      } catch(e){
+        console.error('connectToPlayerAsViewer err', e);
+        toast('Error: ' + (e.message||e),'danger');
+        const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Error';
+      }
+    }
+
+    // DB listeners (unchanged except using updated renderPlayersViewer)
     playersRef.on('value', snap=>{ playersSnapshot = snap.val() || {}; renderPlayersViewer(playersSnapshot); renderPlayersHost(playersSnapshot); });
     db.ref('.info/connected').on('value', snap=>{ const v=snap.val(); const fb = el('fbLabel'); if (fb) fb.textContent = v ? 'Conectado' : 'Desconectado'; });
 
     auth.onAuthStateChanged(async user=>{ if (!user){ currentUser=null; currentProfile=null; showAuthStart(); return; } currentUser=user; const snap=await usersRef.child(user.uid).once('value'); currentProfile = snap.val() || { username: user.email.split('@')[0] }; const playersNow = (await playersRef.once('value')).val() || {}; const owns = Object.values(playersNow||{}).some(p=> p && p.owner === currentUser.uid); if (owns) showAppMain(); else { showViewerFull(); ensureViewerPeer(); } });
+
+    // small helper toast (kept simple)
+    function toast(msg, type='info'){
+      const t = document.createElement('div'); t.className='toast'; t.innerText = msg; document.body.appendChild(t);
+      setTimeout(()=> t.style.opacity='0', 2600);
+      setTimeout(()=> t.remove(), 3000);
+    }
+
+    // back button to jump to auth (keeps previous behavior simple)
+    el('viewerBackBtn').addEventListener('click', ()=> showAuthStart());
 
     // initial
     showAuthStart();
