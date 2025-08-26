@@ -16,89 +16,91 @@
       --accent-2:#0ea5a4;
     }
     html,body{height:100%;box-sizing:border-box}
-    body{background:linear-gradient(180deg,#eef6ff 0%, #fbfcff 100%);font-family:Inter, 'Segoe UI', Roboto, system-ui, sans-serif;margin:0;padding:18px;color:#111}
+    body{background:linear-gradient(180deg,#eef6ff 0%, #fbfcff 100%);font-family:Inter, 'Segoe UI', Roboto, system-ui, sans-serif;margin:0;padding:8px;color:#111}
+
+    /* TOP FRAME */
+    .top-frame { max-width:1320px; margin:10px auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .top-left-logo { background:var(--panel); border-radius:16px; padding:12px 16px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 22px rgba(16,24,40,.06); }
+    .top-center { flex:1; display:flex; gap:14px; align-items:center; justify-content:center; }
+    .top-box { width:320px; height:56px; background:var(--panel); border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(16,24,40,.04); font-weight:800; font-size:16px; }
+    .top-box.tokens { width:220px; }
+    .top-user { background:var(--panel); padding:8px 18px; border-radius:28px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(12,30,60,.04); font-weight:800; }
 
     /* Stage layout */
-    .stage{max-width:1320px;margin:0 auto;height:calc(100vh - 36px);display:flex;align-items:flex-start;gap:28px}
+    .stage{max-width:1320px;margin:0 auto;height:calc(100vh - 160px);display:flex;align-items:flex-start;gap:28px}
 
-    /* LEFT info column */
+    /* LEFT info column (kept smaller) */
     .left-col{width:260px;display:flex;flex-direction:column;gap:14px}
     .logo-top{height:66px;width:220px;border-radius:12px;background:var(--panel);display:flex;align-items:center;padding:8px 14px;box-shadow:0 8px 22px rgba(16,24,40,.06);position:relative}
     .logo-top img{max-width:100%;max-height:48px;display:block}
-    .logo-fallback{display:flex;flex-direction:column}
-    .logo-fallback .line1{font-weight:900;color:var(--accent);font-family:'Segoe UI',Arial;font-size:15px}
-    .logo-fallback .line2{font-weight:800;color:#333;margin-top:2px;font-size:13px}
     .info-card{flex:1;border-radius:14px;background:var(--panel);padding:18px;box-shadow:0 10px 30px rgba(16,24,40,.04);position:relative;overflow:hidden;display:flex;flex-direction:column}
-    .info-card h5{margin:0 0 8px 0}
-    .big-answer{margin-top:12px;background:linear-gradient(180deg,#fbfdff,#f8fbff);border-radius:12px;padding:18px;border:2px solid rgba(0,0,0,.05);min-height:200px;box-sizing:border-box;color:#1f2937;flex:1;display:flex;flex-direction:column;justify-content:flex-start}
-    .answer-text{line-height:1.45;color:#1f2937}
-    .question-buttons{display:flex;flex-direction:row;gap:10px;margin-top:12px}
-    .q-btn{flex:1;height:48px;border-radius:10px;border:2px solid rgba(0,0,0,.06);background:var(--panel);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer}
-    .q-btn:hover{box-shadow:0 6px 20px rgba(16,24,40,.06)}
+    .big-answer{margin-top:12px;background:linear-gradient(180deg,#fbfdff,#f8fbff);border-radius:12px;padding:18px;border:2px solid rgba(0,0,0,.05);flex:1}
 
-    /* CENTER auth card */
-    .center-col{flex:1;display:flex;align-items:center;justify-content:center}
-    .auth-card{width:820px;border-radius:28px;background:linear-gradient(180deg,#f8fbff,#f4f8ff);padding:28px 28px 44px 28px;box-shadow:0 24px 80px rgba(12,30,60,.06);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center}
-    .corner-logo{position:absolute;left:18px;top:12px;width:160px;height:44px;border-radius:10px;background:var(--panel);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--accent);box-shadow:0 8px 24px rgba(12,30,60,.04)}
-    .corner-logo img{max-height:36px;max-width:140px;display:block}
-    .auth-tabs{display:flex;gap:12px;justify-content:center;margin-bottom:22px;width:100%}
-    .tab{padding:12px 22px;border-radius:12px;background:var(--panel);border:2px solid rgba(0,0,0,.06);text-align:center;font-weight:800;font-size:1.02rem;cursor:pointer;min-width:160px}
-    .tab.active{border-color:rgba(37,99,235,.18);box-shadow:inset 0 -4px 0 rgba(37,99,235,.06)}
-    .auth-body{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
-    .big-input{width:460px;padding:16px;border-radius:12px;border:2px solid rgba(0,0,0,.08);background:var(--panel);font-size:1rem}
-    .muted-link{font-size:0.95rem;color:var(--muted);text-decoration:underline;cursor:pointer}
-    .submit-btn{margin-top:8px;width:320px;padding:14px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;font-weight:800;cursor:pointer;box-shadow:0 8px 30px rgba(37,99,235,.14)}
+    /* viewer area (new big layout; everything larger) */
+    .viewer-area { max-width:1320px; margin:8px auto; }
+    .viewer-old { display:grid; grid-template-columns:300px 1fr; gap:18px; align-items:start; height:calc(100vh - 260px); }
 
-    /* RIGHT reviews rail (vertical larger stars) */
-    .right-col{width:160px;display:flex;flex-direction:column;align-items:center}
-    .reviews-rail{width:160px;border-radius:12px;background:var(--panel);padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:calc(100vh - 120px);box-shadow:0 12px 36px rgba(12,30,60,.04)}
-    .reviews-rail h5{margin:0;font-weight:800;letter-spacing:0.6px}
-    .stars-vertical{display:flex;flex-direction:column;gap:14px;margin-top:16px;align-items:center}
-    .star-big{width:54px;height:54px}
-    .rating-bubble{background:linear-gradient(90deg,#fff,#fbfdff);border-radius:12px;padding:10px 14px;font-weight:800;border:1px solid rgba(0,0,0,.06);font-size:1rem;box-shadow:0 8px 20px rgba(12,30,60,.04)}
+    .players-panel { background:#f3f3f3; border-radius:20px; padding:18px; border:2px solid #bdbdbd; box-shadow: inset 0 2px 0 rgba(255,255,255,.6); height:100%; display:flex; flex-direction:column; }
+    .players-panel h3 { margin:0; font-size:28px; text-align:center; font-weight:900; letter-spacing:0.6px; }
+    .players-list { margin-top:18px; display:flex; flex-direction:column; gap:14px; padding:6px; border-radius:12px; background:linear-gradient(180deg,#fff,#f4f4f4); border:2px solid rgba(0,0,0,.06); flex:1; overflow:auto; }
+    .player-item { display:flex; align-items:center; justify-content:space-between; padding:16px 12px; border-radius:12px; border:2px solid rgba(0,0,0,.08); background:#fbfbfb; cursor:pointer; font-size:18px; }
+    .player-item.selected { outline:6px solid rgba(0,0,0,.04); background:#f0f8ef; }
+    .player-item .name { font-weight:900; font-size:18px; }
+    .status-dot { width:22px; height:22px; border-radius:5px; border:2px solid rgba(0,0,0,.06); margin-left:12px; }
+    .add-player-btn { margin-top:12px; width:100%; padding:12px; border-radius:10px; background:#e8e8e8; border:2px solid rgba(0,0,0,.08); font-weight:900; font-size:16px; cursor:pointer; }
 
-    /* viewer area (replicating the 'old' image) */
-    .viewer-old { display:flex; gap:20px; align-items:flex-start; height:calc(100vh - 36px); max-width:1320px; margin:18px auto; }
-    .players-panel { width:220px; background:#f3f3f3; border-radius:20px; padding:14px; border:2px solid #bdbdbd; box-shadow: inset 0 2px 0 rgba(255,255,255,.6); }
-    .players-panel h3 { margin:0; font-size:22px; text-align:center; font-weight:900; }
-    .players-list { margin-top:12px; display:flex; flex-direction:column; gap:10px; padding:6px; border-radius:12px; background:linear-gradient(180deg,#fff,#f4f4f4); border:2px solid rgba(0,0,0,.06); height:420px; overflow:auto; }
-    .player-item { display:flex; align-items:center; justify-content:space-between; padding:12px 10px; border-radius:10px; border:2px solid rgba(0,0,0,.08); background:#fbfbfb; cursor:pointer; }
-    .player-item.selected { outline:4px solid rgba(0,0,0,.04); box-shadow: inset 0 0 0 4px rgba(0,0,0,.02); background:#f0f8ef; }
-    .player-item .name { font-weight:700; font-size:16px; }
-    .status-dot { width:18px; height:18px; border-radius:4px; border:2px solid rgba(0,0,0,.06); }
-    .add-player-btn { margin-top:12px; width:100%; padding:10px; border-radius:8px; background:#e8e8e8; border:2px solid rgba(0,0,0,.08); font-weight:800; cursor:pointer; }
+    .center-panel { background:#ececec; border-radius:26px; padding:28px; border:3px solid rgba(0,0,0,.08); min-height:640px; position:relative; display:flex; flex-direction:column; }
+    .current-player-badge { display:inline-block; padding:12px 16px; border-radius:10px; border:2px solid rgba(0,0,0,.12); background:#f6f6f6; font-weight:900; margin-bottom:18px; font-size:18px; }
+    .share-canvas { flex:1; border-radius:18px; background:#efefef; display:flex; align-items:center; justify-content:center; font-size:44px; color:#666; text-align:center; margin-top:8px; position:relative; overflow:hidden; }
+    .downtime { margin-top:18px; color:#c00; font-weight:800; text-decoration:underline; cursor:default; }
 
-    .center-panel { flex:1; background:#ececec; border-radius:22px; padding:18px; border:3px solid rgba(0,0,0,.08); min-height:560px; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; position:relative; }
-    .current-player-badge { display:inline-block; padding:8px 12px; border-radius:8px; border:2px solid rgba(0,0,0,.12); background:#f6f6f6; font-weight:800; margin-bottom:12px; width:260px; text-align:left; }
-    .share-canvas { flex:1; border-radius:18px; background:#efefef; display:flex; align-items:center; justify-content:center; font-size:36px; color:#666; text-align:center; margin-top:8px; }
-    .downtime { margin-top:14px; color:#c00; font-weight:800; text-decoration:underline; cursor:default; }
+    /* arrow inside center frame (top-right) */
+    .center-panel .view-arrow { position:absolute; top:18px; right:18px; width:56px; height:56px; border-radius:10px; border:2px solid rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; background:#f7f7f7; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.04); }
 
-    .right-mini { width:72px; display:flex; align-items:flex-start; justify-content:center; }
-    .back-btn { width:48px; height:48px; border-radius:8px; border:2px solid rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; font-weight:800; cursor:pointer; background:#f7f7f7; }
+    /* buy modal */
+    .modal-overlay { position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:9999; }
+    .modal { width:760px; background:var(--panel); border-radius:14px; padding:18px; box-shadow:0 30px 90px rgba(0,0,0,.35); }
+    .modal h4 { margin:0 0 12px 0; }
+    .sale-list { display:flex; flex-direction:column; gap:10px; max-height:420px; overflow:auto; }
 
-    /* small utility */
+    /* host small controls */
+    .host-controls { display:flex; gap:8px; margin-top:12px; }
+
     .small-muted{color:var(--muted);font-size:.95rem}
-    .muted{color:var(--muted)}
     .toast{position:fixed;right:18px;bottom:18px;background:#111;color:white;padding:10px 14px;border-radius:8px;opacity:.95}
 
-    /* responsive */
     @media(max-width:1100px){
-      .stage{flex-direction:column;align-items:stretch;height:auto}
-      .left-col,.right-col{width:100%}
-      .auth-card{width:100%;border-radius:18px;padding:18px}
-      .reviews-rail{height:340px}
-      .viewer-old{flex-direction:column; gap:12px}
+      .viewer-old{grid-template-columns:1fr;gap:12px;height:auto}
       .players-panel{width:100%}
-      .right-mini{width:100%; display:flex; justify-content:flex-end}
-      .center-panel{min-height:320px}
+      .center-panel{min-height:380px}
+      .top-box{width:120px}
     }
   </style>
 </head>
 <body>
 
+  <!-- TOP FRAME -->
+  <div class="top-frame">
+    <div class="top-left-logo" id="topLogo">
+      <img src="LogoInit.jpg" alt="Logo" style="height:44px" onerror="this.style.display='none'">
+      <div style="font-weight:900;color:var(--accent);font-size:18px">Roblox Life SHARE</div>
+    </div>
+
+    <div class="top-center">
+      <div class="top-box" id="topRect1"> <!-- big rectangle left (e.g. search or info) -->
+        <span id="topRect1Text">Live Tab Sharing</span>
+      </div>
+      <div class="top-box tokens" id="topRect2">Tokens: <span id="tokensDisplay">0</span></div>
+    </div>
+
+    <div class="top-user" id="topUser">
+      <div id="usernameDisplay">Guest</div>
+      <button id="userAddBtn" title="Create/Add">+</button>
+    </div>
+  </div>
+
   <!-- AUTH stage (unchanged) -->
   <div class="stage" id="authStart">
-    <!-- LEFT: Q&A viewer area (hidden logo when on authStart if desired) -->
     <div class="left-col">
       <div class="logo-top" id="leftLogo">
         <img id="leftLogoImg" src="LogoInit.jpg" alt="Logo" onerror="this.style.display='none'">
@@ -123,7 +125,7 @@
       </div>
     </div>
 
-    <!-- CENTER: auth card (unchanged) -->
+    <!-- CENTER: auth card -->
     <div class="center-col">
       <div class="auth-card" role="main" aria-labelledby="authTitle">
         <div class="corner-logo" id="cornerLogo">
@@ -164,7 +166,7 @@
       </div>
     </div>
 
-    <!-- RIGHT: reviews rail (unchanged) -->
+    <!-- RIGHT: reviews rail -->
     <div class="right-col">
       <div class="reviews-rail" aria-hidden="false">
         <div style="text-align:center"><h5>REVIEWS</h5></div>
@@ -181,8 +183,8 @@
     </div>
   </div>
 
-  <!-- NEW VIEWER layout (matches the image) -->
-  <div id="viewerFull" style="display:none;">
+  <!-- VIEWER area (big new layout) -->
+  <div id="viewerFull" style="display:none;" class="viewer-area">
     <div class="viewer-old">
       <!-- LEFT: Players column -->
       <div class="players-panel" aria-label="Players panel">
@@ -190,35 +192,41 @@
         <div class="players-list" id="playersListViewer">
           <!-- rendered by renderPlayersViewer() -->
         </div>
-        <button id="addPlayer" class="add-player-btn">Add Player</button>
+        <button id="addPlayer" class="add-player-btn">Add / Buy Player</button>
       </div>
 
       <!-- CENTER: large sharing canvas -->
       <div class="center-panel" id="centerShare">
         <div style="display:flex;align-items:center;justify-content:space-between">
-          <div class="current-player-badge" id="currentPlayerBadge">Current Player: —</div>
+          <div class="current-player-badge" id="currentPlayerBadge">Select A Player</div>
           <div style="display:flex;gap:8px;align-items:center">
-            <div class="muted small" id="shareStatusLabel">Status: Not connected</div>
+            <div class="muted small" id="shareStatusLabel">Status: —</div>
           </div>
         </div>
 
         <div id="viewerVideoContainer" class="share-canvas">
-          <div id="noShareMessage">
-            —NOT CURRENTLY SHARING—<br/>
-            <span style="font-size:18px;color:#444">(Fixing Soon &amp; Compensating Time)</span><br/>
-            <span class="downtime" id="downtimeDisplay">DOWN TIME: 3h 2m 45s</span>
-          </div>
+          <div id="selectMessage">Select A Player</div>
         </div>
-      </div>
 
-      <!-- RIGHT: small nav / back -->
-      <div class="right-mini">
-        <div class="back-btn" id="viewerBackBtn" title="Back">◀</div>
+        <div class="view-arrow" id="viewArrow" title="Back">◀</div>
       </div>
     </div>
   </div>
 
-  <!-- HOST APP area (unchanged) -->
+  <!-- BUY modal -->
+  <div id="buyModal" style="display:none;">
+    <div class="modal-overlay" id="buyOverlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h4>Buy Available Players</h4>
+        <div id="saleList" class="sale-list"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px">
+          <button id="closeBuy" class="submit-btn" style="width:120px;background:#fff;color:#111;border:1px solid rgba(0,0,0,.08)">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOST APP area -->
   <div id="appMain" style="display:none">
     <div style="max-width:1200px;margin:18px auto;padding:18px;background:var(--panel);border-radius:12px;box-shadow:0 12px 36px rgba(12,30,60,.04)">
       <h3>Host view (Players)</h3>
@@ -233,7 +241,7 @@
   <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
   <script>
-    /*********************** CONFIG (unchanged) ***********************/
+    /*********************** CONFIG ***********************/
     const firebaseConfig = {
       apiKey: "AIzaSyDLQGyXjRwrJ9O6RbVFtp-4uRNepAWdfrU",
       authDomain: "thefiringflame3210.firebaseapp.com",
@@ -253,7 +261,7 @@
     const usersRef = db.ref('users');
 
     function el(id){ return document.getElementById(id); }
-    function showAuthStart(){ el('authStart').style.display='flex'; el('appMain').style.display='none'; el('viewerFull').style.display='none'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'hidden'; }
+    function showAuthStart(){ el('authStart').style.display='flex'; el('appMain').style.display='none'; el('viewerFull').style.display='none'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'hidden'; updateTopForUser(null); }
     function showViewerFull(){ el('authStart').style.display='none'; el('viewerFull').style.display='block'; el('appMain').style.display='none'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'visible'; }
     function showAppMain(){ el('authStart').style.display='none'; el('viewerFull').style.display='none'; el('appMain').style.display='block'; const leftLogo = el('leftLogo'); if (leftLogo) leftLogo.style.visibility = 'visible'; }
 
@@ -284,20 +292,30 @@
     el('qBtn2').addEventListener('click', ()=>{ const clickedIndex = btnB % questions.length; setMainQuestion(clickedIndex); btnB = nextPointer % questions.length; nextPointer = (nextPointer + 1) % questions.length; setButtonTexts(); });
     setMainQuestion(0); setButtonTexts();
 
-    // AUTH wiring (unchanged)
+    // AUTH wiring (modified register to add tokens)
     el('tabLogin').addEventListener('click', ()=>{ el('tabLogin').classList.add('active'); el('tabRegister').classList.remove('active'); el('loginForm').style.display = 'flex'; el('registerForm').style.display = 'none'; });
     el('tabRegister').addEventListener('click', ()=>{ el('tabRegister').classList.add('active'); el('tabLogin').classList.remove('active'); el('loginForm').style.display = 'none'; el('registerForm').style.display = 'flex'; });
 
     el('visualSubmit').addEventListener('click', async ()=>{ const email = el('visualEmail').value.trim(); const pass = el('visualPassword').value; if (!email || !pass) { el('loginMsg').innerText = 'Introduce email y contraseña'; return; } el('loginMsg').innerText = 'Iniciando sesión...'; try { await auth.signInWithEmailAndPassword(email, pass); el('loginMsg').innerText = 'Sesión iniciada'; } catch(e){ el('loginMsg').innerText = 'Error: ' + (e.message||e); } });
 
-    el('registerBtnVisual').addEventListener('click', async ()=>{ const email = el('regEmail').value.trim(); const pass = el('regPassword').value; const username = el('regUsername').value.trim(); if (!email || !pass || !username){ el('regMsg').innerText = 'Rellena todos los campos'; return; } el('regMsg').innerText = 'Creando cuenta...'; try { const cred = await auth.createUserWithEmailAndPassword(email, pass); const uid = cred.user.uid; await usersRef.child(uid).set({ username }); el('regMsg').innerText = 'Cuenta creada. Inicia sesión.'; el('tabLogin').click(); el('visualEmail').value = email; } catch(e){ el('regMsg').innerText = 'Error: ' + (e.message||e); } });
+    el('registerBtnVisual').addEventListener('click', async ()=>{ const email = el('regEmail').value.trim(); const pass = el('regPassword').value; const username = el('regUsername').value.trim(); if (!email || !pass || !username){ el('regMsg').innerText = 'Rellena todos los campos'; return; } el('regMsg').innerText = 'Creando cuenta...'; try { const cred = await auth.createUserWithEmailAndPassword(email, pass); const uid = cred.user.uid; // give new user 100 tokens
+        await usersRef.child(uid).set({ username, tokens: 100 }); el('regMsg').innerText = 'Cuenta creada. Inicia sesión.'; el('tabLogin').click(); el('visualEmail').value = email; } catch(e){ el('regMsg').innerText = 'Error: ' + (e.message||e); } });
     el('cancelRegVisual').addEventListener('click', ()=> el('tabLogin').click() );
 
     el('forgotLink').addEventListener('click', async (ev)=>{ ev.preventDefault(); const email = el('visualEmail').value.trim(); if (!email) return alert('Introduce tu correo en el campo de email para recibir un enlace de recuperación.'); try { await auth.sendPasswordResetEmail(email); alert('Se ha enviado un correo para restablecer la contraseña.'); } catch(e){ alert('Error: ' + (e.message||e)); } });
 
-    // Peer + players integration
+    // Peer + players integration (preserved and integrated)
     let currentUser = null, currentProfile = null, viewerPeer = null, playersSnapshot = {}, connectedMap = {};
     function peerOptions(){ return { config:{ iceServers: ICE_SERVERS } }; }
+
+    // update top header when user changes
+    function updateTopForUser(profile){
+      const nameEl = el('usernameDisplay');
+      const tokensEl = el('tokensDisplay');
+      if (!profile){ if (nameEl) nameEl.innerText = 'Guest'; if (tokensEl) tokensEl.innerText = '0'; return; }
+      if (nameEl) nameEl.innerText = profile.username || 'User';
+      if (tokensEl) tokensEl.innerText = (profile.tokens != null) ? profile.tokens : 0;
+    }
 
     // ensure viewer peer — updated to attach incoming stream to center big area
     function ensureViewerPeer(){
@@ -322,25 +340,18 @@
           video.style.objectFit = 'contain';
           container.appendChild(video);
 
-          // when stream ends, restore placeholder
+          // when stream ends, restore placeholder and mark downtime start in DB (done by host)
           remoteStream.getTracks().forEach(t => {
             t.onended = ()=>{
-              const placeholder = el('noShareMessage');
-              if (container && placeholder) {
-                container.innerHTML = '';
-                container.appendChild(placeholder);
-                // NOTE: we cloned the original placeholder; ensure it reappears
-                // If placeholder was removed, recreate fallback text:
-                if (!el('noShareMessage')) {
-                  const fallback = document.createElement('div');
-                  fallback.id = 'noShareMessage';
-                  fallback.innerHTML = '—NOT CURRENTLY SHARING—<br/><span style="font-size:18px;color:#444">(Fixing Soon &amp; Compensating Time)</span><br/><span class="downtime" id="downtimeDisplay">DOWN TIME: 3h 2m 45s</span>';
-                  container.appendChild(fallback);
-                }
-                // update status label
-                const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Not sharing';
-              }
-          }});
+              // restore placeholder content (will be computed from selected player)
+              // set UI status
+              const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Not sharing';
+              // if selected player exists, show its NOT CURRENTLY SHARING UI:
+              const selectedBadge = el('currentPlayerBadge').innerText;
+              // UI will follow DB updates via re-render
+            };
+          });
+
           const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Playing';
         });
 
@@ -348,113 +359,268 @@
       });
     }
 
-    // render players for the viewer left column (matches image)
+    // render players for viewer left column (updated with status logic & purchase indicator)
     function renderPlayersViewer(snapshot){
-      const container = el('playersListViewer');
-      if (!container) return;
+      const container = el('playersListViewer'); if (!container) return;
       container.innerHTML = '';
       const keys = Object.keys(snapshot || {});
-      if (keys.length === 0){
-        container.innerHTML = '<div class="small-muted" style="padding:12px">No Players available.</div>';
-        return;
-      }
+      if (keys.length === 0){ container.innerHTML = '<div class="small-muted" style="padding:12px">No Players available.</div>'; return; }
 
-      // sort deterministically (by createdAt or by key)
-      keys.sort((a,b)=>{
-        const pa = snapshot[a] || {}, pb = snapshot[b] || {};
-        return (pa.createdAt || 0) - (pb.createdAt || 0);
-      });
+      // sort by createdAt
+      keys.sort((a,b)=> (snapshot[a]?.createdAt||0) - (snapshot[b]?.createdAt||0) );
 
+      let anySelected = false;
       keys.forEach((pid, idx)=>{
         const p = snapshot[pid] || {};
         const item = document.createElement('div');
         item.className = 'player-item';
         item.dataset.pid = pid;
 
-        // left: name
         const left = document.createElement('div');
-        left.style.display = 'flex';
-        left.style.alignItems = 'center';
-        left.style.gap = '10px';
-        const name = document.createElement('div');
-        name.className = 'name';
-        name.innerText = p.title || `Player ${idx+1}`;
+        left.style.display='flex'; left.style.alignItems='center';
+        const name = document.createElement('div'); name.className='name'; name.innerText = p.title || `Player ${idx+1}`;
         left.appendChild(name);
 
-        // right: status dot
+        // show renter tag
+        if (p.renterUid) {
+          const rentTag = document.createElement('div');
+          rentTag.style.marginLeft='10px'; rentTag.style.fontSize='12px'; rentTag.style.color='#6b7280';
+          rentTag.innerText = '(rented)';
+          left.appendChild(rentTag);
+        }
+
         const right = document.createElement('div');
-        const dot = document.createElement('div');
-        dot.className = 'status-dot';
-        // status logic: green = available/not sharing, orange = selected, red = error/offline
-        if (p.peerId) dot.style.background = '#0f9d58'; // sharing -> green
-        else dot.style.background = '#2dd4bf'; // not sharing -> teal/greenish
-        // if viewers limit or locked can change color; example: set red if locked
-        if (p.locked) dot.style.background = '#ef4444';
+        right.style.display='flex'; right.style.alignItems='center';
+
+        const dot = document.createElement('div'); dot.className='status-dot';
+        // status color rules:
+        // - Green: the player is currently inside a roblox game (p.inGame === true)
+        // - Red: broadcaster is sharing the screen but not in roblox (p.peerId exists && !p.inGame)
+        // - Orange: broadcaster not sharing (no peerId) -> then NOT CURRENTLY SHARING and downtime accumulates
+        if (p.inGame) dot.style.background = '#16a34a'; // green
+        else if (p.peerId) dot.style.background = '#ef4444'; // red
+        else dot.style.background = '#f97316'; // orange
 
         right.appendChild(dot);
 
         item.appendChild(left);
         item.appendChild(right);
 
-        // click behavior: select and attempt connect
+        // visual selection if matches currently selected (we keep lastSelectedPid)
+        if (window._lastSelectedPid && window._lastSelectedPid === pid){
+          item.classList.add('selected'); anySelected = true;
+        }
+
         item.addEventListener('click', ()=>{
-          // mark selected visually
-          const alreadySelected = item.classList.contains('selected');
-          // clear previous
-          const prev = container.querySelector('.player-item.selected');
-          if (prev && prev !== item) prev.classList.remove('selected');
-          if (!alreadySelected) item.classList.add('selected');
+          // deselect previous
+          const prev = container.querySelector('.player-item.selected'); if (prev) prev.classList.remove('selected');
+          item.classList.add('selected');
+          window._lastSelectedPid = pid;
 
           // update current player badge
-          const badge = el('currentPlayerBadge');
-          if (badge) badge.innerText = 'Current Player: ' + (p.title || pid);
+          const badge = el('currentPlayerBadge'); if (badge) badge.innerText = 'Current Player: ' + (p.title || pid);
 
-          // Try to connect if peerId exists
-          if (p.peerId) {
-            connectToPlayerAsViewer(pid);
-          } else {
-            // show not sharing message
+          // if player is rented and current user not renter nor owner -> show rented info and prevent connection
+          if (p.renterUid && currentUser && currentUser.uid !== p.renterUid && currentUser.uid !== p.owner){
             const center = el('viewerVideoContainer');
-            if (center) {
-              center.innerHTML = '';
-              const placeholder = document.createElement('div');
-              placeholder.id = 'noShareMessage';
-              placeholder.innerHTML = '—NOT CURRENTLY SHARING—<br/><span style="font-size:18px;color:#444">(Fixing Soon &amp; Compensating Time)</span><br/><span class="downtime" id="downtimeDisplay">DOWN TIME: 3h 2m 45s</span>';
-              center.appendChild(placeholder);
-            }
-            const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Not sharing';
-            toast('Ese player no está compartiendo', 'info');
+            center.innerHTML = `<div style="font-size:20px;color:#444">This Player is rented by another user until ${p.rentalExpires ? new Date(p.rentalExpires).toLocaleString() : '—'}</div>`;
+            el('shareStatusLabel').innerText = 'Status: Rented';
+            return;
+          }
+
+          // else if peer present -> connect
+          if (p.peerId){
+            connectToPlayerAsViewer(pid);
+            el('shareStatusLabel').innerText = 'Status: Connecting...';
+          } else {
+            // show NOT CURRENTLY SHARING (downtime accumulation)
+            renderNotSharingUI(pid, p);
+            el('shareStatusLabel').innerText = 'Status: Not sharing';
           }
         });
 
         container.appendChild(item);
       });
+
+      // if nothing selected, show select message in center
+      if (!anySelected){
+        showSelectMessage();
+      }
     }
 
-    // Host rendering left as-is (preserved)
-    function renderPlayersHost(snapshot){ const container = el('playersGrid'); if (!container) return; container.innerHTML = ''; for (const playerId in snapshot){ const p = snapshot[playerId] || {}; const elDiv = document.createElement('div'); elDiv.className='player'; elDiv.id = 'pl-' + playerId; elDiv.innerHTML = `<div class="title" style="font-weight:700;color:#0b2b66">${p.title || playerId}</div><div class="meta" style="font-size:.85rem;color:var(--muted);margin-top:6px">Owner: <strong>${p.ownerName||p.owner||'—'}</strong> • Peer: <span class="peer-id">${p.peerId || '—'}</span></div><div class="preview" style="flex:1;border-radius:8px;margin-top:8px;overflow:hidden;background:linear-gradient(180deg,#f7fbff,#ffffff);display:flex;align-items:center;justify-content:center"><div class="muted small">No se comparte</div></div><div class="actions" style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-sm btn-outline-primary share-btn">${p.peerId ? 'Compartiendo' : 'Compartir'}</button><button class="btn btn-sm btn-outline-secondary copy-btn">Copiar Peer</button><button class="btn btn-sm btn-outline-danger kick-all-btn">Kick All</button></div><button class="delete-btn" title="Eliminar" style="position:absolute;top:10px;right:10px;border:none;background:transparent;color:#e04b4b;font-weight:700">×</button><div style="margin-top:8px"><div class="small-muted">Conectados:</div><div class="viewer-list small-muted" style="margin-top:6px;max-height:90px;overflow:auto"></div></div>`; container.appendChild(elDiv);
-      const viewers = p.viewers || {}; const viewerListDiv = elDiv.querySelector('.viewer-list'); if (Object.keys(viewers).length === 0) viewerListDiv.innerHTML = `<div class="muted small">Nadie conectado</div>`; else { viewerListDiv.innerHTML=''; for (const uid in viewers){ const v = viewers[uid] || {}; const item = document.createElement('div'); item.style.display='flex'; item.style.justifyContent='space-between'; item.style.alignItems='center'; item.style.marginBottom='6px'; item.innerHTML = `<div>${v.username || uid} ${v.kicked ? '(kicked)' : v.active ? '(activo)' : '(inactivo)'}</div><div><button class="btn btn-sm btn-outline-danger kick-btn">Kick</button></div>`; const kickBtn = item.querySelector('.kick-btn'); kickBtn.addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger'); playersRef.child(playerId).child('viewers').child(uid).update({ kicked: true, active:false }); toast('Kick enviado a ' + (v.username||uid),'info'); }); viewerListDiv.appendChild(item); } }
+    function renderNotSharingUI(pid, p){
+      const center = el('viewerVideoContainer');
+      if (!center) return;
+      center.innerHTML = '';
+      const div = document.createElement('div');
+      div.style.textAlign='center';
+      div.style.fontSize='34px';
+      div.style.color='#666';
+      div.innerHTML = `—NOT CURRENTLY SHARING—<br/><span style="font-size:20px;color:#444">(Fixing Soon &amp; Compensating Time)</span><div style="margin-top:18px;font-weight:800;color:#c00" id="downDisplay-${pid}">DOWN TIME: ${formatMs(computeDowntime(p))}</div>`;
+      center.appendChild(div);
+    }
 
-      // attach actions
-      const shareBtn = elDiv.querySelector('.share-btn'); shareBtn.addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede compartir','danger'); startSharingForExistingPlayer(playerId, elDiv); }); elDiv.querySelector('.copy-btn').addEventListener('click', ()=>{ const pid = elDiv.querySelector('.peer-id').textContent; if (!pid || pid === '—') return toast('No hay PeerID','info'); navigator.clipboard.writeText(pid).then(()=>toast('PeerID copiado','success')).catch(()=>toast('No se pudo copiar','danger')); }); elDiv.querySelector('.delete-btn').addEventListener('click', ()=>{ if (!currentUser) return toast('No autenticado','info'); if (p.owner && currentUser.uid !== p.owner) return toast('Solo el owner puede eliminar','danger'); playersRef.child(playerId).remove(); toast('Player eliminado','info'); }); elDiv.querySelector('.kick-all-btn').addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger'); for (const uid in viewers) playersRef.child(playerId).child('viewers').child(uid).update({ kicked:true, active:false }); toast('Kick all enviado','info'); });
-    } }
+    // Host render (update to include 'inGame' toggle and unlink renter control)
+    function renderPlayersHost(snapshot){
+      const container = el('playersGrid'); if (!container) return; container.innerHTML = '';
+      for (const playerId in snapshot){
+        const p = snapshot[playerId] || {};
+        const elDiv = document.createElement('div');
+        elDiv.className='player';
+        elDiv.id = 'pl-' + playerId;
+        elDiv.innerHTML = `<div class="title" style="font-weight:900;color:#0b2b66;font-size:18px">${p.title || playerId}</div>
+          <div class="meta" style="font-size:.9rem;color:var(--muted);margin-top:6px">Owner: <strong>${p.ownerName||p.owner||'—'}</strong> • Peer: <span class="peer-id">${p.peerId || '—'}</span></div>
+          <div class="preview" style="flex:1;border-radius:8px;margin-top:8px;overflow:hidden;background:linear-gradient(180deg,#f7fbff,#ffffff);display:flex;align-items:center;justify-content:center"><div class="muted small">No se comparte</div></div>
+          <div class="host-controls" style="margin-top:8px"></div>
+          <div style="margin-top:8px"><div class="small-muted">Conectados:</div><div class="viewer-list small-muted" style="margin-top:6px;max-height:90px;overflow:auto"></div></div>`;
+
+        container.appendChild(elDiv);
+
+        const controls = elDiv.querySelector('.host-controls');
+        // share button
+        const shareBtn = document.createElement('button'); shareBtn.className='btn btn-sm btn-outline-primary'; shareBtn.innerText = p.peerId ? 'Compartiendo' : 'Compartir';
+        shareBtn.addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede compartir','danger'); startSharingForExistingPlayer(playerId, elDiv); });
+        controls.appendChild(shareBtn);
+
+        // copy peer
+        const copyBtn = document.createElement('button'); copyBtn.className='btn btn-sm btn-outline-secondary'; copyBtn.innerText='Copiar Peer';
+        copyBtn.addEventListener('click', ()=>{ const pidText = elDiv.querySelector('.peer-id').textContent; if (!pidText || pidText === '—') return toast('No hay PeerID','info'); navigator.clipboard.writeText(pidText).then(()=>toast('PeerID copiado','success')).catch(()=>toast('No se pudo copiar','danger')); });
+        controls.appendChild(copyBtn);
+
+        // toggle inGame
+        const inGameBtn = document.createElement('button'); inGameBtn.className='btn btn-sm btn-outline-info'; inGameBtn.innerText = p.inGame ? 'In Game ✓' : 'Toggle InGame';
+        inGameBtn.addEventListener('click', async ()=>{
+          if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede cambiar','danger');
+          await playersRef.child(playerId).update({ inGame: !p.inGame });
+          toast('inGame toggled','success');
+        });
+        controls.appendChild(inGameBtn);
+
+        // unlink renter / kick renter
+        if (p.renterUid) {
+          const unlinkBtn = document.createElement('button'); unlinkBtn.className='btn btn-sm btn-outline-danger'; unlinkBtn.innerText='Unlink Renter';
+          unlinkBtn.addEventListener('click', async ()=>{
+            if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger');
+            await playersRef.child(playerId).update({ renterUid: null, available: true, rentedAt: null, rentalExpires: null });
+            toast('Renter unlinked','info');
+          });
+          controls.appendChild(unlinkBtn);
+        }
+
+        // delete button (owner only)
+        const delBtn = document.createElement('button'); delBtn.className='delete-btn'; delBtn.title='Eliminar'; delBtn.style.marginLeft='auto'; delBtn.style.border='none'; delBtn.style.background='transparent'; delBtn.style.color='#e04b4b'; delBtn.style.fontWeight='700'; delBtn.innerText = '×';
+        delBtn.addEventListener('click', ()=>{ if (!currentUser) return toast('No autenticado','info'); if (p.owner && currentUser.uid !== p.owner) return toast('Solo el owner puede eliminar','danger'); playersRef.child(playerId).remove(); toast('Player eliminado','info'); });
+        elDiv.appendChild(delBtn);
+
+        // viewer list rendering
+        const viewers = p.viewers || {}; const viewerListDiv = elDiv.querySelector('.viewer-list');
+        if (Object.keys(viewers).length === 0) viewerListDiv.innerHTML = `<div class="muted small">Nadie conectado</div>`; else {
+          viewerListDiv.innerHTML=''; for (const uid in viewers){ const v = viewers[uid] || {}; const item = document.createElement('div'); item.style.display='flex'; item.style.justifyContent='space-between'; item.style.alignItems='center'; item.style.marginBottom='6px'; item.innerHTML = `<div>${v.username || uid} ${v.kicked ? '(kicked)' : v.active ? '(activo)' : '(inactivo)'}</div><div><button class="btn btn-sm btn-outline-danger kick-btn">Kick</button></div>`; const kickBtn = item.querySelector('.kick-btn'); kickBtn.addEventListener('click', ()=>{ if (!currentUser || currentUser.uid !== p.owner) return toast('Solo el owner puede kickear','danger'); playersRef.child(playerId).child('viewers').child(uid).update({ kicked: true, active:false }); toast('Kick enviado a ' + (v.username||uid),'info'); }); viewerListDiv.appendChild(item); }
+        }
+      }
+    }
 
     function getNextPlayerNumber(){ return Object.keys(playersSnapshot || {}).length + 1; }
-    document.addEventListener('click', function(e){ if (e.target && e.target.id === 'addPlayer'){ if (!currentUser) return toast('Inicia sesión para crear Player','info'); const idx = getNextPlayerNumber(); const pid = `player-${Date.now()}-${Math.floor(Math.random()*999)}`; const ownerName = currentProfile.username; playersRef.child(pid).set({ owner: currentUser.uid, ownerName: ownerName, title: `Player ${idx}`, peerId: '', viewers: {}, locked: false, createdAt: Date.now() }); toast('Player creado','success'); } });
 
-    // startSharingForExistingPlayer (unchanged)
-    async function startSharingForExistingPlayer(playerId, elDom){ const pSnap = playersSnapshot[playerId] || {}; if (!currentUser || pSnap.owner !== currentUser.uid) return toast('No eres el owner','danger'); try { let width=1280,height=720,fps=15; const qualityEl=document.getElementById('quality'); if (qualityEl){ const q=qualityEl.value.split('@')[0].split('x'); width=parseInt(q[0])||1280;height=parseInt(q[1])||720;fps=parseInt(qualityEl.value.split('@')[1]||'15'); } const stream = await navigator.mediaDevices.getDisplayMedia({ video:{ width, height, frameRate: fps }, audio:false }); const peer = new Peer(peerOptions()); elDom._playerPeer = peer; elDom._stream = stream; peer.on('open', id=>{ playersRef.child(playerId).update({ peerId: id, title: pSnap.title || 'Player' }); toast('Peer listo: ' + id, 'success'); }); peer.on('connection', conn=>{ conn.on('open', ()=>{ conn.on('data', data=>{ if (data && data.type === 'request'){ const viewerUid = data.viewerUid; const username = data.username || 'guest'; const viewerRef = playersRef.child(playerId).child('viewers').child(viewerUid); viewerRef.update({ username, connectedAt: Date.now(), active: true, kicked: false }); const call = peer.call(conn.peer, stream); call.on('error', e=>console.error('Call err', e)); } else if (data && data.type === 'control'){ window.dispatchEvent(new CustomEvent('remote-control', { detail: data })); } }); }); }); peer.on('call', call => call.answer(stream)); stream.getTracks().forEach(t => t.onended = ()=> { playersRef.child(playerId).update({ peerId: '' }); playersRef.child(playerId).child('viewers').once('value').then(snap=>{ const vs = snap.val() || {}; for (const uid in vs) playersRef.child(playerId).child('viewers').child(uid).update({ active:false }); }); if (elDom._playerPeer) try { elDom._playerPeer.destroy(); } catch(e){} }); const preview = elDom.querySelector('.preview'); if (preview){ preview.innerHTML=''; const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.muted=true; v.srcObject = stream; v.style.width='100%'; preview.appendChild(v); }
-    } catch(e){ toast('Error compartiendo: ' + (e.message || e),'danger'); } }
+    // if owner clicks addPlayer we still create an unsold player (forSale true) for sale by default
+    document.addEventListener('click', async function(e){
+      if (e.target && e.target.id === 'addPlayer'){
+        // open buy modal for viewers (or owners who want to buy)
+        openBuyModal();
+      }
+    });
 
-    // connectToPlayerAsViewer — updated to send request and update UI
+    // when owner creates player elsewhere: keep previous creation handler for adding a player (for owners)
+    // (if you want owners to create players via a different UI, keep using playersRef.child(...).set(...))
+    // For completeness, hooking the old 'create player' pattern to a keyboard shortcut helps quick testing:
+    document.addEventListener('keydown', function(e){
+      if (e.ctrlKey && e.key === 'n'){ // ctrl+n to create a player as current user (for owners)
+        if (!currentUser) return toast('Inicia sesión para crear Player','info');
+        const idx = getNextPlayerNumber(); const pid = `player-${Date.now()}-${Math.floor(Math.random()*999)}`; const ownerName = currentProfile.username;
+        // new player for sale by default, price 10
+        playersRef.child(pid).set({ owner: currentUser.uid, ownerName: ownerName, title: `Player ${idx}`, peerId: '', viewers: {}, locked: false, createdAt: Date.now(), forSale:true, price:10, available:true, inGame:false, downAccumulated:0, downSince: null });
+        toast('Player creado (for sale)','success');
+      }
+    });
+
+    // startSharingForExistingPlayer (modified with downtime accumulation)
+    async function startSharingForExistingPlayer(playerId, elDom){
+      const pSnap = playersSnapshot[playerId] || {};
+      if (!currentUser || pSnap.owner !== currentUser.uid) return toast('No eres el owner','danger');
+      try {
+        let width=1280,height=720,fps=15;
+        const qualityEl=document.getElementById('quality');
+        if (qualityEl){ const q=qualityEl.value.split('@')[0].split('x'); width=parseInt(q[0])||1280;height=parseInt(q[1])||720;fps=parseInt(qualityEl.value.split('@')[1]||'15'); }
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video:{ width, height, frameRate: fps }, audio:false });
+        const peer = new Peer(peerOptions());
+        elDom._playerPeer = peer; elDom._stream = stream;
+
+        peer.on('open', async id=>{
+          // If player had downSince, add to downAccumulated
+          const p = playersSnapshot[playerId] || {};
+          let updates = { peerId: id, title: pSnap.title || 'Player' };
+          if (p.downSince){
+            const extra = Date.now() - p.downSince;
+            updates.downAccumulated = (p.downAccumulated || 0) + extra;
+            updates.downSince = null;
+          }
+          await playersRef.child(playerId).update(updates);
+          toast('Peer listo: ' + id, 'success');
+        });
+
+        peer.on('connection', conn=>{
+          conn.on('open', ()=>{
+            conn.on('data', data=>{
+              if (data && data.type === 'request'){
+                const viewerUid = data.viewerUid;
+                const username = data.username || 'guest';
+                const viewerRef = playersRef.child(playerId).child('viewers').child(viewerUid);
+                viewerRef.update({ username, connectedAt: Date.now(), active: true, kicked: false });
+                const call = peer.call(conn.peer, stream);
+                call.on('error', e=>console.error('Call err', e));
+              } else if (data && data.type === 'control'){
+                window.dispatchEvent(new CustomEvent('remote-control', { detail: data }));
+              }
+            });
+          });
+        });
+
+        peer.on('call', call => call.answer(stream));
+
+        // when stream ends: mark peerId empty and start downtime
+        stream.getTracks().forEach(t => t.onended = async ()=> {
+          await playersRef.child(playerId).update({ peerId: '' , downSince: Date.now() });
+          // mark all viewers inactive
+          playersRef.child(playerId).child('viewers').once('value').then(snap=>{
+            const vs = snap.val() || {}; for (const uid in vs) playersRef.child(playerId).child('viewers').child(uid).update({ active:false });
+          });
+          if (elDom._playerPeer) try { elDom._playerPeer.destroy(); } catch(e){}
+        });
+
+        // show preview inside host UI if exists
+        const preview = elDom.querySelector('.preview');
+        if (preview){
+          preview.innerHTML=''; const v=document.createElement('video'); v.autoplay=true; v.playsInline=true; v.muted=true; v.srcObject = stream; v.style.width='100%'; preview.appendChild(v);
+        }
+      } catch(e){ toast('Error compartiendo: ' + (e.message || e),'danger'); }
+    }
+
+    // connectToPlayerAsViewer — updated to enforce rental exclusivity
     function connectToPlayerAsViewer(playerId){
       if (!currentUser) return toast('Inicia sesión para conectar','danger');
       const p = playersSnapshot[playerId] || {};
-      if (!p.peerId) return toast('Ese player no está compartiendo','info');
+      // if rented and not the renter and not owner => block
+      if (p.renterUid && p.renterUid !== currentUser.uid && currentUser.uid !== p.owner) {
+        return toast('Este player está alquilado por otro usuario','info');
+      }
+      if (!p.peerId) {
+        // show not sharing UI (downtime)
+        renderNotSharingUI(playerId, p);
+        el('shareStatusLabel').innerText = 'Status: Not sharing';
+        return;
+      }
 
       ensureViewerPeer();
-
-      // first, update current player badge
       const badge = el('currentPlayerBadge'); if (badge) badge.innerText = 'Current Player: ' + (p.title || playerId);
       const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Connecting...';
 
@@ -471,25 +637,177 @@
       } catch(e){
         console.error('connectToPlayerAsViewer err', e);
         toast('Error: ' + (e.message||e),'danger');
-        const st = el('shareStatusLabel'); if (st) st.innerText = 'Status: Error';
+        if (st) st.innerText = 'Status: Error';
       }
     }
 
-    // DB listeners (unchanged except using updated renderPlayersViewer)
-    playersRef.on('value', snap=>{ playersSnapshot = snap.val() || {}; renderPlayersViewer(playersSnapshot); renderPlayersHost(playersSnapshot); });
+    // BUY modal logic
+    function openBuyModal(){
+      const modal = el('buyModal'); if (!modal) return;
+      populateSaleList();
+      modal.style.display = 'block';
+      document.getElementById('closeBuy').onclick = ()=> modal.style.display='none';
+    }
+
+    function populateSaleList(){
+      const saleDiv = el('saleList'); if (!saleDiv) return; saleDiv.innerHTML = '';
+      const keys = Object.keys(playersSnapshot || {});
+      const sales = keys.filter(k => {
+        const p = playersSnapshot[k] || {};
+        return p.forSale && p.available;
+      });
+      if (sales.length === 0) {
+        saleDiv.innerHTML = '<div class="small-muted">No players currently available to buy.</div>'; return;
+      }
+      sales.forEach(pid=>{
+        const p = playersSnapshot[pid] || {};
+        const row = document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='8px'; row.style.border='1px solid rgba(0,0,0,.06)'; row.style.borderRadius='8px';
+        const left = document.createElement('div'); left.innerHTML = `<div style="font-weight:800">${p.title || pid}</div><div style="font-size:12px;color:#6b7280">Owner: ${p.ownerName||p.owner||'—'}</div>`;
+        const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px'; const price = document.createElement('div'); price.style.fontWeight='900'; price.innerText = `${p.price || 10} tokens`;
+        const buyBtn = document.createElement('button'); buyBtn.className='submit-btn'; buyBtn.style.width='140px'; buyBtn.innerText='Buy';
+        buyBtn.addEventListener('click', ()=> attemptBuy(pid));
+        right.appendChild(price); right.appendChild(buyBtn);
+        row.appendChild(left); row.appendChild(right);
+        saleDiv.appendChild(row);
+      });
+    }
+
+    // atomic purchase: deduct tokens and claim the player if still available
+    async function attemptBuy(pid){
+      if (!currentUser) return toast('Inicia sesión para comprar','info');
+      const uid = currentUser.uid;
+      const price = (playersSnapshot[pid] && playersSnapshot[pid].price) || 10;
+      // transaction on players to ensure available
+      try {
+        // first ensure user has enough tokens via transaction on user tokens
+        const tokensRef = usersRef.child(uid).child('tokens');
+        const tokensResult = await tokensRef.transaction(current => {
+          if (current == null) return; // abort if user doesn't exist (shouldn't happen)
+          if (current < price) return; // abort by returning undefined
+          return current - price;
+        }, undefined, false);
+        if (!tokensResult.committed){
+          return toast('No tienes suficientes tokens','danger');
+        }
+        // now claim player atomically
+        const playerRef = playersRef.child(pid);
+        const playerResult = await playerRef.transaction(current=>{
+          if (!current) return; // abort
+          if (!current.available) return; // already taken -> abort
+          current.available = false;
+          current.renterUid = uid;
+          current.rentedAt = Date.now();
+          current.rentalExpires = Date.now() + 24*3600*1000;
+          return current;
+        }, undefined, false);
+        if (!playerResult.committed){
+          // refund tokens if player not available
+          await tokensRef.transaction(current => (current||0) + price);
+          return toast('El player fue comprado por alguien más, tokens devueltos','info');
+        }
+        // success
+        toast('Compra completada. Tienes el acceso por 24h','success');
+        el('buyModal').style.display='none';
+      } catch(e){
+        console.error('buy err', e);
+        toast('Error en la compra','danger');
+      }
+    }
+
+    // helper compute downtime for player
+    function computeDowntime(p){
+      const acc = p.downAccumulated || 0;
+      const ds = p.downSince || null;
+      let total = acc;
+      if (ds) total += (Date.now() - ds);
+      return total;
+    }
+    function formatMs(ms){
+      if (!ms || ms < 0) ms = 0;
+      const s = Math.floor(ms/1000);
+      const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = s%60;
+      return `${h}h ${m}m ${sec}s`;
+    }
+
+    // periodically update downtime display for selected player and expiry handling
+    setInterval(()=>{
+      // update selected player's down display
+      const sel = window._lastSelectedPid;
+      if (sel){
+        const p = playersSnapshot[sel];
+        if (p && (!p.peerId)){
+          const elDown = document.getElementById('downDisplay-' + sel);
+          if (elDown) elDown.innerText = 'DOWN TIME: ' + formatMs(computeDowntime(p));
+        }
+      }
+      // check rentals expiration
+      const now = Date.now();
+      for (const pid in playersSnapshot){
+        const p = playersSnapshot[pid] || {};
+        if (p.rentalExpires && p.rentalExpires <= now){
+          // clear rental, make available again
+          playersRef.child(pid).update({ renterUid: null, available: true, rentedAt: null, rentalExpires: null });
+        }
+      }
+    }, 1000);
+
+    // DB listeners
+    playersRef.on('value', snap=>{ playersSnapshot = snap.val() || {}; renderPlayersViewer(playersSnapshot); renderPlayersHost(playersSnapshot); populateSaleList(); });
     db.ref('.info/connected').on('value', snap=>{ const v=snap.val(); const fb = el('fbLabel'); if (fb) fb.textContent = v ? 'Conectado' : 'Desconectado'; });
 
-    auth.onAuthStateChanged(async user=>{ if (!user){ currentUser=null; currentProfile=null; showAuthStart(); return; } currentUser=user; const snap=await usersRef.child(user.uid).once('value'); currentProfile = snap.val() || { username: user.email.split('@')[0] }; const playersNow = (await playersRef.once('value')).val() || {}; const owns = Object.values(playersNow||{}).some(p=> p && p.owner === currentUser.uid); if (owns) showAppMain(); else { showViewerFull(); ensureViewerPeer(); } });
+    // when auth status changes
+    auth.onAuthStateChanged(async user=>{
+      if (!user){ currentUser=null; currentProfile=null; showAuthStart(); updateTopForUser(null); return; }
+      currentUser = user;
+      const snap = await usersRef.child(user.uid).once('value');
+      currentProfile = snap.val() || { username: user.email.split('@')[0], tokens: 0 };
+      // update top UI
+      updateTopForUser(currentProfile);
+      // decide view
+      const playersNow = (await playersRef.once('value')).val() || {};
+      const owns = Object.values(playersNow||{}).some(p=> p && p.owner === currentUser.uid);
+      if (owns) showAppMain(); else { showViewerFull(); ensureViewerPeer(); }
+    });
 
-    // small helper toast (kept simple)
+    // when registering, usersRef already gets tokens:100 (done earlier)
+
+    // small helper toast
     function toast(msg, type='info'){
       const t = document.createElement('div'); t.className='toast'; t.innerText = msg; document.body.appendChild(t);
       setTimeout(()=> t.style.opacity='0', 2600);
       setTimeout(()=> t.remove(), 3000);
     }
 
-    // back button to jump to auth (keeps previous behavior simple)
-    el('viewerBackBtn').addEventListener('click', ()=> showAuthStart());
+    // UI helpers
+    function showSelectMessage(){
+      const center = el('viewerVideoContainer');
+      if (!center) return;
+      center.innerHTML = '<div id="selectMessage" style="font-size:38px;color:#444">Select A Player</div>';
+      el('currentPlayerBadge').innerText = 'Select A Player';
+      el('shareStatusLabel').innerText = 'Status: —';
+    }
+
+    // close buy modal on clicking overlay
+    document.addEventListener('click', (ev)=>{
+      const modal = el('buyModal');
+      if (!modal) return;
+      if (ev.target && ev.target.id === 'buyOverlay'){
+        modal.style.display='none';
+      }
+    });
+
+    // back arrow inside center frame -> go back to authStart as requested
+    el('viewArrow').addEventListener('click', ()=> showAuthStart());
+
+    // update header tokens display when user profile changes in db (listen to user's profile)
+    auth.onAuthStateChanged(user=>{
+      if (!user) return;
+      usersRef.child(user.uid).on('value', snap=>{
+        const data = snap.val() || {};
+        currentProfile = data;
+        updateTopForUser(currentProfile);
+      });
+    });
 
     // initial
     showAuthStart();
